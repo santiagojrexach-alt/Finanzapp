@@ -16,20 +16,20 @@
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 
 [data-theme="dark"]{
-  --bg:#111c12;--bg2:#172118;--bg3:#1d2a1e;
-  --card:#1e2e1f;--card2:#243626;--border:#2a4030;
-  --muted:#4a7055;--dim:#6a9a74;--text:#c4dac9;--bright:#eaf4ec;
-  --accent:#5ee87a;--a2:#3bc957;--red:#ff7070;--amber:#f5c842;
-  --blue:#6ab4f5;--purple:#b09af5;--teal:#5ee8d4;
-  --shadow:rgba(0,0,0,.5);--input-bg:#172118;--overlay:rgba(0,0,0,.72);
+  --bg:#0e1a0f;--bg2:#131f14;--bg3:#192619;
+  --card:#1a2b1b;--card2:#203022;--border:#2c4432;
+  --muted:#527a5a;--dim:#78aa82;--text:#ccddd0;--bright:#f0f7f2;
+  --accent:#6ef08a;--a2:#42d460;--red:#ff7878;--amber:#fdd44a;
+  --blue:#7ac0ff;--purple:#c0aaff;--teal:#6ef0e0;
+  --shadow:rgba(0,0,0,.55);--input-bg:#131f14;--overlay:rgba(0,0,0,.75);
 }
 [data-theme="light"]{
-  --bg:#d8edd9;--bg2:#cfe6d1;--bg3:#c4ddc7;
-  --card:#e4f0e6;--card2:#daeadc;--border:#a4c8aa;
-  --muted:#5a8a64;--dim:#2a6636;--text:#143818;--bright:#0a2010;
-  --accent:#1a8832;--a2:#126824;--red:#c02828;--amber:#7a5800;
-  --blue:#10589a;--purple:#5030a8;--teal:#107880;
-  --shadow:rgba(0,0,0,.15);--input-bg:#dceede;--overlay:rgba(0,0,0,.45);
+  --bg:#cce8cf;--bg2:#c2e0c6;--bg3:#b6d8ba;
+  --card:#e8f5ea;--card2:#ddf0e0;--border:#8ebf96;
+  --muted:#3d7045;--dim:#1e5228;--text:#0f3016;--bright:#071a0c;
+  --accent:#0d7a28;--a2:#0a6020;--red:#b81c1c;--amber:#7a5200;
+  --blue:#0850a0;--purple:#4828b0;--teal:#0b7070;
+  --shadow:rgba(0,0,0,.18);--input-bg:#dff2e2;--overlay:rgba(0,0,0,.48);
 }
 
 html{height:100%;background:var(--bg)}
@@ -840,6 +840,110 @@ body{
 }
 .color-chip:hover{transform:scale(1.12)}
 .color-chip.sel{outline:2px solid var(--bright);outline-offset:2px}
+/* ── COLLAPSIBLE CARDS ── */
+.card-hdr.collapsible{cursor:pointer;user-select:none}
+.card-hdr.collapsible::after{
+  content:'›';
+  font-size:18px;font-weight:300;color:var(--muted);
+  transform:rotate(90deg);display:inline-block;
+  transition:transform .25s;margin-left:auto;padding-left:8px;
+}
+.card-hdr.collapsible.collapsed::after{transform:rotate(0deg)}
+.card-body{
+  overflow:hidden;
+  transition:max-height .32s cubic-bezier(.4,0,.2,1),opacity .25s;
+  max-height:2000px;opacity:1;
+}
+.card-body.collapsed{max-height:0;opacity:0}
+
+/* cfg sections collapsible */
+.cfg-section .cfg-hdr{cursor:pointer;user-select:none;display:flex;align-items:center}
+.cfg-section .cfg-hdr::after{
+  content:'›';font-size:16px;font-weight:300;color:var(--muted);
+  transform:rotate(90deg);display:inline-block;
+  transition:transform .25s;margin-left:auto;
+}
+.cfg-section .cfg-hdr.collapsed::after{transform:rotate(0deg)}
+.cfg-body{
+  overflow:hidden;
+  transition:max-height .32s cubic-bezier(.4,0,.2,1),opacity .25s;
+  max-height:1200px;opacity:1;
+}
+.cfg-body.collapsed{max-height:0;opacity:0}
+
+/* ── SWIPE TO DELETE ── */
+.tx-swipe-wrap{position:relative;overflow:hidden}
+.tx-delete-bg{
+  position:absolute;top:0;right:0;bottom:0;
+  width:80px;background:var(--red);
+  display:flex;align-items:center;justify-content:center;
+  font-size:20px;opacity:0;transition:opacity .15s;
+  pointer-events:none;
+}
+.tx-swipe-wrap.swiping .tx-delete-bg{opacity:1}
+
+/* ── AUTOCOMPLETE ── */
+.autocomplete-wrap{position:relative}
+.autocomplete-list{
+  position:absolute;top:100%;left:0;right:0;z-index:50;
+  background:var(--card);border:1px solid var(--border);
+  border-radius:0 0 14px 14px;overflow:hidden;
+  box-shadow:0 8px 24px var(--shadow);
+  max-height:160px;overflow-y:auto;
+  display:none;
+}
+.autocomplete-list.open{display:block}
+.ac-item{
+  padding:10px 16px;font-size:13px;font-weight:500;
+  color:var(--text);cursor:pointer;transition:background .12s;
+  border-bottom:1px solid var(--border);
+}
+.ac-item:last-child{border-bottom:none}
+.ac-item:hover{background:var(--bg3)}
+
+/* ── MONTH DELTA ── */
+.balance-delta{
+  font-size:11px;font-weight:600;margin-left:8px;
+  padding:2px 7px;border-radius:8px;
+  vertical-align:middle;
+}
+.delta-pos{background:rgba(66,212,96,.15);color:var(--a2)}
+.delta-neg{background:rgba(255,120,120,.15);color:var(--red)}
+
+/* ── LOGOUT MODAL ── */
+.logout-modal-bg{
+  position:fixed;inset:0;background:var(--overlay);
+  display:flex;align-items:center;justify-content:center;
+  opacity:0;pointer-events:none;transition:opacity .2s;z-index:200;
+  padding:24px;
+}
+.logout-modal-bg.open{opacity:1;pointer-events:all}
+.logout-card{
+  background:var(--card);border:1px solid var(--border);
+  border-radius:22px;padding:28px 24px;
+  width:100%;max-width:320px;
+  transform:scale(.95);transition:transform .2s;
+  text-align:center;
+}
+.logout-modal-bg.open .logout-card{transform:scale(1)}
+.logout-icon{font-size:36px;margin-bottom:12px}
+.logout-title{font-size:16px;font-weight:800;color:var(--bright);margin-bottom:8px}
+.logout-sub{font-size:13px;color:var(--muted);margin-bottom:22px;line-height:1.5}
+.logout-btns{display:flex;gap:10px}
+.logout-cancel{
+  flex:1;padding:12px;border-radius:14px;
+  background:var(--bg3);border:1px solid var(--border);
+  color:var(--text);font-family:'Nunito',sans-serif;
+  font-size:13px;font-weight:700;cursor:pointer;transition:background .15s;
+}
+.logout-cancel:hover{background:var(--border)}
+.logout-confirm{
+  flex:1;padding:12px;border-radius:14px;
+  background:rgba(255,120,120,.1);border:1px solid rgba(255,120,120,.3);
+  color:var(--red);font-family:'Nunito',sans-serif;
+  font-size:13px;font-weight:700;cursor:pointer;transition:background .15s;
+}
+.logout-confirm:hover{background:rgba(255,120,120,.18)}
 </style>
 </head>
 <body>
@@ -919,7 +1023,7 @@ body{
     <div class="hero" id="heroEl">
       <div class="balance-label">Balance del mes</div>
       <div class="balance-main">
-        <span class="curr-sym">$</span><span id="balARS">0</span>
+        <span class="curr-sym">$</span><span id="balARS">0</span><span id="balDelta" class="balance-delta"></span>
       </div>
       <div id="balUSDRow" class="balance-usd-row"></div>
       <div class="kpi-row">
@@ -970,15 +1074,15 @@ body{
       <div class="budget-alert" id="budgetAlert"></div>
 
       <div class="card">
-        <div class="card-hdr"><span>Gastos por categoría</span></div>
-        <div id="catList"></div>
+        <div class="card-hdr collapsible collapsed" onclick="toggleCard(this)"><span>Gastos por categoría</span></div>
+        <div class="card-body collapsed"><div id="catList"></div></div>
       </div>
       <div class="card">
-        <div class="card-hdr">
+        <div class="card-hdr collapsible collapsed" onclick="toggleCard(this)">
           <span>Últimos movimientos</span>
-          <button class="card-hdr-btn" onclick="switchTab('registro')">Ver todos</button>
+          <button class="card-hdr-btn" onclick="event.stopPropagation();switchTab('registro')">Ver todos</button>
         </div>
-        <div id="recentList"></div>
+        <div class="card-body collapsed"><div id="recentList"></div></div>
       </div>
     </div>
 
@@ -1006,39 +1110,41 @@ body{
     <div class="tab-panel" id="tab-analisis">
       <!-- Torta categorías -->
       <div class="card">
-        <div class="card-hdr"><span>Gastos por categoría</span><span id="donutMonth" style="font-size:11px;font-weight:600;text-transform:none;letter-spacing:0;color:var(--dim)"></span></div>
-        <div class="chart-wrap">
-          <div class="chart-canvas-wrap" style="height:200px">
-            <canvas id="donutChart"></canvas>
-          </div>
+        <div class="card-hdr collapsible collapsed" onclick="toggleCard(this)">
+          <span>Gastos por categoría</span><span id="donutMonth" style="font-size:11px;font-weight:600;text-transform:none;letter-spacing:0;color:var(--dim);margin-left:8px"></span>
         </div>
-        <div class="chart-legend" id="donutLegend"></div>
+        <div class="card-body collapsed">
+          <div class="chart-wrap">
+            <div class="chart-canvas-wrap" style="height:200px"><canvas id="donutChart"></canvas></div>
+          </div>
+          <div class="chart-legend" id="donutLegend"></div>
+        </div>
       </div>
 
       <!-- Barras evolución mensual -->
       <div class="card">
-        <div class="card-hdr"><span>Evolución mensual</span></div>
-        <div class="chart-period-row" id="barPeriodRow">
-          <div class="chart-chip active" data-months="6">6 meses</div>
-          <div class="chart-chip" data-months="12">12 meses</div>
-        </div>
-        <div class="chart-wrap" style="padding-top:0">
-          <div class="chart-canvas-wrap" style="height:200px">
-            <canvas id="barChart"></canvas>
+        <div class="card-hdr collapsible collapsed" onclick="toggleCard(this)"><span>Evolución mensual</span></div>
+        <div class="card-body collapsed">
+          <div class="chart-period-row" id="barPeriodRow">
+            <div class="chart-chip active" data-months="6">6 meses</div>
+            <div class="chart-chip" data-months="12">12 meses</div>
           </div>
-        </div>
-        <div class="chart-legend" style="padding-top:0">
-          <div class="chart-legend-item"><div class="chart-legend-dot" style="background:var(--accent)"></div>Ingresos</div>
-          <div class="chart-legend-item"><div class="chart-legend-dot" style="background:var(--red)"></div>Egresos</div>
+          <div class="chart-wrap" style="padding-top:0">
+            <div class="chart-canvas-wrap" style="height:200px"><canvas id="barChart"></canvas></div>
+          </div>
+          <div class="chart-legend" style="padding-top:0">
+            <div class="chart-legend-item"><div class="chart-legend-dot" style="background:var(--accent)"></div>Ingresos</div>
+            <div class="chart-legend-item"><div class="chart-legend-dot" style="background:var(--red)"></div>Egresos</div>
+          </div>
         </div>
       </div>
 
       <!-- Línea ahorro acumulado -->
       <div class="card">
-        <div class="card-hdr"><span>Ahorro acumulado</span></div>
-        <div class="chart-wrap">
-          <div class="chart-canvas-wrap" style="height:180px">
-            <canvas id="lineChart"></canvas>
+        <div class="card-hdr collapsible collapsed" onclick="toggleCard(this)"><span>Ahorro acumulado</span></div>
+        <div class="card-body collapsed">
+          <div class="chart-wrap">
+            <div class="chart-canvas-wrap" style="height:180px"><canvas id="lineChart"></canvas></div>
           </div>
         </div>
       </div>
@@ -1063,7 +1169,8 @@ body{
     <div class="tab-panel" id="tab-config">
 
       <div class="cfg-section">
-        <div class="cfg-hdr">Cuenta</div>
+        <div class="cfg-hdr" onclick="toggleCfg(this)">Cuenta</div>
+        <div class="cfg-body">
         <div class="cfg-row">
           <div class="user-row">
             <div class="user-avatar">👤</div>
@@ -1072,12 +1179,14 @@ body{
               <div class="cfg-sub" id="cfgSyncStatus">Sincronización activa</div>
             </div>
           </div>
-          <button class="cfg-action red" onclick="doLogout()">Salir</button>
+          <button class="cfg-action red" onclick="openLogoutModal()">Salir</button>
+        </div>
         </div>
       </div>
 
       <div class="cfg-section">
-        <div class="cfg-hdr">Apariencia</div>
+        <div class="cfg-hdr collapsed" onclick="toggleCfg(this)">Apariencia</div>
+        <div class="cfg-body collapsed">
         <div class="cfg-row">
           <div>
             <div class="cfg-lbl">Tema nocturno</div>
@@ -1087,10 +1196,12 @@ body{
             <div class="toggle-knob"></div>
           </div>
         </div>
+        </div>
       </div>
 
       <div class="cfg-section">
-        <div class="cfg-hdr">Moneda y tipo de cambio</div>
+        <div class="cfg-hdr collapsed" onclick="toggleCfg(this)">Moneda y tipo de cambio</div>
+        <div class="cfg-body collapsed">
         <div class="cfg-row">
           <div>
             <div class="cfg-lbl">Tipo de cambio USD</div>
@@ -1107,18 +1218,26 @@ body{
           <input class="cfg-inline-input" type="number" inputmode="decimal"
                  id="monthlyInput" placeholder="0" min="0">
         </div>
-      </div>
-
-      <div class="cfg-section">
-        <div class="cfg-hdr">Categorías</div>
-        <div id="catMgmtList"></div>
-        <div class="cfg-row" style="padding:11px 16px">
-          <button class="cfg-action green" onclick="openCatModal(null)">+ Agregar categoría</button>
         </div>
       </div>
 
       <div class="cfg-section">
-        <div class="cfg-hdr">Datos</div>
+        <div class="cfg-hdr collapsed" onclick="toggleCfg(this)">Categorías</div>
+        <div class="cfg-body collapsed">
+        <div id="catMgmtList"></div>
+        <div class="cfg-row" style="padding:11px 16px">
+          <button class="cfg-action green" onclick="openCatModal(null)">+ Agregar categoría</button>
+        </div>
+        </div>
+      </div>
+
+      <div class="cfg-section">
+        <div class="cfg-hdr collapsed" onclick="toggleCfg(this)">Datos</div>
+        <div class="cfg-body collapsed">
+        <div class="cfg-row">
+          <div><div class="cfg-lbl">Importar JSON</div><div class="cfg-sub">Restaurar desde backup</div></div>
+          <button class="cfg-action" onclick="importJSON()">↑ JSON</button>
+        </div>
         <div class="cfg-row">
           <div><div class="cfg-lbl">Exportar CSV</div><div class="cfg-sub">Todas las transacciones</div></div>
           <button class="cfg-action" onclick="exportCSV()">↓ CSV</button>
@@ -1130,6 +1249,7 @@ body{
         <div class="cfg-row">
           <div><div class="cfg-lbl">Borrar todos los datos</div><div class="cfg-sub">No se puede deshacer</div></div>
           <button class="cfg-action red" onclick="confirmClear()">Borrar</button>
+        </div>
         </div>
       </div>
 
@@ -1179,8 +1299,12 @@ body{
 
     <div class="field">
       <label class="field-lbl">Descripción</label>
-      <input class="field-input" type="text" id="descInput"
-             placeholder="Opcional" maxlength="80" autocomplete="off">
+      <div class="autocomplete-wrap">
+        <input class="field-input" type="text" id="descInput"
+               placeholder="Opcional" maxlength="80" autocomplete="off"
+               oninput="onDescInput(this.value)" onblur="closeAC()">
+        <div class="autocomplete-list" id="acList"></div>
+      </div>
     </div>
 
     <div class="field">
@@ -1256,6 +1380,19 @@ body{
 
 <!-- TOAST -->
 <div class="toast" id="toast"></div>
+
+<!-- LOGOUT MODAL -->
+<div class="logout-modal-bg" id="modalLogout">
+  <div class="logout-card">
+    <div class="logout-icon">👋</div>
+    <div class="logout-title">¿Cerrar sesión?</div>
+    <div class="logout-sub">Tus datos quedan guardados en la nube. Podés volver a ingresar cuando quieras.</div>
+    <div class="logout-btns">
+      <button class="logout-cancel" onclick="closeModal('modalLogout')">Cancelar</button>
+      <button class="logout-confirm" onclick="confirmLogout()">Cerrar sesión</button>
+    </div>
+  </div>
+</div>
 
 <!-- GOAL MODAL -->
 <div class="modal-backdrop" id="modalGoal">
@@ -1442,18 +1579,19 @@ async function loadFromCloud() {
     var snap = await userDocRef(currentUser.uid).get();
     if (snap.exists) {
       var d = migrate(snap.data());
-      // Cloud wins if it has data
-      if (d.txs)   S.txs   = d.txs;
-      if (d.goals) S.goals = d.goals;
-      if (d.cats && d.cats.length) S.cats = d.cats;
-      if (d.cfg)   S.cfg   = Object.assign({}, S.cfg, d.cfg);
+      // Cloud wins ONLY if it actually has data
+      // Empty array [] is truthy in JS — must check length
+      if (d.txs   && d.txs.length)   S.txs   = d.txs;
+      if (d.goals && d.goals.length)  S.goals = d.goals;
+      if (d.cats  && d.cats.length)   S.cats  = d.cats;
+      if (d.cfg)  S.cfg = Object.assign({}, S.cfg, d.cfg);
       if (!S.cfg.budgets) S.cfg.budgets = {};
       CATS = S.cats;
       saveLocal();
       setSyncState('synced');
       return true;
     } else {
-      // First time — push local data to cloud
+      // First time user — push whatever is in localStorage to cloud
       await syncToCloud();
       return false;
     }
@@ -1674,27 +1812,181 @@ function renderHeader(){
     saveEl.textContent=pct+'%';
     saveEl.style.color=parseFloat(pct)>=0?'var(--amber)':'var(--red)';
   }else{saveEl.textContent='—';saveEl.style.color='var(--amber)';}
-  var cMain=document.getElementById('balCompactMain');
+  // Delta vs previous month
+  var deltaEl = document.getElementById('balDelta');
+  if (deltaEl) {
+    var delta = calcDelta();
+    if (delta !== null) {
+      var pos = delta >= 0;
+      deltaEl.textContent = (pos ? '↑' : '↓') + Math.abs(delta).toFixed(0) + '%';
+      deltaEl.className = 'balance-delta ' + (pos ? 'delta-pos' : 'delta-neg');
+    } else {
+      deltaEl.textContent = '';
+      deltaEl.className = 'balance-delta';
+    }
+  }
   cMain.textContent=sign+fARS(Math.abs(b.total));
   cMain.style.color=b.total<0?'var(--red)':'var(--bright)';
   document.getElementById('balCompactIn').textContent ='↑'+fARS(b.totalIn);
   document.getElementById('balCompactOut').textContent='↓'+fARS(b.totalOut);
 }
 
-/* ── HEADER COLLAPSE ── */
-function initHeaderCollapse(){
-  var el=document.getElementById('contentArea');
-  if(!el)return;
-  var sentinel=document.createElement('div');
-  sentinel.style.cssText='position:absolute;top:0;left:0;height:1px;width:100%;pointer-events:none';
+/* ── COLLAPSIBLE CARDS ── */
+function toggleCard(hdr) {
+  hdr.classList.toggle('collapsed');
+  var body = hdr.nextElementSibling;
+  if (body && body.classList.contains('card-body')) {
+    body.classList.toggle('collapsed');
+    // Render chart if expanding an analysis card
+    if (!body.classList.contains('collapsed')) {
+      var canvas = body.querySelector('canvas');
+      if (canvas) {
+        var id = canvas.id;
+        if (id === 'donutChart') renderDonut();
+        if (id === 'barChart')   renderBar();
+        if (id === 'lineChart')  renderLine();
+      }
+    }
+  }
+}
+window.toggleCard = toggleCard;
+
+function toggleCfg(hdr) {
+  hdr.classList.toggle('collapsed');
+  var body = hdr.nextElementSibling;
+  if (body && body.classList.contains('cfg-body')) {
+    body.classList.toggle('collapsed');
+  }
+}
+window.toggleCfg = toggleCfg;
+
+/* ── SWIPE TO DELETE ── */
+function initSwipe(el, txId) {
+  var startX = 0, curX = 0, swiping = false;
+  var wrap = el.parentElement;
+
+  el.addEventListener('touchstart', function(e) {
+    startX = e.touches[0].clientX;
+    swiping = true;
+  }, { passive: true });
+
+  el.addEventListener('touchmove', function(e) {
+    if (!swiping) return;
+    curX = e.touches[0].clientX - startX;
+    if (curX < 0) {
+      el.style.transform = 'translateX(' + Math.max(curX, -80) + 'px)';
+      wrap.classList.add('swiping');
+    }
+  }, { passive: true });
+
+  el.addEventListener('touchend', function() {
+    swiping = false;
+    if (curX < -60) {
+      // Confirm delete
+      el.style.transform = 'translateX(-80px)';
+      setTimeout(function() {
+        if (confirm('¿Eliminar este movimiento?')) {
+          S.txs = S.txs.filter(function(t) { return t.id !== txId; });
+          save(); renderAll(); toast('🗑️ Eliminado'); vibrate(20);
+        } else {
+          el.style.transform = '';
+          wrap.classList.remove('swiping');
+        }
+      }, 100);
+    } else {
+      el.style.transform = '';
+      wrap.classList.remove('swiping');
+    }
+    curX = 0;
+  });
+}
+
+/* ── AUTOCOMPLETE ── */
+function onDescInput(val) {
+  var list = document.getElementById('acList');
+  if (!list) return;
+  if (!val || val.length < 2) { list.classList.remove('open'); return; }
+  var lower = val.toLowerCase();
+  var seen = {}, suggestions = [];
+  S.txs.forEach(function(t) {
+    if (t.desc && t.desc.toLowerCase().includes(lower) && !seen[t.desc]) {
+      seen[t.desc] = true;
+      suggestions.push(t.desc);
+    }
+  });
+  suggestions = suggestions.slice(0, 5);
+  if (!suggestions.length) { list.classList.remove('open'); return; }
+  list.innerHTML = suggestions.map(function(s) {
+    return '<div class="ac-item" onmousedown="pickAC(\'' + esc(s).replace(/'/g, "\\'") + '\')">' + esc(s) + '</div>';
+  }).join('');
+  list.classList.add('open');
+}
+function pickAC(val) {
+  var inp = document.getElementById('descInput');
+  if (inp) inp.value = val;
+  closeAC();
+}
+function closeAC() {
+  var list = document.getElementById('acList');
+  if (list) list.classList.remove('open');
+}
+window.onDescInput = onDescInput;
+window.pickAC      = pickAC;
+window.closeAC     = closeAC;
+
+/* ── LOGOUT MODAL ── */
+function openLogoutModal() {
+  document.getElementById('modalLogout').classList.add('open');
+}
+async function confirmLogout() {
+  closeModal('modalLogout');
+  await fbAuth.signOut();
+}
+window.openLogoutModal = openLogoutModal;
+window.confirmLogout   = confirmLogout;
+document.getElementById('modalLogout').addEventListener('click', function(e) {
+  if (e.target === this) closeModal('modalLogout');
+});
+
+/* ── MONTH VS PREV MONTH DELTA ── */
+function calcDelta() {
+  var y = S.ui.year, m = S.ui.month;
+  var prevM = m - 1, prevY = y;
+  if (prevM < 0) { prevM = 11; prevY--; }
+  var curr = calcBal(S.txs.filter(function(t){ return inMonth(t,y,m); })).total;
+  var prev = calcBal(S.txs.filter(function(t){ return inMonth(t,prevY,prevM); })).total;
+  if (prev === 0) return null;
+  return ((curr - prev) / Math.abs(prev) * 100);
+}
+
+/* ── HEADER COLLAPSE (single-init fix) ── */
+var headerCollapseInited = false;
+function initHeaderCollapse() {
+  if (headerCollapseInited) return;
+  headerCollapseInited = true;
+  var el = document.getElementById('contentArea');
+  if (!el) return;
+  var sentinel = document.createElement('div');
+  sentinel.style.cssText = 'position:absolute;top:0;left:0;height:1px;width:100%;pointer-events:none';
   el.prepend(sentinel);
-  new IntersectionObserver(function(entries){
-    var visible=entries[0].isIntersecting;
-    var hero=document.getElementById('heroEl');
-    var compact=document.getElementById('balCompact');
-    if(visible){hero.classList.remove('collapsed');compact.classList.remove('show');}
-    else{hero.classList.add('collapsed');compact.classList.add('show');}
-  },{threshold:0}).observe(sentinel);
+  new IntersectionObserver(function(entries) {
+    var visible = entries[0].isIntersecting;
+    var hero    = document.getElementById('heroEl');
+    var compact = document.getElementById('balCompact');
+    if (visible) { hero.classList.remove('collapsed'); compact.classList.remove('show'); }
+    else         { hero.classList.add('collapsed');    compact.classList.add('show');    }
+  }, { threshold: 0 }).observe(sentinel);
+}
+
+/* ── SESSION EXPIRED DETECTION ── */
+function initSessionWatch() {
+  fbAuth.onIdTokenChanged(async function(user) {
+    if (!user && currentUser) {
+      // Session expired
+      toast('⚠️ Sesión expirada. Volvé a ingresar.');
+      setTimeout(function() { showAuth(); }, 2000);
+    }
+  });
 }
 
 /* ── RENDER RESUMEN ── */
@@ -1756,6 +2048,7 @@ function renderRecent(){
     return;
   }
   el.innerHTML=txs.map(function(tx){return txRow(tx);}).join('');
+  setTimeout(attachSwipeListeners, 50);
 }
 
 function renderRecurBanner(){
@@ -1832,6 +2125,7 @@ function renderHist(){
   var html='';
   order.forEach(function(dk){html+='<div class="date-sep">'+dateLabel(dk)+'</div>';html+=groups[dk].map(function(tx){return txRow(tx);}).join('');});
   el.innerHTML=html;
+  setTimeout(attachSwipeListeners, 50);
 }
 
 function renderPeriodSummary(txs){
@@ -1850,12 +2144,27 @@ function txRow(tx){
   var desc=tx.desc||c.label;
   var badge=tx.curr==='USD'?'<span style="font-size:10px;color:var(--blue);margin-left:4px">USD</span>':'';
   var recurBadge=tx.recurring?'<div class="tx-recur">🔁 recurrente</div>':'';
-  return'<div class="tx" onclick="openEdit(\''+tx.id+'\')">' +
-    '<div class="tx-icon">'+c.icon+'</div>'+
-    '<div class="tx-body"><div class="tx-name">'+esc(desc)+badge+'</div>'+
-    '<div class="tx-meta">'+esc(c.label)+'</div>'+recurBadge+'</div>'+
-    '<div class="tx-right"><div class="tx-amount '+cls+'">'+sign+fmt+'</div>'+
-    '<div class="tx-date-lbl">'+fmtDate(tx.date)+'</div></div></div>';
+  var html='<div class="tx-swipe-wrap">'+
+    '<div class="tx-delete-bg">🗑️</div>'+
+    '<div class="tx" id="tx-'+tx.id+'" onclick="openEdit(\''+tx.id+'\')">'+
+      '<div class="tx-icon">'+c.icon+'</div>'+
+      '<div class="tx-body"><div class="tx-name">'+esc(desc)+badge+'</div>'+
+      '<div class="tx-meta">'+esc(c.label)+'</div>'+recurBadge+'</div>'+
+      '<div class="tx-right"><div class="tx-amount '+cls+'">'+sign+fmt+'</div>'+
+      '<div class="tx-date-lbl">'+fmtDate(tx.date)+'</div></div>'+
+    '</div>'+
+  '</div>';
+  return html;
+}
+
+function attachSwipeListeners() {
+  document.querySelectorAll('.tx-swipe-wrap').forEach(function(wrap) {
+    var txEl = wrap.querySelector('.tx');
+    if (!txEl || txEl.dataset.swipe) return;
+    txEl.dataset.swipe = '1';
+    var id = txEl.id.replace('tx-','');
+    initSwipe(txEl, id);
+  });
 }
 
 /* ── CHART INSTANCES ── */
@@ -2437,6 +2746,7 @@ function deleteCat(){
 function toggleTheme(){
   S.cfg.theme=S.cfg.theme==='dark'?'light':'dark';
   applyTheme();save();renderCfg();
+  if(S.ui.tab==='analisis') renderAnalysis();
 };
 function applyTheme(){
   var dark=S.cfg.theme==='dark';
@@ -2510,6 +2820,7 @@ window.selGoalColor  = selGoalColor;
 // Load local data first so UI has something to show while auth resolves
 loadLocal();
 applyTheme();
+initSessionWatch();
 // onAuthStateChanged handles the rest (show auth or app)
 
 var STORE_KEY = 'finanzapp_v01';
@@ -3397,6 +3708,39 @@ var debouncedSaveRate = debounce(function(v){
 var debouncedSaveIncome = debounce(function(v){
   var n = parseFloat(v); S.cfg.monthlyIncome = n>=0?n:0; save(); renderHeader();
 }, 800);
+
+function importJSON() {
+  var input = document.createElement('input');
+  input.type = 'file';
+  input.accept = '.json,application/json';
+  input.onchange = function(e) {
+    var file = e.target.files[0];
+    if (!file) return;
+    var reader = new FileReader();
+    reader.onload = function(ev) {
+      try {
+        var d = migrate(JSON.parse(ev.target.result));
+        var txCount = (d.txs && d.txs.length) || 0;
+        var goalsCount = (d.goals && d.goals.length) || 0;
+        if (!confirm('¿Importar ' + txCount + ' transacciones y ' + goalsCount + ' metas? Los datos actuales se reemplazarán.')) return;
+        if (d.txs   && d.txs.length)   S.txs   = d.txs;
+        if (d.goals && d.goals.length)  S.goals = d.goals;
+        if (d.cats  && d.cats.length)  { S.cats = d.cats; CATS = S.cats; }
+        if (d.cfg) S.cfg = Object.assign({}, S.cfg, d.cfg);
+        if (!S.cfg.budgets) S.cfg.budgets = {};
+        save();
+        renderAll();
+        toast('✓ ' + txCount + ' transacciones importadas');
+      } catch(err) {
+        toast('⚠️ Archivo inválido o corrupto');
+        console.error('importJSON error', err);
+      }
+    };
+    reader.readAsText(file);
+  };
+  input.click();
+}
+window.importJSON = importJSON;
 
 function exportCSV() {
   if (!S.txs.length) { toast('Sin transacciones'); return; }
