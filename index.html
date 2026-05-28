@@ -1324,14 +1324,14 @@ function setSyncState(state) {
 }
 
 /* ── AUTH UI ── */
-function showAuth()     { document.getElementById('authScreen').style.display='flex'; document.getElementById('mainApp').style.display='none'; }
-function showApp()      { document.getElementById('authScreen').style.display='none'; document.getElementById('mainApp').style.display='flex'; }
-function switchAuthTab(tab) {
+function showAuth()  { document.getElementById('authScreen').style.display='flex'; document.getElementById('mainApp').style.display='none'; }
+function showApp()   { document.getElementById('authScreen').style.display='none'; document.getElementById('mainApp').style.display='flex'; }
+window.switchAuthTab = function(tab) {
   document.getElementById('tabLogin').classList.toggle('active',  tab==='login');
   document.getElementById('tabSignup').classList.toggle('active', tab==='signup');
   document.getElementById('authLoginForm').style.display  = tab==='login'  ? 'block' : 'none';
   document.getElementById('authSignupForm').style.display = tab==='signup' ? 'block' : 'none';
-}
+};
 
 function authError(formId, msg) {
   var map = {login:'loginError', signup:'signupError'};
@@ -1359,7 +1359,7 @@ function friendlyAuthError(code) {
   return msgs[code] || 'Error inesperado. Intentá de nuevo.';
 }
 
-async function doLogin() {
+window.doLogin = async function() {
   var email = document.getElementById('loginEmail').value.trim();
   var pass  = document.getElementById('loginPass').value;
   authError('login','');
@@ -1367,14 +1367,13 @@ async function doLogin() {
   authLoading('loginBtn', true);
   try {
     await signInWithEmailAndPassword(fbAuth, email, pass);
-    // onAuthStateChanged handles the rest
   } catch(e) {
     authError('login', friendlyAuthError(e.code));
     authLoading('loginBtn', false);
   }
-}
+};
 
-async function doSignup() {
+window.doSignup = async function() {
   var email = document.getElementById('signupEmail').value.trim();
   var pass  = document.getElementById('signupPass').value;
   authError('signup','');
@@ -1386,7 +1385,7 @@ async function doSignup() {
     authError('signup', friendlyAuthError(e.code));
     authLoading('signupBtn', false);
   }
-}
+};
 
 async function doLogout() {
   if (!confirm('¿Cerrar sesión?')) return;
