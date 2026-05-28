@@ -1278,7 +1278,7 @@ async function loadFromCloud() {
   setSyncState('syncing');
   try {
     var snap = await userDocRef(currentUser.uid).get();
-    if (snap.exists()) {
+    if (snap.exists) {
       var d = migrate(snap.data());
       // Cloud wins if it has data
       if (d.txs)   S.txs   = d.txs;
