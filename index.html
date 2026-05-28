@@ -1131,16 +1131,15 @@ body{
 <!-- TOAST -->
 <div class="toast" id="toast"></div>
 
-<!-- FIREBASE SDKs -->
-<script type="module">
-import { initializeApp }                        from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
-import { getAuth, createUserWithEmailAndPassword,
-         signInWithEmailAndPassword, signOut,
-         onAuthStateChanged }                   from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js';
-import { getFirestore, doc, getDoc, setDoc }    from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
+<!-- FIREBASE SDKs v8 compat -->
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+<script>
+'use strict';
 
 /* ── FIREBASE INIT ── */
-const fbApp  = initializeApp({
+firebase.initializeApp({
   apiKey:            "AIzaSyBju4RLBgJURN_U6l7Fa5mbW_3OONwIjPo",
   authDomain:        "finanzapp-f11f6.firebaseapp.com",
   projectId:         "finanzapp-f11f6",
@@ -1148,8 +1147,8 @@ const fbApp  = initializeApp({
   messagingSenderId: "973062622758",
   appId:             "1:973062622758:web:3cf08fd4aca32194ad60e7",
 });
-const fbAuth = getAuth(fbApp);
-const fbDb   = getFirestore(fbApp);
+var fbAuth = firebase.auth();
+var fbDb   = firebase.firestore();
 
 /* ── CONSTANTS ── */
 var STORE_KEY      = 'finanzapp_v01';
@@ -1253,14 +1252,14 @@ function saveLocal() {
 
 /* ── FIRESTORE SYNC ── */
 function userDocRef(uid) {
-  return doc(fbDb, 'users', uid, 'data', 'main');
+  return fbDb.collection('users').doc(uid).collection('data').doc('main');
 }
 
 async function syncToCloud() {
   if (!currentUser) return;
   setSyncState('syncing');
   try {
-    await setDoc(userDocRef(currentUser.uid), {
+    await userDocRef(currentUser.uid).set({
       txs:  S.txs,
       goals:S.goals,
       cats: S.cats,
@@ -1278,7 +1277,7 @@ async function loadFromCloud() {
   if (!currentUser) return false;
   setSyncState('syncing');
   try {
-    var snap = await getDoc(userDocRef(currentUser.uid));
+    var snap = await userDocRef(currentUser.uid).get();
     if (snap.exists()) {
       var d = migrate(snap.data());
       // Cloud wins if it has data
@@ -1326,7 +1325,7 @@ function setSyncState(state) {
 /* ── AUTH UI ── */
 function showAuth()  { document.getElementById('authScreen').style.display='flex'; document.getElementById('mainApp').style.display='none'; }
 function showApp()   { document.getElementById('authScreen').style.display='none'; document.getElementById('mainApp').style.display='flex'; }
-window.switchAuthTab = function(tab) {
+function switchAuthTab(tab) {
   document.getElementById('tabLogin').classList.toggle('active',  tab==='login');
   document.getElementById('tabSignup').classList.toggle('active', tab==='signup');
   document.getElementById('authLoginForm').style.display  = tab==='login'  ? 'block' : 'none';
@@ -1359,28 +1358,28 @@ function friendlyAuthError(code) {
   return msgs[code] || 'Error inesperado. Intentá de nuevo.';
 }
 
-window.doLogin = async function() {
+async function doLogin() {
   var email = document.getElementById('loginEmail').value.trim();
   var pass  = document.getElementById('loginPass').value;
   authError('login','');
   if (!email || !pass) { authError('login','Completá todos los campos.'); return; }
   authLoading('loginBtn', true);
   try {
-    await signInWithEmailAndPassword(fbAuth, email, pass);
+    await fbAuth.signInWithEmailAndPassword(email, pass);
   } catch(e) {
     authError('login', friendlyAuthError(e.code));
     authLoading('loginBtn', false);
   }
 };
 
-window.doSignup = async function() {
+async function doSignup() {
   var email = document.getElementById('signupEmail').value.trim();
   var pass  = document.getElementById('signupPass').value;
   authError('signup','');
   if (!email || !pass) { authError('signup','Completá todos los campos.'); return; }
   authLoading('signupBtn', true);
   try {
-    await createUserWithEmailAndPassword(fbAuth, email, pass);
+    await fbAuth.createUserWithEmailAndPassword(email, pass);
   } catch(e) {
     authError('signup', friendlyAuthError(e.code));
     authLoading('signupBtn', false);
@@ -1393,7 +1392,7 @@ async function doLogout() {
 }
 
 /* ── AUTH STATE OBSERVER ── */
-onAuthStateChanged(fbAuth, async function(user) {
+fbAuth.onAuthStateChanged(async function(user) {
   if (user) {
     currentUser = user;
     // Update config panel email
@@ -1485,8 +1484,7 @@ function calcBal(txs){
     else{if(t.type==='in')aIn+=t.amt;else aOut+=t.amt;}
   });
   var rate=S.cfg.usdRate;
-  return{aIn,aOut,uIn,uOut,aNet:aIn-aOut,uNet:uIn-uOut,
-    total:(aIn-aOut)+(uIn-uOut)*rate,totalIn:aIn+uIn*rate,totalOut:aOut+uOut*rate};
+  return{aIn:aIn,aOut:aOut,uIn:uIn,uOut:uOut,aNet:aIn-aOut,uNet:uIn-uOut,total:(aIn-aOut)+(uIn-uOut)*rate,totalIn:aIn+uIn*rate,totalOut:aOut+uOut*rate};
 }
 
 /* ── RENDER HEADER ── */
@@ -1627,7 +1625,7 @@ function renderRecurBanner(){
   }).join('');
 }
 
-window.addRecurTx = function(sourceId){
+function addRecurTx(sourceId){
   var source=S.txs.find(function(t){return t.id===sourceId;});
   if(!source)return;
   S.txs.push({id:uid(),type:source.type,amt:source.amt,curr:source.curr,
@@ -1770,7 +1768,7 @@ function renderAll(){
 }
 
 /* ── TAB SWITCHING ── */
-window.switchTab = function(name){
+function switchTab(name){
   S.ui.tab=name;
   document.querySelectorAll('.nav-item').forEach(function(el){el.classList.toggle('active',el.dataset.tab===name);});
   document.querySelectorAll('.tab-panel').forEach(function(el){el.classList.toggle('active',el.id==='tab-'+name);});
@@ -1782,19 +1780,19 @@ document.getElementById('navEl').addEventListener('click',function(e){
 });
 
 /* ── MONTH NAV ── */
-window.shiftMonth = function(d){
+function shiftMonth(d){
   var m=S.ui.month+d,y=S.ui.year;
   if(m<0){m=11;y--;}if(m>11){m=0;y++;}
   S.ui.month=m;S.ui.year=y;renderAll();
 };
 
 /* ── SEARCH ── */
-window.onSearch = function(val){
+function onSearch(val){
   S.ui.searchQuery=val;
   document.getElementById('searchClear').style.display=val?'block':'none';
   renderHist();
 };
-window.clearSearch = function(){
+function clearSearch(){
   S.ui.searchQuery='';
   document.getElementById('searchInput').value='';
   document.getElementById('searchClear').style.display='none';
@@ -1802,7 +1800,7 @@ window.clearSearch = function(){
 };
 
 /* ── MODAL ── */
-window.openModal = function(type,id){
+function openModal(type,id){
   var isEdit=Boolean(id);
   var tx=isEdit?S.txs.find(function(t){return t.id===id;}):null;
   S.ui.editId=id||null;S.ui.txType=tx?tx.type:(type||'out');
@@ -1819,8 +1817,8 @@ window.openModal = function(type,id){
   document.getElementById('modalReg').classList.add('open');
   setTimeout(function(){document.getElementById('amtInput').focus();},200);
 };
-window.openEdit = function(id){openModal(null,id);};
-window.closeModal = function(id){document.getElementById(id).classList.remove('open');};
+function openEdit(id){openModal(null,id);};
+function closeModal(id){document.getElementById(id).classList.remove('open');};
 function guardClose(modalId){
   var amt=modalId==='modalReg'?document.getElementById('amtInput').value:'';
   if(amt&&!S.ui.editId){if(!confirm('¿Cerrar sin guardar?'))return;}
@@ -1829,18 +1827,18 @@ function guardClose(modalId){
 document.getElementById('modalReg').addEventListener('click',function(e){if(e.target===this)guardClose('modalReg');});
 document.getElementById('modalQuick').addEventListener('click',function(e){if(e.target===this)closeModal('modalQuick');});
 
-window.setType = function(t){
+function setType(t){
   S.ui.txType=t;
   document.getElementById('typOut').className='type-btn'+(t==='out'?' sel-out':'');
   document.getElementById('typIn').className ='type-btn'+(t==='in' ?' sel-in' :'');
 };
-window.setCurr = function(c){
+function setCurr(c){
   S.ui.txCurr=c;
   document.getElementById('cARS').classList.toggle('active',c==='ARS');
   document.getElementById('cUSD').classList.toggle('active',c==='USD');
   document.getElementById('amtSym').textContent=c==='USD'?'US$':'$';
 };
-window.toggleRecur = function(){
+function toggleRecur(){
   S.ui.txRecur=!S.ui.txRecur;
   var tog=document.getElementById('recurToggle');
   if(S.ui.txRecur)tog.classList.add('on');else tog.classList.remove('on');
@@ -1852,11 +1850,11 @@ function buildChips(){
   }).join('');
   setTimeout(function(){var el=document.querySelector('#catChips .cat-chip.active');if(el)el.scrollIntoView({block:'nearest',inline:'center',behavior:'smooth'});},50);
 }
-window.selCat = function(id){
+function selCat(id){
   S.ui.txCat=id;
   document.querySelectorAll('#catChips .cat-chip').forEach(function(el){el.classList.toggle('active',el.dataset.id===id);});
 };
-window.saveTx = function(){
+function saveTx(){
   var amt=parseFloat(document.getElementById('amtInput').value);
   if(!amt||amt<=0){toast('⚠️ Ingresá un monto válido');return;}
   var desc=document.getElementById('descInput').value.trim();
@@ -1864,9 +1862,9 @@ window.saveTx = function(){
   var isEdit=Boolean(S.ui.editId);
   if(isEdit){
     var idx=S.txs.findIndex(function(t){return t.id===S.ui.editId;});
-    if(idx>=0)S.txs[idx]=Object.assign({},S.txs[idx],{type:S.ui.txType,amt,curr:S.ui.txCurr,cat:S.ui.txCat,desc,date,recurring:S.ui.txRecur});
+    if(idx>=0)S.txs[idx]=Object.assign({},S.txs[idx],{type:S.ui.txType,amt:amt,curr:S.ui.txCurr,cat:S.ui.txCat,desc:desc,date:date,recurring:S.ui.txRecur});
   }else{
-    S.txs.push({id:uid(),type:S.ui.txType,amt,curr:S.ui.txCurr,cat:S.ui.txCat,desc,date,ts:Date.now(),recurring:S.ui.txRecur,note:''});
+    S.txs.push({id:uid(),type:S.ui.txType,amt:amt,curr:S.ui.txCurr,cat:S.ui.txCat,desc:desc,date:date,ts:Date.now(),recurring:S.ui.txRecur,note:''});
   }
   var btn=document.getElementById('saveRegBtn');
   btn.textContent='✓ Guardado';btn.classList.add('done');
@@ -1876,21 +1874,21 @@ window.saveTx = function(){
   if(!isEdit&&S.ui.tab==='resumen'){renderAll();setTimeout(function(){var f=document.querySelector('#recentList .tx');if(f)f.classList.add('tx-new');},30);}
   else renderAll();
 };
-window.deleteTx = function(){
+function deleteTx(){
   if(!S.ui.editId)return;
   S.txs=S.txs.filter(function(t){return t.id!==S.ui.editId;});
   save();closeModal('modalReg');toast('🗑️ Eliminado');vibrate(20);renderAll();
 };
 
 /* ── QUICK MODAL ── */
-window.openQuick = function(){
+function openQuick(){
   S.ui.qCurr='ARS';S.ui.qCat='otros';
   document.getElementById('qAmtInput').value='';
   setQCurr('ARS');buildQuickGrid();
   document.getElementById('modalQuick').classList.add('open');
   setTimeout(function(){document.getElementById('qAmtInput').focus();},200);
 };
-window.setQCurr = function(c){
+function setQCurr(c){
   S.ui.qCurr=c;
   document.getElementById('qcARS').classList.toggle('active',c==='ARS');
   document.getElementById('qcUSD').classList.toggle('active',c==='USD');
@@ -1902,14 +1900,14 @@ function buildQuickGrid(){
       '<div class="quick-tile-lbl">'+esc(c.label.length>8?c.label.slice(0,7)+'…':c.label)+'</div></div>';
   }).join('');
 }
-window.selQCat = function(id){
+function selQCat(id){
   S.ui.qCat=id;
   document.querySelectorAll('#quickGrid .quick-tile').forEach(function(el){el.classList.toggle('active',el.dataset.id===id);});
 };
-window.saveQuick = function(){
+function saveQuick(){
   var amt=parseFloat(document.getElementById('qAmtInput').value);
   if(!amt||amt<=0){toast('⚠️ Ingresá un monto');return;}
-  S.txs.push({id:uid(),type:'out',amt,curr:S.ui.qCurr,cat:S.ui.qCat,desc:'',date:todayISO(),ts:Date.now(),recurring:false,note:''});
+  S.txs.push({id:uid(),type:'out',amt:amt,curr:S.ui.qCurr,cat:S.ui.qCat,desc:'',date:todayISO(),ts:Date.now(),recurring:false,note:''});
   save();closeModal('modalQuick');toast('⚡ Gasto guardado');vibrate(30);renderAll();
 };
 
@@ -1922,7 +1920,7 @@ document.getElementById('filterBar').addEventListener('click',function(e){
 });
 
 /* ── CATEGORY MODAL ── */
-window.openCatModal = function(id){
+function openCatModal(id){
   S.ui.editCatId=id;
   var existing=id?S.cats.find(function(c){return c.id===id;}):null;
   document.getElementById('modalCatTitle').textContent=existing?'Editar categoría':'Nueva categoría';
@@ -1944,8 +1942,8 @@ function buildColorPicker(){
       'transition:transform .12s" onmouseover="this.style.transform=\'scale(1.12)\'" onmouseout="this.style.transform=\'scale(1)\'"></div>';
   }).join('');
 }
-window.selColor = function(col){S.ui.editCatColor=col;buildColorPicker();};
-window.saveCat = function(){
+function selColor(col){S.ui.editCatColor=col;buildColorPicker();};
+function saveCat(){
   var name=document.getElementById('catNameInput').value.trim();
   var icon=document.getElementById('catIconInput').value.trim()||'📦';
   var budget=parseFloat(document.getElementById('catBudgetInput').value)||0;
@@ -1963,7 +1961,7 @@ window.saveCat = function(){
   }
   CATS=S.cats;save();closeModal('modalCat');renderAll();
 };
-window.deleteCat = function(){
+function deleteCat(){
   if(!S.ui.editCatId)return;
   var c=S.cats.find(function(x){return x.id===S.ui.editCatId;});
   if(c&&c.builtin){toast('Las categorías base no se pueden eliminar');return;}
@@ -1973,7 +1971,7 @@ window.deleteCat = function(){
 };
 
 /* ── CONFIG ── */
-window.toggleTheme = function(){
+function toggleTheme(){
   S.cfg.theme=S.cfg.theme==='dark'?'light':'dark';
   applyTheme();save();renderCfg();
 };
@@ -1989,13 +1987,13 @@ function applyTheme(){
 var debouncedSaveRate   = debounce(function(v){var n=parseFloat(v);if(n>0){S.cfg.usdRate=n;save();renderHeader();toast('✓ TC actualizado');}},800);
 var debouncedSaveIncome = debounce(function(v){var n=parseFloat(v);S.cfg.monthlyIncome=n>=0?n:0;save();renderHeader();},800);
 
-window.exportCSV = function(){
+function exportCSV(){
   if(!S.txs.length){toast('Sin transacciones');return;}
   var rows=['id,tipo,monto,moneda,categoria,descripcion,fecha,recurrente'].concat(
     S.txs.map(function(t){return[t.id,t.type,t.amt,t.curr,t.cat,'"'+(t.desc||'')+'"',t.date,t.recurring?'si':'no'].join(',');}));
   dlFile('finanzapp.csv','text/csv',rows.join('\n'));toast('✓ CSV descargado');
 };
-window.exportJSON = function(){
+function exportJSON(){
   dlFile('finanzapp-backup.json','application/json',JSON.stringify({txs:S.txs,goals:S.goals,cats:S.cats,cfg:S.cfg},null,2));
   toast('✓ JSON descargado');
 };
@@ -2003,14 +2001,14 @@ function dlFile(name,type,content){
   var a=document.createElement('a');a.href=URL.createObjectURL(new Blob([content],{type}));
   a.download=name;a.click();URL.revokeObjectURL(a.href);
 }
-window.confirmClear = function(){
+function confirmClear(){
   if(confirm('¿Borrar TODOS los datos? No se puede deshacer.')){
     S.txs=[];S.goals=[];S.cfg.budgets={};save();renderAll();toast('🗑️ Datos eliminados');
   }
 };
-window.doLogout = function(){
+function doLogout(){
   if(!confirm('¿Cerrar sesión?'))return;
-  signOut(fbAuth);
+  fbAuth.signOut();
 };
 
 /* ── TOAST ── */
