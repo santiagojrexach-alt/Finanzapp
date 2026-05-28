@@ -583,9 +583,14 @@ body{
 [data-theme="light"] .field-input[type="date"]{color-scheme:light}
 
 /* CHIPS */
-.chip-grid{display:flex;flex-wrap:wrap;gap:7px;margin-bottom:12px}
+.chip-grid{
+  display:flex;flex-wrap:nowrap;gap:7px;margin-bottom:12px;
+  overflow-x:auto;scrollbar-width:none;padding-bottom:4px;
+  -webkit-overflow-scrolling:touch;
+}
+.chip-grid::-webkit-scrollbar{display:none}
 .cat-chip{
-  padding:7px 12px;border-radius:12px;
+  padding:7px 12px;border-radius:12px;flex-shrink:0;
   background:var(--bg3);border:1.5px solid var(--border);
   font-size:12px;font-weight:600;color:var(--muted);
   cursor:pointer;transition:all .15s;white-space:nowrap;user-select:none;
@@ -627,22 +632,25 @@ body{
 
 /* QUICK GRID */
 .quick-grid{
-  display:grid;grid-template-columns:repeat(4,1fr);
-  gap:8px;margin-bottom:12px;
+  display:grid;grid-template-columns:repeat(5,1fr);
+  gap:6px;margin-bottom:4px;
 }
 .quick-tile{
-  aspect-ratio:1;border-radius:16px;
+  padding:8px 2px;border-radius:12px;
   background:var(--bg3);border:1.5px solid var(--border);
   display:flex;flex-direction:column;align-items:center;
-  justify-content:center;gap:4px;cursor:pointer;
+  justify-content:center;gap:3px;cursor:pointer;
   transition:all .15s;user-select:none;
+  min-height:62px;
 }
 .quick-tile:active{transform:scale(.93)}
 .quick-tile.active{background:rgba(59,201,87,.12);border-color:var(--a2)}
-.quick-tile-icon{font-size:22px;line-height:1}
+.quick-tile-icon{font-size:20px;line-height:1}
 .quick-tile-lbl{
-  font-size:9px;font-weight:700;letter-spacing:.04em;
+  font-size:8px;font-weight:700;letter-spacing:.02em;
   text-transform:uppercase;color:var(--muted);
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+  max-width:95%;text-align:center;
 }
 .quick-tile.active .quick-tile-lbl{color:var(--accent)}
 
@@ -1503,7 +1511,7 @@ body{
 
 <!-- MODAL REGISTRO COMPLETO -->
 <div class="modal-backdrop" id="modalReg">
-  <div class="modal-sheet" style="max-height:88vh;padding:18px 18px 0">
+  <div class="modal-sheet" style="max-height:92vh;padding:18px 18px 0">
     <div class="modal-handle"></div>
     <div class="modal-title" id="modalRegTitle">Nuevo movimiento</div>
     <div class="modal-scroll">
@@ -1564,10 +1572,10 @@ body{
 
 <!-- MODAL REGISTRO RÁPIDO -->
 <div class="modal-backdrop" id="modalQuick">
-  <div class="modal-sheet" style="max-height:72vh">
+  <div class="modal-sheet" style="max-height:85vh;display:flex;flex-direction:column;padding:18px 18px 0">
     <div class="modal-handle"></div>
     <div class="modal-title">&#9889; Registro rápido</div>
-    <div class="amount-row" style="margin-bottom:14px">
+    <div class="amount-row" style="margin-bottom:14px;flex-shrink:0">
       <div class="amount-box">
         <span class="amount-sym">$</span>
         <input class="amount-input" type="number" inputmode="decimal"
@@ -1578,8 +1586,14 @@ body{
         <button class="curr-btn" id="qcUSD" onclick="setQCurr('USD')">USD</button>
       </div>
     </div>
-    <div class="quick-grid" id="quickGrid"></div>
-    <button class="save-btn" onclick="saveQuick()">Guardar gasto</button>
+    <!-- Scrollable category grid -->
+    <div style="flex:1;overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch">
+      <div class="quick-grid" id="quickGrid"></div>
+    </div>
+    <!-- Sticky save button always visible -->
+    <div style="flex-shrink:0;padding:12px 0 20px;border-top:1px solid var(--border);background:var(--card);margin-top:4px">
+      <button class="save-btn" onclick="saveQuick()">Guardar gasto</button>
+    </div>
   </div>
 </div>
 
