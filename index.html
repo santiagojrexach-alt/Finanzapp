@@ -747,6 +747,99 @@ body{
   display:flex;align-items:center;justify-content:center;
   font-size:16px;flex-shrink:0;
 }
+/* ── CHART CONTAINERS ── */
+.chart-wrap{
+  padding:16px 16px 8px;position:relative;
+}
+.chart-canvas-wrap{
+  position:relative;width:100%;
+}
+.chart-period-row{
+  display:flex;gap:6px;padding:0 16px 12px;
+  overflow-x:auto;scrollbar-width:none;
+}
+.chart-period-row::-webkit-scrollbar{display:none}
+.chart-chip{
+  padding:5px 12px;border-radius:20px;
+  background:var(--bg3);border:1px solid var(--border);
+  font-size:11px;font-weight:700;color:var(--muted);
+  cursor:pointer;white-space:nowrap;flex-shrink:0;
+  transition:all .15s;user-select:none;
+}
+.chart-chip.active{
+  background:rgba(59,201,87,.12);border-color:var(--a2);color:var(--accent);
+}
+.chart-legend{
+  display:flex;flex-wrap:wrap;gap:8px 14px;
+  padding:4px 16px 14px;
+}
+.chart-legend-item{
+  display:flex;align-items:center;gap:5px;
+  font-size:11px;font-weight:600;color:var(--text);
+}
+.chart-legend-dot{
+  width:10px;height:10px;border-radius:3px;flex-shrink:0;
+}
+
+/* ── GOALS ── */
+.goal-card{
+  background:var(--card);border:1px solid var(--border);
+  border-radius:20px;overflow:hidden;margin-bottom:10px;
+  transition:background .35s,border-color .35s;
+}
+.goal-item{
+  padding:16px 18px;border-bottom:1px solid var(--border);
+  cursor:pointer;transition:background .15s;
+}
+.goal-item:last-child{border-bottom:none}
+.goal-item:hover{background:var(--bg3)}
+.goal-top{
+  display:flex;justify-content:space-between;
+  align-items:flex-start;margin-bottom:10px;
+}
+.goal-name{
+  font-size:14px;font-weight:700;color:var(--bright);
+  flex:1;margin-right:12px;
+}
+.goal-pct{
+  font-family:'JetBrains Mono',monospace;
+  font-size:18px;font-weight:500;flex-shrink:0;
+}
+.goal-bar-track{
+  height:6px;background:var(--bg3);border-radius:3px;
+  overflow:hidden;margin-bottom:8px;
+  border:1px solid var(--border);
+}
+.goal-bar-fill{
+  height:100%;border-radius:3px;
+  transition:width .6s cubic-bezier(.4,0,.2,1);
+}
+.goal-meta{
+  display:flex;justify-content:space-between;
+  font-size:11px;color:var(--muted);
+  font-family:'JetBrains Mono',monospace;
+}
+.goal-pace{
+  font-size:11px;font-weight:600;margin-top:6px;
+}
+.goal-empty{
+  padding:36px 20px;text-align:center;
+}
+.goal-add-row{
+  padding:12px 18px;
+  border-top:1px solid var(--border);
+}
+
+/* ── GOAL MODAL ── */
+.color-chips{
+  display:flex;flex-wrap:wrap;gap:8px;margin-top:4px;
+}
+.color-chip{
+  width:28px;height:28px;border-radius:8px;
+  cursor:pointer;transition:transform .12s;flex-shrink:0;
+}
+.color-chip:hover{transform:scale(1.12)}
+.color-chip.sel{outline:2px solid var(--bright);outline-offset:2px}
 </style>
 </head>
 <body>
@@ -911,25 +1004,58 @@ body{
 
     <!-- ANÁLISIS -->
     <div class="tab-panel" id="tab-analisis">
+      <!-- Torta categorías -->
       <div class="card">
-        <div class="card-hdr"><span>Ahorro acumulado por mes</span></div>
-        <div id="savingsChart" style="padding:4px 0"></div>
+        <div class="card-hdr"><span>Gastos por categoría</span><span id="donutMonth" style="font-size:11px;font-weight:600;text-transform:none;letter-spacing:0;color:var(--dim)"></span></div>
+        <div class="chart-wrap">
+          <div class="chart-canvas-wrap" style="height:200px">
+            <canvas id="donutChart"></canvas>
+          </div>
+        </div>
+        <div class="chart-legend" id="donutLegend"></div>
       </div>
-      <div class="card" style="margin-top:0">
-        <div class="card-hdr"><span>Gráficos detallados</span></div>
-        <div class="coming-soon" style="padding:30px 20px">
-          <div class="cs-icon" style="font-size:32px">📊</div>
-          <div class="cs-sub">Torta de categorías y barras de evolución mensual en v0.3 con Chart.js</div>
+
+      <!-- Barras evolución mensual -->
+      <div class="card">
+        <div class="card-hdr"><span>Evolución mensual</span></div>
+        <div class="chart-period-row" id="barPeriodRow">
+          <div class="chart-chip active" data-months="6">6 meses</div>
+          <div class="chart-chip" data-months="12">12 meses</div>
+        </div>
+        <div class="chart-wrap" style="padding-top:0">
+          <div class="chart-canvas-wrap" style="height:200px">
+            <canvas id="barChart"></canvas>
+          </div>
+        </div>
+        <div class="chart-legend" style="padding-top:0">
+          <div class="chart-legend-item"><div class="chart-legend-dot" style="background:var(--accent)"></div>Ingresos</div>
+          <div class="chart-legend-item"><div class="chart-legend-dot" style="background:var(--red)"></div>Egresos</div>
+        </div>
+      </div>
+
+      <!-- Línea ahorro acumulado -->
+      <div class="card">
+        <div class="card-hdr"><span>Ahorro acumulado</span></div>
+        <div class="chart-wrap">
+          <div class="chart-canvas-wrap" style="height:180px">
+            <canvas id="lineChart"></canvas>
+          </div>
         </div>
       </div>
     </div>
 
     <!-- METAS -->
     <div class="tab-panel" id="tab-metas">
-      <div class="coming-soon">
-        <div class="cs-icon">🎯</div>
-        <div class="cs-title">Metas de ahorro</div>
-        <div class="cs-sub">Creá objetivos con monto, fecha límite y seguimiento visual del progreso.<br><br>Próximamente en v0.3</div>
+      <div class="goal-card" id="goalsContainer">
+        <div class="goal-empty" id="goalsEmpty">
+          <div style="font-size:36px;margin-bottom:10px">🎯</div>
+          <div style="font-size:14px;font-weight:700;color:var(--bright);margin-bottom:6px">Sin metas todavía</div>
+          <div style="font-size:12px;color:var(--muted);line-height:1.6">Creá tu primera meta de ahorro</div>
+        </div>
+        <div id="goalsList"></div>
+      </div>
+      <div style="padding:0 2px">
+        <button class="save-btn" style="background:var(--bg3);color:var(--accent);border:1px solid var(--border);box-shadow:none" onclick="openGoalModal(null)">+ Nueva meta</button>
       </div>
     </div>
 
@@ -1007,7 +1133,7 @@ body{
         </div>
       </div>
 
-      <div class="version-note">FinanzApp v0.2 · Firebase · schema v2</div>
+      <div class="version-note">FinanzApp v0.3 · Firebase · Chart.js · schema v2</div>
     </div>
 
   </div><!-- /content-area -->
@@ -1130,6 +1256,42 @@ body{
 
 <!-- TOAST -->
 <div class="toast" id="toast"></div>
+
+<!-- GOAL MODAL -->
+<div class="modal-backdrop" id="modalGoal">
+  <div class="modal-sheet" style="max-height:80vh">
+    <div class="modal-handle"></div>
+    <div class="modal-title" id="modalGoalTitle">Nueva meta</div>
+
+    <div class="field">
+      <label class="field-lbl">Nombre</label>
+      <input class="field-input" type="text" id="goalNameInput"
+             placeholder="Ej: Vacaciones, Fondo de emergencia" maxlength="40" autocomplete="off">
+    </div>
+
+    <div class="field">
+      <label class="field-lbl">Monto objetivo (ARS)</label>
+      <input class="field-input" type="number" inputmode="decimal"
+             id="goalTargetInput" placeholder="0" min="1">
+    </div>
+
+    <div class="field">
+      <label class="field-lbl">Fecha límite (opcional)</label>
+      <input class="field-input" type="date" id="goalDeadlineInput">
+    </div>
+
+    <div class="field">
+      <label class="field-lbl">Color</label>
+      <div class="color-chips" id="goalColorPicker"></div>
+    </div>
+
+    <button class="save-btn" onclick="saveGoal()">Guardar meta</button>
+    <button class="del-btn" id="delGoalBtn" onclick="deleteGoal()" style="display:none">Eliminar meta</button>
+  </div>
+</div>
+
+<!-- CHART.JS -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 
 <!-- FIREBASE SDKs v8 compat -->
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
@@ -1696,33 +1858,333 @@ function txRow(tx){
     '<div class="tx-date-lbl">'+fmtDate(tx.date)+'</div></div></div>';
 }
 
+/* ── CHART INSTANCES ── */
+var chartDonut = null;
+var chartBar   = null;
+var chartLine  = null;
+var barMonths  = 6;
+
+/* ── CHART COLORS ── */
+function chartTheme() {
+  var dark = S.cfg.theme === 'dark';
+  return {
+    grid:   dark ? 'rgba(255,255,255,.06)' : 'rgba(0,0,0,.07)',
+    text:   dark ? '#6a9a74' : '#5a8a64',
+    border: dark ? '#2a4030' : '#a4c8aa',
+  };
+}
+
 /* ── RENDER ANÁLISIS ── */
-function renderAnalysis(){
-  var now=new Date(),rows=[];
-  for(var i=11;i>=0;i--){
-    var d=new Date(now.getFullYear(),now.getMonth()-i,1);
-    var y=d.getFullYear(),m=d.getMonth();
-    var txs=S.txs.filter(function(t){return inMonth(t,y,m);});
-    if(!txs.length&&i>0)continue;
-    var b=calcBal(txs);
-    rows.push({label:MONTHS[m].slice(0,3)+' '+String(y).slice(2),value:b.total,totalIn:b.totalIn});
-  }
-  var maxAbs=Math.max.apply(null,rows.map(function(r){return Math.abs(r.value);})||[1])||1;
-  var el=document.getElementById('savingsChart');
-  if(!rows.length||rows.every(function(r){return r.value===0&&r.totalIn===0;})){
-    el.innerHTML='<div style="padding:30px;text-align:center;color:var(--muted);font-size:12px">Registrá transacciones para ver tu historial</div>';
+function renderAnalysis() {
+  renderDonut();
+  renderBar();
+  renderLine();
+}
+
+function renderDonut() {
+  var y = S.ui.year, m = S.ui.month;
+  var txs = S.txs.filter(function(t){ return inMonth(t,y,m) && t.type==='out'; });
+  var map = {};
+  txs.forEach(function(t){ var a=toARS(t.amt,t.curr); map[t.cat]=(map[t.cat]||0)+a; });
+
+  var lbl = document.getElementById('donutMonth');
+  if(lbl) lbl.textContent = MONTHS[m].slice(0,3)+' '+y;
+
+  var entries = Object.keys(map).map(function(k){ return[k,map[k]]; });
+  entries.sort(function(a,b){ return b[1]-a[1]; });
+
+  var canvas = document.getElementById('donutChart');
+  if(!canvas) return;
+
+  var labels = entries.map(function(e){ return cat(e[0]).label; });
+  var data   = entries.map(function(e){ return e[1]; });
+  var colors = entries.map(function(e){ return cat(e[0]).color; });
+
+  var th = chartTheme();
+
+  if(chartDonut) { chartDonut.destroy(); chartDonut=null; }
+
+  if(!entries.length) {
+    canvas.parentElement.innerHTML = '<div style="height:200px;display:flex;align-items:center;justify-content:center;font-size:12px;color:var(--muted)">Sin gastos este mes</div>';
+    document.getElementById('donutLegend').innerHTML = '';
     return;
   }
-  el.innerHTML=rows.map(function(r){
-    var pct=Math.abs(r.value)/maxAbs*100;
-    var col=r.value>=0?'var(--a2)':'var(--red)';
-    return'<div class="savings-row">'+
-      '<div class="sv-month">'+r.label+'</div>'+
-      '<div class="sv-bar-wrap"><div class="sv-bar-fill" style="width:'+pct+'%;background:'+col+'"></div></div>'+
-      '<div class="sv-amt" style="color:'+col+'">'+(r.value>=0?'+':'−')+fARS(Math.abs(r.value))+'</div>'+
+
+  chartDonut = new Chart(canvas, {
+    type: 'doughnut',
+    data: { labels:labels, datasets:[{ data:data, backgroundColor:colors, borderWidth:2, borderColor:'transparent', hoverOffset:6 }] },
+    options: {
+      responsive:true, maintainAspectRatio:false,
+      cutout:'68%',
+      plugins:{
+        legend:{ display:false },
+        tooltip:{
+          callbacks:{
+            label: function(ctx){ return ' '+fARS(ctx.parsed)+' ('+((ctx.parsed/data.reduce(function(a,b){return a+b;},0))*100).toFixed(0)+'%)'; }
+          }
+        }
+      }
+    }
+  });
+
+  // Custom legend
+  var total = data.reduce(function(a,b){return a+b;},0)||1;
+  document.getElementById('donutLegend').innerHTML = entries.slice(0,6).map(function(e){
+    var c=cat(e[0]);
+    var pct=(e[1]/total*100).toFixed(0);
+    return '<div class="chart-legend-item"><div class="chart-legend-dot" style="background:'+c.color+'"></div>'+
+      esc(c.label)+' <span style="color:var(--muted)">'+pct+'%</span></div>';
+  }).join('');
+}
+
+function renderBar() {
+  var now = new Date();
+  var months = barMonths;
+  var labels=[], incData=[], expData=[];
+
+  for(var i=months-1; i>=0; i--) {
+    var d = new Date(now.getFullYear(), now.getMonth()-i, 1);
+    var y=d.getFullYear(), m=d.getMonth();
+    var txs=S.txs.filter(function(t){ return inMonth(t,y,m); });
+    var b=calcBal(txs);
+    labels.push(MONTHS[m].slice(0,3));
+    incData.push(Math.round(b.totalIn));
+    expData.push(Math.round(b.totalOut));
+  }
+
+  var canvas = document.getElementById('barChart');
+  if(!canvas) return;
+  var th = chartTheme();
+
+  if(chartBar) { chartBar.destroy(); chartBar=null; }
+
+  chartBar = new Chart(canvas, {
+    type:'bar',
+    data:{
+      labels:labels,
+      datasets:[
+        { label:'Ingresos', data:incData, backgroundColor:'rgba(94,232,122,.7)', borderRadius:6, borderSkipped:false },
+        { label:'Egresos',  data:expData, backgroundColor:'rgba(255,112,112,.7)', borderRadius:6, borderSkipped:false },
+      ]
+    },
+    options:{
+      responsive:true, maintainAspectRatio:false,
+      plugins:{ legend:{display:false}, tooltip:{
+        callbacks:{ label:function(ctx){ return ' '+ctx.dataset.label+': '+fARS(ctx.parsed.y); } }
+      }},
+      scales:{
+        x:{ grid:{color:th.grid}, ticks:{color:th.text,font:{size:10}} },
+        y:{ grid:{color:th.grid}, ticks:{color:th.text,font:{size:10},
+          callback:function(v){ return v>=1000?'$'+(v/1000).toFixed(0)+'k':'$'+v; }
+        }}
+      }
+    }
+  });
+}
+
+function renderLine() {
+  var now = new Date();
+  var months = 12;
+  var labels=[], lineData=[], cumulative=0;
+
+  for(var i=months-1; i>=0; i--) {
+    var d = new Date(now.getFullYear(), now.getMonth()-i, 1);
+    var y=d.getFullYear(), m=d.getMonth();
+    var txs=S.txs.filter(function(t){ return inMonth(t,y,m); });
+    if(!txs.length && i>0) continue;
+    var b=calcBal(txs);
+    cumulative += b.total;
+    labels.push(MONTHS[m].slice(0,3)+' '+String(y).slice(2));
+    lineData.push(Math.round(cumulative));
+  }
+
+  var canvas = document.getElementById('lineChart');
+  if(!canvas) return;
+  var th = chartTheme();
+
+  if(chartLine) { chartLine.destroy(); chartLine=null; }
+
+  if(labels.length < 2) {
+    canvas.parentElement.innerHTML='<div style="height:180px;display:flex;align-items:center;justify-content:center;font-size:12px;color:var(--muted)">Registrá al menos 2 meses para ver la curva</div>';
+    return;
+  }
+
+  chartLine = new Chart(canvas, {
+    type:'line',
+    data:{
+      labels:labels,
+      datasets:[{
+        label:'Ahorro acumulado',
+        data:lineData,
+        borderColor:'#3bc957',
+        backgroundColor:'rgba(59,201,87,.08)',
+        borderWidth:2,
+        pointBackgroundColor:'#3bc957',
+        pointRadius:3,
+        tension:.35,
+        fill:true,
+      }]
+    },
+    options:{
+      responsive:true, maintainAspectRatio:false,
+      plugins:{ legend:{display:false}, tooltip:{
+        callbacks:{ label:function(ctx){ return ' '+fARS(ctx.parsed.y); } }
+      }},
+      scales:{
+        x:{ grid:{color:th.grid}, ticks:{color:th.text,font:{size:10},maxRotation:0} },
+        y:{ grid:{color:th.grid}, ticks:{color:th.text,font:{size:10},
+          callback:function(v){ return v>=1000?'$'+(v/1000).toFixed(0)+'k':'$'+v; }
+        }}
+      }
+    }
+  });
+}
+
+/* ── BAR PERIOD TOGGLE ── */
+document.addEventListener('DOMContentLoaded', function() {
+  var bpr = document.getElementById('barPeriodRow');
+  if(bpr) bpr.addEventListener('click', function(e){
+    var chip = e.target.closest('.chart-chip');
+    if(!chip) return;
+    barMonths = parseInt(chip.dataset.months);
+    bpr.querySelectorAll('.chart-chip').forEach(function(c){
+      c.classList.toggle('active', c.dataset.months===chip.dataset.months);
+    });
+    renderBar();
+  });
+});
+
+/* ── GOAL COLORS ── */
+var GOAL_COLORS = ['#3bc957','#f5c842','#6ab4f5','#ff7070','#b09af5','#f5a442','#5ee8d4','#f48fb1'];
+
+/* ── GOALS RENDER ── */
+function renderMetas() {
+  var goals = S.goals;
+  var emptyEl = document.getElementById('goalsEmpty');
+  var listEl  = document.getElementById('goalsList');
+  if(!emptyEl || !listEl) return;
+
+  if(!goals.length) {
+    emptyEl.style.display = 'block';
+    listEl.innerHTML = '';
+    return;
+  }
+  emptyEl.style.display = 'none';
+
+  // Calculate savings since goal creation date
+  listEl.innerHTML = goals.map(function(g) {
+    var saved = calcSavedForGoal(g);
+    var pct   = g.target > 0 ? Math.min(saved/g.target*100, 100) : 0;
+    var pctDisplay = pct.toFixed(0)+'%';
+    var color = g.color || '#3bc957';
+
+    // Pace indicator
+    var paceHtml = '';
+    if(g.deadline) {
+      var daysLeft = Math.ceil((new Date(g.deadline) - new Date()) / 86400000);
+      var needed   = g.target - saved;
+      if(daysLeft > 0 && needed > 0) {
+        var perMonth = needed / (daysLeft/30);
+        paceHtml = '<div class="goal-pace" style="color:var(--muted)">Necesitás '+fARS(perMonth)+'/mes para llegar a tiempo</div>';
+      } else if(saved >= g.target) {
+        paceHtml = '<div class="goal-pace" style="color:var(--accent)">✓ Meta alcanzada</div>';
+      } else if(daysLeft <= 0) {
+        paceHtml = '<div class="goal-pace" style="color:var(--red)">Fecha límite vencida</div>';
+      }
+    }
+
+    var deadlineLbl = g.deadline
+      ? 'Vence '+fmtDate(g.deadline)
+      : 'Sin fecha límite';
+
+    return '<div class="goal-item" onclick="openGoalModal(\''+g.id+'\')">' +
+      '<div class="goal-top">' +
+        '<div class="goal-name">'+esc(g.name)+'</div>' +
+        '<div class="goal-pct" style="color:'+color+'">'+pctDisplay+'</div>' +
+      '</div>' +
+      '<div class="goal-bar-track">' +
+        '<div class="goal-bar-fill" style="width:'+pct+'%;background:'+color+'"></div>' +
+      '</div>' +
+      '<div class="goal-meta">' +
+        '<span>'+fARS(saved)+' de '+fARS(g.target)+'</span>' +
+        '<span>'+deadlineLbl+'</span>' +
+      '</div>' +
+      paceHtml +
     '</div>';
   }).join('');
 }
+
+function calcSavedForGoal(g) {
+  // Option A: balance acumulado desde la fecha de creación de la meta
+  var since = g.createdAt ? new Date(g.createdAt) : new Date(0);
+  since.setHours(0,0,0,0);
+  var txs = S.txs.filter(function(t) {
+    if(!t.date) return false;
+    var p = t.date.split('-').map(Number);
+    return new Date(p[0],p[1]-1,p[2]) >= since;
+  });
+  return Math.max(0, calcBal(txs).total);
+}
+
+/* ── GOAL MODAL ── */
+var editGoalId = null;
+var editGoalColor = GOAL_COLORS[0];
+
+function openGoalModal(id) {
+  editGoalId = id;
+  var existing = id ? S.goals.find(function(g){ return g.id===id; }) : null;
+  document.getElementById('modalGoalTitle').textContent = existing ? 'Editar meta' : 'Nueva meta';
+  document.getElementById('goalNameInput').value     = existing ? existing.name     : '';
+  document.getElementById('goalTargetInput').value   = existing ? existing.target   : '';
+  document.getElementById('goalDeadlineInput').value = existing ? (existing.deadline||'') : '';
+  editGoalColor = existing ? (existing.color||GOAL_COLORS[0]) : GOAL_COLORS[0];
+  buildGoalColorPicker();
+  document.getElementById('delGoalBtn').style.display = existing ? 'block' : 'none';
+  document.getElementById('modalGoal').classList.add('open');
+  setTimeout(function(){ document.getElementById('goalNameInput').focus(); }, 200);
+}
+
+function buildGoalColorPicker() {
+  document.getElementById('goalColorPicker').innerHTML = GOAL_COLORS.map(function(col){
+    var sel = col === editGoalColor;
+    return '<div class="color-chip'+(sel?' sel':'')+'" style="background:'+col+'" onclick="selGoalColor(\''+col+'\')" '+
+      'onmouseover="this.style.transform=\'scale(1.12)\'" onmouseout="this.style.transform=\'scale(1)\'"></div>';
+  }).join('');
+}
+
+function selGoalColor(col) {
+  editGoalColor = col;
+  buildGoalColorPicker();
+}
+
+function saveGoal() {
+  var name     = document.getElementById('goalNameInput').value.trim();
+  var target   = parseFloat(document.getElementById('goalTargetInput').value);
+  var deadline = document.getElementById('goalDeadlineInput').value || null;
+  if(!name)          { toast('⚠️ Ingresá un nombre para la meta'); return; }
+  if(!target||target<=0){ toast('⚠️ Ingresá un monto objetivo'); return; }
+
+  if(editGoalId) {
+    var idx = S.goals.findIndex(function(g){ return g.id===editGoalId; });
+    if(idx>=0) S.goals[idx] = Object.assign({},S.goals[idx],{name:name,target:target,deadline:deadline,color:editGoalColor});
+    toast('✓ Meta actualizada');
+  } else {
+    S.goals.push({ id:uid(), name:name, target:target, deadline:deadline, color:editGoalColor, createdAt:todayISO() });
+    toast('✓ Meta creada');
+  }
+  save(); closeModal('modalGoal'); renderAll();
+}
+
+function deleteGoal() {
+  if(!editGoalId) return;
+  if(!confirm('¿Eliminar esta meta?')) return;
+  S.goals = S.goals.filter(function(g){ return g.id!==editGoalId; });
+  save(); closeModal('modalGoal'); toast('🗑️ Meta eliminada'); renderAll();
+}
+
+document.getElementById('modalGoal').addEventListener('click', function(e){
+  if(e.target===this) closeModal('modalGoal');
+});
 
 /* ── RENDER CONFIG ── */
 function renderCfg(){
@@ -1764,6 +2226,7 @@ function renderAll(){
   if(t==='resumen') renderResumen();
   if(t==='registro')renderHist();
   if(t==='analisis')renderAnalysis();
+  if(t==='metas')   renderMetas();
   if(t==='config')  renderCfg();
 }
 
@@ -2022,7 +2485,7 @@ function toast(msg){
 
 /* ── KEYBOARD ── */
 document.addEventListener('keydown',function(e){
-  if(e.key==='Escape'){guardClose('modalReg');closeModal('modalQuick');closeModal('modalCat');}
+  if(e.key==='Escape'){guardClose('modalReg');closeModal('modalQuick');closeModal('modalCat');closeModal('modalGoal');}
 });
 
 /* ── AUTH ENTER KEY ── */
@@ -2036,6 +2499,12 @@ document.getElementById('monthlyInput').addEventListener('input',function(){debo
 /* ── FAB WIRING ── */
 document.getElementById('fabMain').addEventListener('click',function(){openModal('out',null);});
 document.getElementById('fabQuick').addEventListener('click',openQuick);
+
+// Expose goal functions called from inline HTML
+window.openGoalModal = openGoalModal;
+window.saveGoal      = saveGoal;
+window.deleteGoal    = deleteGoal;
+window.selGoalColor  = selGoalColor;
 
 /* ── INIT ── */
 // Load local data first so UI has something to show while auth resolves
