@@ -1793,7 +1793,8 @@ function saveLocal() {
 
 /* ── FIRESTORE SYNC ── */
 function userDocRef(uid) {
-  return fbDb.collection('users').doc(uid).collection('data').doc('main');
+  // Simpler path: users/{uid} directly (no subcollection)
+  return fbDb.collection('users').doc(uid);
 }
 
 async function syncToCloud() {
@@ -1808,8 +1809,9 @@ async function syncToCloud() {
       updatedAt: Date.now(),
     });
     setSyncState('synced');
+    console.log('[sync] OK — txs:', S.txs.length);
   } catch(e) {
-    console.warn('syncToCloud error', e);
+    console.error('[sync] ERROR:', e.code, e.message);
     setSyncState('error');
   }
 }
