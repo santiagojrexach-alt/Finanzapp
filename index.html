@@ -1683,6 +1683,14 @@ firebase.initializeApp({
 var fbAuth = firebase.auth();
 var fbDb   = firebase.firestore();
 
+// Explicit session persistence (survives page refresh)
+fbAuth.setPersistence(firebase.auth.Auth.Persistence.LOCAL).catch(function(e){
+  console.warn('setPersistence error:', e);
+});
+
+// Force Firestore to always fetch fresh data from server (not local cache)
+fbDb.settings({ cacheSizeBytes: firebase.firestore.CACHE_SIZE_UNLIMITED });
+
 /* ── CONSTANTS ── */
 var STORE_KEY      = 'finanzapp_v01';
 var SCHEMA_VERSION = 2;
@@ -1810,11 +1818,10 @@ async function loadFromCloud() {
   if (!currentUser) return false;
   setSyncState('syncing');
   try {
-    var snap = await userDocRef(currentUser.uid).get();
+    // Force fetch from server, not local Firestore cache
+    var snap = await userDocRef(currentUser.uid).get({ source: 'server' });
     if (snap.exists) {
       var d = migrate(snap.data());
-      // Cloud wins ONLY if it actually has data
-      // Empty array [] is truthy in JS — must check length
       if (d.txs   && d.txs.length)   S.txs   = d.txs;
       if (d.goals && d.goals.length)  S.goals = d.goals;
       if (d.cats  && d.cats.length)   S.cats  = d.cats;
@@ -1825,12 +1832,27 @@ async function loadFromCloud() {
       setSyncState('synced');
       return true;
     } else {
-      // First time user — push whatever is in localStorage to cloud
+      // First time on this device — push local data to cloud
       await syncToCloud();
       return false;
     }
   } catch(e) {
-    console.warn('loadFromCloud error', e);
+    console.warn('loadFromCloud error:', e);
+    // If server fetch fails (offline), try local cache as fallback
+    try {
+      var snapCache = await userDocRef(currentUser.uid).get({ source: 'cache' });
+      if (snapCache.exists) {
+        var dc = migrate(snapCache.data());
+        if (dc.txs   && dc.txs.length)   S.txs   = dc.txs;
+        if (dc.goals && dc.goals.length)  S.goals = dc.goals;
+        if (dc.cats  && dc.cats.length)   S.cats  = dc.cats;
+        if (dc.cfg)  S.cfg = Object.assign({}, S.cfg, dc.cfg);
+        if (!S.cfg.budgets) S.cfg.budgets = {};
+        CATS = S.cats;
+        setSyncState('error');
+        return true;
+      }
+    } catch(e2) { /* cache also empty */ }
     setSyncState('error');
     return false;
   }
@@ -1934,7 +1956,7 @@ async function doSignup() {
 
 async function doLogout() {
   if (!confirm('¿Cerrar sesión?')) return;
-  await signOut(fbAuth);
+  await fbAuth.signOut();
 }
 
 /* ── AUTH STATE OBSERVER ── */
