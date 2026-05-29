@@ -2033,7 +2033,7 @@ fbAuth.onAuthStateChanged(async function(user) {
     showApp();
     initHeaderCollapse();
     initContainerDelegation();
-    renderAll();
+    renderTab(S.ui.tab);
   } else {
     currentUser = null;
     showAuth();
@@ -2774,7 +2774,7 @@ function openGoalModal(id) {
 function buildGoalColorPicker() {
   document.getElementById('goalColorPicker').innerHTML = GOAL_COLORS.map(function(col){
     var sel = col === S.ui.editGoalColor;
-    return '<div class="color-chip'+(sel?' sel':'')+'" style="background:'+col+'" data-color="'+col+'" '></div>';
+    return '<div class="color-chip'+(sel?' sel':'')+'" style="background:'+col+'" data-color="'+col+'"></div>';
   }).join('');
 }
 
@@ -2862,7 +2862,7 @@ function switchTab(name){
   document.querySelectorAll('.nav-item').forEach(function(el){el.classList.toggle('active',el.dataset.tab===name);});
   document.querySelectorAll('.tab-panel').forEach(function(el){el.classList.toggle('active',el.id==='tab-'+name);});
   document.getElementById('contentArea').scrollTop=0;
-  renderAll();
+  renderTab(name);
 };
 document.getElementById('navEl').addEventListener('click',function(e){
   var item=e.target.closest('.nav-item');if(item)switchTab(item.dataset.tab);
@@ -3095,7 +3095,7 @@ function dlFile(name,type,content){
 }
 function confirmClear(){
   if(confirm('¿Borrar TODOS los datos? No se puede deshacer.')){
-    S.txs=[];S.goals=[];S.cfg.budgets={};save();renderAll();toast('🗑️ Datos eliminados');
+    S.txs=[];S.goals=[];S.cfg.budgets={};save();renderHeader();renderTab(S.ui.tab);toast('🗑️ Datos eliminados');
   }
 };;
 
@@ -3262,7 +3262,8 @@ function importJSON() {
         if (d.cfg) S.cfg = Object.assign({}, S.cfg, d.cfg);
         if (!S.cfg.budgets) S.cfg.budgets = {};
         save();
-        renderAll();
+        renderHeader();
+        renderTab(S.ui.tab);
         toast('✓ ' + txCount + ' transacciones importadas');
       } catch(err) {
         toast('⚠️ Archivo inválido o corrupto');
