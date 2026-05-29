@@ -1162,8 +1162,8 @@ body{
       <div class="ob-dot"></div>
       <div class="ob-dot"></div>
     </div>
-    <button class="ob-btn" id="obNextBtn" onclick="obNext()">Siguiente</button>
-    <button class="ob-skip" onclick="obFinish()">Saltar introducción</button>
+    <button class="ob-btn" id="obNextBtn" data-action="obNext">Siguiente</button>
+    <button class="ob-skip" data-action="obFinish">Saltar introducción</button>
   </div>
 </div>
 
@@ -1175,8 +1175,8 @@ body{
 
   <div class="auth-card">
     <div class="auth-tabs">
-      <div class="auth-tab active" id="tabLogin"  onclick="switchAuthTab('login')">Ingresar</div>
-      <div class="auth-tab"        id="tabSignup" onclick="switchAuthTab('signup')">Registrarse</div>
+      <div class="auth-tab active" id="tabLogin"  data-action="switchAuthTab" data-args="login">Ingresar</div>
+      <div class="auth-tab"        id="tabSignup" data-action="switchAuthTab" data-args="signup">Registrarse</div>
     </div>
 
     <div id="authLoginForm">
@@ -1190,7 +1190,7 @@ body{
         <input class="auth-input" type="password" id="loginPass"
                placeholder="••••••••" autocomplete="current-password">
       </div>
-      <button class="auth-btn" id="loginBtn" onclick="doLogin()">Ingresar</button>
+      <button class="auth-btn" id="loginBtn" data-action="doLogin">Ingresar</button>
       <div class="auth-error" id="loginError"></div>
     </div>
 
@@ -1205,7 +1205,7 @@ body{
         <input class="auth-input" type="password" id="signupPass"
                placeholder="Mínimo 6 caracteres" autocomplete="new-password">
       </div>
-      <button class="auth-btn" id="signupBtn" onclick="doSignup()">Crear cuenta</button>
+      <button class="auth-btn" id="signupBtn" data-action="doSignup">Crear cuenta</button>
       <div class="auth-error" id="signupError"></div>
     </div>
 
@@ -1231,25 +1231,25 @@ body{
       </div>
       <div class="header-controls">
         <div class="user-menu-wrap" id="userMenuWrap">
-          <div class="user-btn" id="userBtn" onclick="toggleUserMenu()">
+          <div class="user-btn" id="userBtn" data-action="toggleUserMenu">
             👤<div class="sync-badge" id="syncBadge"></div>
           </div>
           <div class="user-dropdown" id="userDropdown">
             <div class="ud-email" id="udEmail">—</div>
-            <div class="ud-row" onclick="toggleTheme()">
+            <div class="ud-row" data-action="toggleTheme">
               <span class="ud-lbl" id="udThemeLbl">Tema nocturno</span>
               <div class="toggle on" id="themeToggle" style="pointer-events:none"><div class="toggle-knob"></div></div>
             </div>
-            <div class="ud-row" onclick="openLogoutModal()">
+            <div class="ud-row" data-action="openLogoutModal">
               <span class="ud-lbl red">Cerrar sesión</span>
               <span style="color:var(--red);font-size:16px">→</span>
             </div>
           </div>
         </div>
         <div class="month-ctrl">
-          <button onclick="shiftMonth(-1)">&#8249;</button>
+          <button data-action="shiftMonth" data-args="-1">&#8249;</button>
           <span id="monthLabel"></span>
-          <button onclick="shiftMonth(1)">&#8250;</button>
+          <button data-action="shiftMonth" data-args="1">&#8250;</button>
         </div>
       </div>
     </div>
@@ -1332,7 +1332,7 @@ body{
         <input class="search-input" type="text" id="searchInput"
                placeholder="Buscar transacciones…" oninput="onSearch(this.value)"
                autocomplete="off" autocorrect="off" spellcheck="false">
-        <button class="search-clear" id="searchClear" onclick="clearSearch()">✕</button>
+        <button class="search-clear" id="searchClear" data-action="clearSearch">✕</button>
       </div>
       <div class="filter-bar" id="filterBar">
         <div class="filter-chip active" data-period="month">Este mes</div>
@@ -1418,7 +1418,7 @@ body{
               <div class="cfg-sub" id="cfgSyncStatus">Sincronización activa</div>
             </div>
           </div>
-          <button class="cfg-action red" onclick="openLogoutModal()">Salir</button>
+          <button class="cfg-action red" data-action="openLogoutModal">Salir</button>
         </div>
         </div>
       </div>
@@ -1431,7 +1431,7 @@ body{
             <div class="cfg-lbl">Tema nocturno</div>
             <div class="cfg-sub">Verde oscuro sobre negro</div>
           </div>
-          <div class="toggle on" id="themeToggle" onclick="toggleTheme()">
+          <div class="toggle on" id="themeToggle" data-action="toggleTheme">
             <div class="toggle-knob"></div>
           </div>
         </div>
@@ -1476,19 +1476,19 @@ body{
         <div class="cfg-body collapsed">
         <div class="cfg-row">
           <div><div class="cfg-lbl">Importar JSON</div><div class="cfg-sub">Restaurar desde backup</div></div>
-          <button class="cfg-action" onclick="importJSON()">↑ JSON</button>
+          <button class="cfg-action" data-action="importJSON">↑ JSON</button>
         </div>
         <div class="cfg-row">
           <div><div class="cfg-lbl">Exportar CSV</div><div class="cfg-sub">Todas las transacciones</div></div>
-          <button class="cfg-action" onclick="exportCSV()">↓ CSV</button>
+          <button class="cfg-action" data-action="exportCSV">↓ CSV</button>
         </div>
         <div class="cfg-row">
           <div><div class="cfg-lbl">Exportar JSON</div><div class="cfg-sub">Backup completo</div></div>
-          <button class="cfg-action" onclick="exportJSON()">↓ JSON</button>
+          <button class="cfg-action" data-action="exportJSON">↓ JSON</button>
         </div>
         <div class="cfg-row">
           <div><div class="cfg-lbl">Borrar todos los datos</div><div class="cfg-sub">No se puede deshacer</div></div>
-          <button class="cfg-action red" onclick="confirmClear()">Borrar</button>
+          <button class="cfg-action red" data-action="confirmClear">Borrar</button>
         </div>
         </div>
       </div>
@@ -1516,8 +1516,8 @@ body{
     <div class="modal-title" id="modalRegTitle">Nuevo movimiento</div>
     <div class="modal-scroll">
       <div class="type-row">
-        <button class="type-btn sel-out" id="typOut" onclick="setType('out')">&#8595; Gasto</button>
-        <button class="type-btn" id="typIn"  onclick="setType('in')">&#8593; Ingreso</button>
+        <button class="type-btn sel-out" id="typOut" data-action="setType" data-args="out">&#8595; Gasto</button>
+        <button class="type-btn" id="typIn"  data-action="setType" data-args="in">&#8593; Ingreso</button>
       </div>
       <div class="amount-row">
         <div class="amount-box">
@@ -1526,8 +1526,8 @@ body{
                  id="amtInput" placeholder="0" min="0" step="0.01">
         </div>
         <div class="curr-toggle">
-          <button class="curr-btn active" id="cARS" onclick="setCurr('ARS')">ARS</button>
-          <button class="curr-btn" id="cUSD" onclick="setCurr('USD')">USD</button>
+          <button class="curr-btn active" id="cARS" data-action="setCurr" data-args="ARS">ARS</button>
+          <button class="curr-btn" id="cUSD" data-action="setCurr" data-args="USD">USD</button>
         </div>
       </div>
       <div class="field">
@@ -1557,15 +1557,15 @@ body{
             <div class="recur-lbl">Movimiento recurrente</div>
             <div class="recur-sub">Se sugerirá cada mes</div>
           </div>
-          <div class="toggle" id="recurToggle" onclick="toggleRecur()">
+          <div class="toggle" id="recurToggle" data-action="toggleRecur">
             <div class="toggle-knob"></div>
           </div>
         </div>
       </div>
     </div>
     <div class="modal-footer" style="padding:12px 0 20px">
-      <button class="save-btn" id="saveRegBtn" onclick="saveTx()">Guardar movimiento</button>
-      <button class="del-btn" id="delBtn" onclick="deleteTx()" style="display:none;margin-top:8px">Eliminar movimiento</button>
+      <button class="save-btn" id="saveRegBtn" data-action="saveTx">Guardar movimiento</button>
+      <button class="del-btn" id="delBtn" data-action="deleteTx" style="display:none;margin-top:8px">Eliminar movimiento</button>
     </div>
   </div>
 </div>
@@ -1582,8 +1582,8 @@ body{
                id="qAmtInput" placeholder="0" min="0" step="0.01">
       </div>
       <div class="curr-toggle">
-        <button class="curr-btn active" id="qcARS" onclick="setQCurr('ARS')">ARS</button>
-        <button class="curr-btn" id="qcUSD" onclick="setQCurr('USD')">USD</button>
+        <button class="curr-btn active" id="qcARS" data-action="setQCurr" data-args="ARS">ARS</button>
+        <button class="curr-btn" id="qcUSD" data-action="setQCurr" data-args="USD">USD</button>
       </div>
     </div>
     <!-- Scrollable category grid -->
@@ -1592,7 +1592,7 @@ body{
     </div>
     <!-- Sticky save button always visible -->
     <div style="flex-shrink:0;padding:12px 0 20px;border-top:1px solid var(--border);background:var(--card);margin-top:4px">
-      <button class="save-btn" onclick="saveQuick()">Guardar gasto</button>
+      <button class="save-btn" data-action="saveQuick">Guardar gasto</button>
     </div>
   </div>
 </div>
@@ -1622,8 +1622,8 @@ body{
       <label class="field-lbl">Color</label>
       <div id="colorPicker" style="display:flex;flex-wrap:wrap;gap:8px;margin-top:4px"></div>
     </div>
-    <button class="save-btn" onclick="saveCat()">Guardar categoría</button>
-    <button class="del-btn" id="delCatBtn" onclick="deleteCat()" style="display:none">Eliminar categoría</button>
+    <button class="save-btn" data-action="saveCat">Guardar categoría</button>
+    <button class="del-btn" id="delCatBtn" data-action="deleteCat" style="display:none">Eliminar categoría</button>
   </div>
 </div>
 
@@ -1637,8 +1637,8 @@ body{
     <div class="logout-title">¿Cerrar sesión?</div>
     <div class="logout-sub">Tus datos quedan guardados en la nube. Podés volver a ingresar cuando quieras.</div>
     <div class="logout-btns">
-      <button class="logout-cancel" onclick="closeModal('modalLogout')">Cancelar</button>
-      <button class="logout-confirm" onclick="confirmLogout()">Cerrar sesión</button>
+      <button class="logout-cancel" data-action="closeModal" data-args="modalLogout">Cancelar</button>
+      <button class="logout-confirm" data-action="confirmLogout">Cerrar sesión</button>
     </div>
   </div>
 </div>
@@ -1672,8 +1672,8 @@ body{
       <div class="color-chips" id="goalColorPicker"></div>
     </div>
 
-    <button class="save-btn" onclick="saveGoal()">Guardar meta</button>
-    <button class="del-btn" id="delGoalBtn" onclick="deleteGoal()" style="display:none">Eliminar meta</button>
+    <button class="save-btn" data-action="saveGoal">Guardar meta</button>
+    <button class="del-btn" id="delGoalBtn" data-action="deleteGoal" style="display:none">Eliminar meta</button>
   </div>
 </div>
 
@@ -2174,7 +2174,7 @@ function initSwipe(el, txId) {
       setTimeout(function() {
         if (confirm('¿Eliminar este movimiento?')) {
           S.txs = S.txs.filter(function(t) { return t.id !== txId; });
-          save(); renderAll(); toast('🗑️ Eliminado'); vibrate(20);
+          save(); renderAfterSave('tx'); toast('🗑️ Eliminado'); vibrate(20);
         } else {
           el.style.transform = '';
           wrap.classList.remove('swiping');
@@ -2362,7 +2362,7 @@ function addRecurTx(sourceId){
   if(!source)return;
   S.txs.push({id:uid(),type:source.type,amt:source.amt,curr:source.curr,
     cat:source.cat,desc:source.desc,date:todayISO(),ts:Date.now(),recurring:false,note:''});
-  save();renderAll();toast('✓ '+esc(source.desc||cat(source.cat).label)+' agregado');vibrate(30);
+  save();renderAfterSave('tx');toast('✓ '+esc(source.desc||cat(source.cat).label)+' agregado');vibrate(30);
 };
 
 function renderBudgetAlert(){
@@ -2758,14 +2758,14 @@ function saveGoal() {
     S.goals.push({ id:uid(), name:name, target:target, deadline:deadline, color:editGoalColor, createdAt:todayISO() });
     toast('✓ Meta creada');
   }
-  save(); closeModal('modalGoal'); renderAll();
+  save(); closeModal('modalGoal'); renderAfterSave('goal');
 }
 
 function deleteGoal() {
   if(!editGoalId) return;
   if(!confirm('¿Eliminar esta meta?')) return;
   S.goals = S.goals.filter(function(g){ return g.id!==editGoalId; });
-  save(); closeModal('modalGoal'); toast('🗑️ Meta eliminada'); renderAll();
+  save(); closeModal('modalGoal'); toast('🗑️ Meta eliminada'); renderAfterSave('goal');
 }
 
 document.getElementById('modalGoal').addEventListener('click', function(e){
@@ -2832,7 +2832,7 @@ document.getElementById('navEl').addEventListener('click',function(e){
 function shiftMonth(d){
   var m=S.ui.month+d,y=S.ui.year;
   if(m<0){m=11;y--;}if(m>11){m=0;y++;}
-  S.ui.month=m;S.ui.year=y;renderAll();
+  S.ui.month=m;S.ui.year=y;renderTab(S.ui.tab);
 };
 
 /* ── SEARCH ── */
@@ -2920,13 +2920,13 @@ function saveTx(){
   setTimeout(function(){btn.textContent=isEdit?'Guardar cambios':'Guardar movimiento';btn.classList.remove('done');},900);
   vibrate(30);save();closeModal('modalReg');
   toast(isEdit?'✓ Movimiento actualizado':'✓ Guardado');
-  if(!isEdit&&S.ui.tab==='resumen'){renderAll();setTimeout(function(){var f=document.querySelector('#recentList .tx');if(f)f.classList.add('tx-new');},30);}
-  else renderAll();
+  if(!isEdit&&S.ui.tab==='resumen'){renderAfterSave('tx');setTimeout(function(){var f=document.querySelector('#recentList .tx');if(f)f.classList.add('tx-new');},30);}
+  else renderAfterSave('tx');
 };
 function deleteTx(){
   if(!S.ui.editId)return;
   S.txs=S.txs.filter(function(t){return t.id!==S.ui.editId;});
-  save();closeModal('modalReg');toast('🗑️ Eliminado');vibrate(20);renderAll();
+  save();closeModal('modalReg');toast('🗑️ Eliminado');vibrate(20);renderAfterSave('tx');
 };
 
 /* ── QUICK MODAL ── */
@@ -2957,7 +2957,7 @@ function saveQuick(){
   var amt=parseFloat(document.getElementById('qAmtInput').value);
   if(!amt||amt<=0){toast('⚠️ Ingresá un monto');return;}
   S.txs.push({id:uid(),type:'out',amt:amt,curr:S.ui.qCurr,cat:S.ui.qCat,desc:'',date:todayISO(),ts:Date.now(),recurring:false,note:''});
-  save();closeModal('modalQuick');toast('⚡ Gasto guardado');vibrate(30);renderAll();
+  save();closeModal('modalQuick');toast('⚡ Gasto guardado');vibrate(30);renderAfterSave('tx');
 };
 
 /* ── FILTER BAR ── */
@@ -3008,7 +3008,7 @@ function saveCat(){
     if(budget>0)S.cfg.budgets[newId]=budget;
     toast('✓ Categoría creada');
   }
-  CATS=S.cats;save();closeModal('modalCat');renderAll();
+  CATS=S.cats;save();closeModal('modalCat');renderAfterSave('cat');
 };
 function deleteCat(){
   if(!S.ui.editCatId)return;
@@ -3016,13 +3016,15 @@ function deleteCat(){
   if(c&&c.builtin){toast('Las categorías base no se pueden eliminar');return;}
   S.cats=S.cats.filter(function(x){return x.id!==S.ui.editCatId;});
   delete S.cfg.budgets[S.ui.editCatId];
-  CATS=S.cats;save();closeModal('modalCat');toast('🗑️ Categoría eliminada');renderAll();
+  CATS=S.cats;save();closeModal('modalCat');toast('🗑️ Categoría eliminada');renderAfterSave('cat');
 };
 
 /* ── CONFIG ── */
 function toggleTheme(){
-  S.cfg.theme=S.cfg.theme==='dark'?'light':'dark';
-  applyTheme();save();renderCfg();
+  updateCfg({ theme: S.cfg.theme === 'dark' ? 'light' : 'dark' });
+  applyTheme();
+  updateUserMenu();
+  renderCfg();
   if(S.ui.tab==='analisis') renderAnalysis();
 };
 function applyTheme(){
@@ -3034,7 +3036,7 @@ function applyTheme(){
   if(btn)btn.textContent=dark?'☀️':'🌙';
 }
 
-var debouncedSaveRate = debounce(function(v){var n=parseFloat(v);if(n>0){S.cfg.usdRate=n;S.cfg.usdRateUpdated=Date.now();save();renderHeader();updateTCDate();toast('✓ TC actualizado');}},800);
+var debouncedSaveRate = debounce(function(v){var n=parseFloat(v);if(n>0){updateCfg({usdRate:n,usdRateUpdated:Date.now()});renderHeader();updateTCDate();toast('✓ TC actualizado');}},800);
 var debouncedSaveIncome = debounce(function(v){var n=parseFloat(v);S.cfg.monthlyIncome=n>=0?n:0;save();renderHeader();},800);
 
 function exportCSV(){
@@ -3088,6 +3090,47 @@ window.openGoalModal = openGoalModal;
 window.saveGoal      = saveGoal;
 window.deleteGoal    = deleteGoal;
 window.selGoalColor  = selGoalColor;
+
+/* ── EVENT DELEGATION ── */
+(function() {
+  var ACTION_MAP = {
+    doLogin:         function()       { doLogin(); },
+    doSignup:        function()       { doSignup(); },
+    saveTx:          function()       { saveTx(); },
+    deleteTx:        function()       { deleteTx(); },
+    saveQuick:       function()       { saveQuick(); },
+    saveCat:         function()       { saveCat(); },
+    deleteCat:       function()       { deleteCat(); },
+    saveGoal:        function()       { saveGoal(); },
+    deleteGoal:      function()       { deleteGoal(); },
+    toggleRecur:     function()       { toggleRecur(); },
+    toggleAccordion: function(el)     { toggleAccordion(el); },
+    importJSON:      function()       { importJSON(); },
+    exportCSV:       function()       { exportCSV(); },
+    exportJSON:      function()       { exportJSON(); },
+    confirmClear:    function()       { confirmClear(); },
+    confirmLogout:   function()       { confirmLogout(); },
+    openLogoutModal: function()       { openLogoutModal(); },
+    toggleUserMenu:  function()       { toggleUserMenu(); },
+    toggleTheme:     function()       { toggleTheme(); },
+    clearSearch:     function()       { clearSearch(); },
+    obNext:          function()       { obNext(); },
+    obFinish:        function()       { obFinish(); },
+    switchAuthTab:   function(el, a)  { switchAuthTab(a); },
+    closeModal:      function(el, a)  { closeModal(a); },
+    shiftMonth:      function(el, a)  { shiftMonth(parseInt(a)); },
+    setType:         function(el, a)  { setType(a); },
+    setCurr:         function(el, a)  { setCurr(a); },
+    setQCurr:        function(el, a)  { setQCurr(a); },
+  };
+  function handleAction(e) {
+    var el = e.target.closest('[data-action]');
+    if (!el) return;
+    var fn = ACTION_MAP[el.dataset.action];
+    if (fn) { e.stopPropagation(); fn(el, el.dataset.args); }
+  }
+  document.addEventListener('click', handleAction);
+})();
 
 /* ── INIT ── */
 // Load local data first so UI has something to show while auth resolves
@@ -3237,7 +3280,7 @@ function switchTabV4(name) {
   if (hero)    hero.classList.toggle('collapsed', !onR);
   if (compact) compact.classList.toggle('show', !onR);
   document.getElementById('contentArea').scrollTop = 0;
-  renderAll();
+  renderTab(name);
 }
 
 /* ── ONBOARDING ── */
@@ -3271,7 +3314,63 @@ function obFinish() {
 window.obNext   = obNext;
 window.obFinish = obFinish;
 
-/* ── WINDOW EXPORTS (v0.4) ── */
+/* ── GLOBAL ERROR HANDLER ── */
+window.onerror = function(msg, src, line, col, err) {
+  console.error('[FinanzApp error]', msg, 'at', src, line+':'+col, err);
+  toast('⚠️ Error inesperado — revisá la consola');
+  setSyncState('error');
+  return false; // don't suppress default
+};
+window.onunhandledrejection = function(e) {
+  console.error('[FinanzApp unhandled promise]', e.reason);
+  if (e.reason && e.reason.code) {
+    // Firebase error
+    var msg = e.reason.code === 'permission-denied'
+      ? '⚠️ Sin permiso en Firestore — revisá las reglas'
+      : '⚠️ Error de Firebase: ' + e.reason.code;
+    toast(msg);
+  }
+  setSyncState('error');
+};
+
+/* ── GRANULAR RENDER (replaces renderAll) ── */
+function renderTab(tab) {
+  renderHeader();
+  if (tab === 'resumen')  { renderResumen(); }
+  if (tab === 'registro') { renderHist(); }
+  if (tab === 'analisis') { /* charts render on card expand */ }
+  if (tab === 'metas')    { renderMetas(); }
+  if (tab === 'config')   { renderCfg(); }
+}
+
+/* render only what changed after a save */
+function renderAfterSave(context) {
+  renderHeader(); // balance always needs update
+  var tab = S.ui.tab;
+  if (context === 'tx') {
+    if (tab === 'resumen')  { renderResumen(); }
+    if (tab === 'registro') { renderHist(); }
+    // other tabs don't need immediate update
+  }
+  if (context === 'goal') {
+    if (tab === 'metas') { renderMetas(); }
+  }
+  if (context === 'cat') {
+    if (tab === 'config') { renderCfg(); }
+  }
+}
+
+/* ── STATE HELPERS ── */
+/* Read-only snapshot of state for renders */
+function getState() { return S; }
+
+/* Safe state update — always saves after mutation */
+function updateCfg(patch) {
+  S.cfg = Object.assign({}, S.cfg, patch);
+  save();
+}
+
+/* ── WINDOW EXPORTS ── */
 window.doLogin         = doLogin;
 window.doSignup        = doSignup;
 window.switchAuthTab   = switchAuthTab;
