@@ -1352,6 +1352,92 @@ body{
 .splash-brand{font-size:28px;font-weight:800;color:var(--a2);letter-spacing:-.02em}
 .splash-sub{font-size:13px;color:var(--muted);margin-top:8px}
 @keyframes splashPulse{0%,100%{transform:scale(1)}50%{transform:scale(1.06)}}
+/* ══════════════════════════════════════════════
+   PORTFOLIO — INSTRUMENTOS DE AHORRO
+   ══════════════════════════════════════════════ */
+.portfolio-summary{
+  background:var(--card);border:1px solid var(--border);
+  border-radius:20px;padding:16px 18px;margin-bottom:10px;
+  transition:background .35s,border-color .35s;
+}
+.portfolio-total-lbl{font-size:10px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin-bottom:4px}
+.portfolio-total-ars{font-size:26px;font-weight:700;color:var(--bright);letter-spacing:-.02em}
+.portfolio-total-usd{font-size:13px;color:var(--blue);font-family:'JetBrains Mono',monospace;margin-top:2px}
+.portfolio-total-rdto{font-size:12px;font-weight:600;margin-top:6px}
+
+.instrument-card{
+  background:var(--card);border:1px solid var(--border);
+  border-radius:18px;margin-bottom:8px;overflow:hidden;
+  transition:background .35s,border-color .35s;
+}
+.instrument-hdr{
+  display:flex;align-items:center;gap:12px;
+  padding:14px 16px;cursor:pointer;transition:background .15s;
+}
+.instrument-hdr:hover{background:var(--bg3)}
+.instrument-icon{
+  width:36px;height:36px;border-radius:12px;
+  display:flex;align-items:center;justify-content:center;
+  font-size:18px;flex-shrink:0;
+}
+.instrument-info{flex:1;min-width:0}
+.instrument-name{font-size:13px;font-weight:700;color:var(--bright)}
+.instrument-sub{font-size:11px;color:var(--muted);margin-top:1px}
+.instrument-right{text-align:right;flex-shrink:0}
+.instrument-value{font-family:'JetBrains Mono',monospace;font-size:14px;font-weight:600;color:var(--bright)}
+.instrument-rdto{font-size:11px;font-weight:600;margin-top:2px}
+.instrument-rdto.pos{color:var(--a2)}
+.instrument-rdto.neg{color:var(--red)}
+.instrument-rdto.neu{color:var(--muted)}
+
+.instrument-body{
+  overflow:hidden;max-height:0;
+  transition:max-height .32s cubic-bezier(.4,0,.2,1);
+  border-top:0px solid var(--border);
+}
+.instrument-body.open{max-height:600px;border-top-width:1px}
+.instrument-mov{
+  padding:10px 16px;display:flex;align-items:center;
+  border-bottom:1px solid var(--border);font-size:12px;
+  gap:10px;
+}
+.instrument-mov:last-child{border-bottom:none}
+.mov-date{color:var(--muted);font-family:'JetBrains Mono',monospace;flex-shrink:0;font-size:10px}
+.mov-type{flex-shrink:0}
+.mov-desc{flex:1;color:var(--text);min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.mov-amt{font-weight:700;flex-shrink:0}
+.mov-amt.dep{color:var(--a2)}
+.mov-amt.ret{color:var(--red)}
+.mov-amt.val{color:var(--blue)}
+.instrument-actions{
+  display:flex;gap:8px;padding:10px 16px 14px;
+}
+.inst-btn{
+  flex:1;padding:9px;border-radius:12px;font-size:12px;font-weight:700;
+  border:1px solid var(--border);background:var(--bg3);color:var(--text);
+  cursor:pointer;transition:background .15s;font-family:'Nunito',sans-serif;
+}
+.inst-btn:hover{background:var(--border)}
+.inst-btn.primary{background:rgba(66,212,96,.1);border-color:rgba(66,212,96,.3);color:var(--accent)}
+
+/* Ahorro tab sections */
+.ahorro-section-title{
+  font-size:10px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;
+  color:var(--muted);padding:12px 4px 6px;
+}
+.ahorro-vs{
+  background:var(--card);border:1px solid var(--border);
+  border-radius:16px;padding:14px 16px;margin-bottom:10px;
+}
+.ahorro-vs-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
+.ahorro-vs-lbl{font-size:12px;color:var(--muted)}
+.ahorro-vs-val{font-family:'JetBrains Mono',monospace;font-size:13px;font-weight:600;color:var(--bright)}
+.ahorro-vs-diff{
+  margin-top:8px;padding:8px 10px;border-radius:10px;
+  font-size:12px;font-weight:600;
+}
+.ahorro-vs-diff.ok{background:rgba(66,212,96,.08);color:var(--a2)}
+.ahorro-vs-diff.warn{background:rgba(255,120,120,.08);color:var(--red)}
 </style>
 </head>
 <body>
@@ -1540,7 +1626,7 @@ body{
         <div class="nav-item active" data-tab="resumen">Resumen</div>
         <div class="nav-item" data-tab="registro">Registro</div>
         <div class="nav-item" data-tab="analisis">Análisis</div>
-        <div class="nav-item" data-tab="metas">Metas</div>
+        <div class="nav-item" data-tab="ahorro">Ahorro</div>
         <div class="nav-item" data-tab="deudas">Deudas</div>
         <div class="nav-item" data-tab="config">Config</div>
       </div>
@@ -1648,7 +1734,26 @@ body{
     </div>
 
     <!-- METAS -->
-    <div class="tab-panel" id="tab-metas">
+    <!-- AHORRO (Portfolio + Metas) -->
+    <div class="tab-panel" id="tab-ahorro">
+
+      <!-- Resumen: ahorro calculado vs real -->
+      <div class="ahorro-section-title">Resumen de ahorro</div>
+      <div class="ahorro-vs" id="ahorroVsCard"></div>
+
+      <!-- Portfolio de instrumentos -->
+      <div class="ahorro-section-title">Portfolio</div>
+      <div class="portfolio-summary" id="portfolioSummary">
+        <div class="portfolio-total-lbl">Valor total del portfolio</div>
+        <div class="portfolio-total-ars" id="portfolioTotalARS">$0</div>
+        <div class="portfolio-total-usd" id="portfolioTotalUSD">USD 0</div>
+        <div class="portfolio-total-rdto" id="portfolioTotalRdto"></div>
+      </div>
+      <div id="instrumentList"></div>
+      <button class="save-btn" style="background:var(--bg3);color:var(--accent);border:1px solid var(--border);box-shadow:none;margin-bottom:6px" onclick="openInstrumentModal(null)">+ Nuevo instrumento</button>
+
+      <!-- Metas de ahorro -->
+      <div class="ahorro-section-title">Metas</div>
       <div class="goal-card" id="goalsContainer">
         <div class="goal-empty" id="goalsEmpty">
           <div style="font-size:36px;margin-bottom:10px">🎯</div>
@@ -1657,9 +1762,8 @@ body{
         </div>
         <div id="goalsList"></div>
       </div>
-      <div style="padding:0 2px">
-        <button class="save-btn" style="background:var(--bg3);color:var(--accent);border:1px solid var(--border);box-shadow:none" onclick="openGoalModal(null)">+ Nueva meta</button>
-      </div>
+      <button class="save-btn" style="background:var(--bg3);color:var(--accent);border:1px solid var(--border);box-shadow:none" onclick="openGoalModal(null)">+ Nueva meta</button>
+
     </div>
 
     <!-- DEUDAS -->
@@ -1984,6 +2088,81 @@ body{
   </div>
 </div>
 
+<!-- INSTRUMENT MODAL -->
+<div class="modal-backdrop" id="modalInstrument">
+  <div class="modal-sheet" style="max-height:82vh;padding:18px 18px 0">
+    <div class="modal-handle"></div>
+    <div class="modal-title" id="modalInstrumentTitle">Nuevo instrumento</div>
+    <div class="modal-scroll">
+      <div class="field">
+        <label class="field-lbl">Nombre</label>
+        <input class="field-input" type="text" id="instNameInput" placeholder="Ej: FCI Balanz, Dólares, YPF" maxlength="40" autocomplete="off">
+      </div>
+      <div class="field">
+        <label class="field-lbl">Tipo</label>
+        <select class="field-input" id="instTypeInput" style="cursor:pointer">
+          <option value="fci">FCI</option>
+          <option value="acciones">Acciones</option>
+          <option value="bonos">Bonos</option>
+          <option value="letras">Letras</option>
+          <option value="on">Obligaciones Negociables</option>
+          <option value="usd">Dólares</option>
+          <option value="plazo_fijo">Plazo Fijo</option>
+          <option value="cripto">Cripto</option>
+          <option value="otro">Otro</option>
+        </select>
+      </div>
+      <div class="field">
+        <label class="field-lbl">Color</label>
+        <div class="color-chips" id="instColorPicker"></div>
+      </div>
+    </div>
+    <div class="modal-footer" style="padding:12px 0 20px">
+      <button class="save-btn" onclick="saveInstrument()">Guardar instrumento</button>
+      <button class="del-btn" id="delInstBtn" onclick="deleteInstrument()" style="display:none;margin-top:8px">Eliminar instrumento</button>
+    </div>
+  </div>
+</div>
+
+<!-- MOVEMENT MODAL (deposit/withdrawal/valuation) -->
+<div class="modal-backdrop" id="modalMovement">
+  <div class="modal-sheet" style="max-height:75vh;padding:18px 18px 0">
+    <div class="modal-handle"></div>
+    <div class="modal-title" id="modalMovementTitle">Registrar movimiento</div>
+    <div class="modal-scroll">
+      <div class="type-row">
+        <button class="type-btn sel-in"  id="movTypeDeposit"   onclick="setMovType('deposit')">↓ Depósito</button>
+        <button class="type-btn"         id="movTypeWithdraw"  onclick="setMovType('withdraw')">↑ Retiro</button>
+        <button class="type-btn"         id="movTypeValuation" onclick="setMovType('valuation')" style="font-size:12px">📊 Valuación</button>
+      </div>
+      <div id="movValuationHint" style="display:none;font-size:11px;color:var(--muted);padding:6px 0 2px;line-height:1.5">
+        Registrá el valor actual total del instrumento. No suma ni resta — reemplaza la valuación anterior.
+      </div>
+      <div class="amount-row">
+        <div class="amount-box">
+          <span class="amount-sym">$</span>
+          <input class="amount-input" type="number" inputmode="decimal" id="movAmtInput" placeholder="0" min="0">
+        </div>
+        <div class="curr-toggle">
+          <button class="curr-btn active" id="mcARS" onclick="setMovCurr('ARS')">ARS</button>
+          <button class="curr-btn"        id="mcUSD" onclick="setMovCurr('USD')">USD</button>
+        </div>
+      </div>
+      <div class="field">
+        <label class="field-lbl">Descripción (opcional)</label>
+        <input class="field-input" type="text" id="movDescInput" placeholder="Ej: Suscripción mensual" maxlength="60">
+      </div>
+      <div class="field">
+        <label class="field-lbl">Fecha</label>
+        <input class="field-input" type="date" id="movDateInput">
+      </div>
+    </div>
+    <div class="modal-footer" style="padding:12px 0 20px">
+      <button class="save-btn" onclick="saveMovement()">Guardar</button>
+    </div>
+  </div>
+</div>
+
 <!-- GOAL MODAL -->
 <div class="modal-backdrop" id="modalGoal">
   <div class="modal-sheet" style="max-height:80vh">
@@ -2124,7 +2303,7 @@ var CATS = DEFAULT_CATS.slice();
 
 /* ── STATE ── */
 var S = {
-  txs:[], goals:[], debts:[], cats:DEFAULT_CATS.slice(),
+  txs:[], goals:[], debts:[], portfolio:[], cats:DEFAULT_CATS.slice(),
   cfg:{theme:'dark',usdRate:1200,monthlyIncome:0,monthlyBudget:0,budgets:{},schemaVersion:SCHEMA_VERSION},
   ui:{
     tab:'resumen',year:new Date().getFullYear(),month:new Date().getMonth(),
@@ -2135,6 +2314,7 @@ var S = {
     editGoalId:null,editGoalColor:'#3bc957',
     obCurrent:0,obTotal:5,
     barMonths:6,headerCollapseInited:false,
+    openInstrumentId:null,
   }
 };
 
@@ -2163,6 +2343,7 @@ function migrate(d) {
   }
   // v2→v3: add tags to txs, debts array, monthlyBudget to cfg
   if (!d.debts) d.debts = [];
+  if (!d.portfolio) d.portfolio = [];
   if (d.cfg && d.cfg.monthlyBudget === undefined) d.cfg.monthlyBudget = 0;
   if (d.txs) d.txs.forEach(function(t) {
     if (!t.tags) t.tags = [];
@@ -2183,6 +2364,7 @@ function loadLocal() {
     if (d.txs)   S.txs   = d.txs;
     if (d.goals) S.goals = d.goals;
     if (d.debts) S.debts = d.debts;
+    if (d.portfolio) S.portfolio = d.portfolio;
     if (d.cats && d.cats.length) S.cats = d.cats;
     if (d.cfg)   S.cfg   = Object.assign({}, S.cfg, d.cfg);
     if (!S.cfg.budgets) S.cfg.budgets = {};
@@ -2192,7 +2374,7 @@ function loadLocal() {
 function saveLocal() {
   try {
     localStorage.setItem(STORE_KEY, JSON.stringify({
-      txs:S.txs, goals:S.goals, debts:S.debts, cats:S.cats, cfg:S.cfg
+      txs:S.txs, goals:S.goals, debts:S.debts, portfolio:S.portfolio, cats:S.cats, cfg:S.cfg
     }));
   } catch(e) {}
 }
@@ -2211,6 +2393,7 @@ async function syncToCloud() {
       txs:  S.txs,
       goals:S.goals,
       debts:S.debts,
+      portfolio:S.portfolio,
       cats: S.cats,
       cfg:  S.cfg,
       updatedAt: Date.now(),
@@ -2234,6 +2417,7 @@ async function loadFromCloud() {
       if (d.txs   && d.txs.length)   S.txs   = d.txs;
       if (d.goals && d.goals.length)  S.goals = d.goals;
       if (d.debts)                    S.debts = d.debts;
+      if (d.portfolio)                 S.portfolio = d.portfolio;
       if (d.cats  && d.cats.length)   S.cats  = d.cats;
       if (d.cfg)  S.cfg = Object.assign({}, S.cfg, d.cfg);
       if (!S.cfg.budgets) S.cfg.budgets = {};
@@ -3831,7 +4015,7 @@ function renderTab(tab) {
   if (tab === 'resumen')  { renderResumen(); }
   if (tab === 'registro') { renderHist(); }
   if (tab === 'analisis') { /* charts render on card expand */ }
-  if (tab === 'metas')    { renderMetas(); }
+  if (tab === 'ahorro')   { renderAhorro(); }
   if (tab === 'deudas')   { renderDeudas(); }
   if (tab === 'config')   { renderCfg(); }
 }
@@ -3846,7 +4030,7 @@ function renderAfterSave(context) {
     // other tabs don't need immediate update
   }
   if (context === 'goal') {
-    if (tab === 'metas') { renderMetas(); }
+    if (tab === 'ahorro') { renderAhorro(); }
   }
   if (context === 'cat') {
     if (tab === 'config') { renderCfg(); }
@@ -4274,7 +4458,308 @@ if (mbInp) mbInp.addEventListener('input',function(){debouncedSaveBudget(this.va
 
 // Export overridden fns (not using _orig pattern — direct extension below)
 
-/* ── WINDOW EXPORTS (features) ── */
+/* ══════════════════════════════════════════════════════
+   PORTFOLIO — INSTRUMENTOS DE AHORRO
+   ══════════════════════════════════════════════════════ */
+
+var INST_TYPES = {
+  fci:'🏦', acciones:'📈', bonos:'📄', letras:'🏛️',
+  on:'🏢', usd:'💵', plazo_fijo:'⏱️', cripto:'₿', otro:'💼'
+};
+var INST_COLORS = ['#6ab4f5','#f5c842','#5ee87a','#b09af5','#f5a442','#ff7070','#5ee8d4','#f48fb1','#80cbc4'];
+
+var editInstId     = null;
+var editInstColor  = INST_COLORS[0];
+var activeInstId   = null; // for movement modal
+var currentMovType = 'deposit';
+var currentMovCurr = 'ARS';
+
+/* ── PORTFOLIO CALCULATIONS ── */
+function getPortfolioTotals() {
+  if (!S.portfolio || !S.portfolio.length) return { totalARS:0, totalUSD:0, totalInvested:0 };
+  var totalARS = 0, totalUSD = 0, totalInvested = 0;
+  S.portfolio.forEach(function(inst) {
+    var v = getInstrumentValue(inst);
+    var dep = getInstrumentDeposited(inst);
+    if (inst.currency === 'USD') { totalUSD += v.usd; totalARS += v.usd * S.cfg.usdRate; }
+    else { totalARS += v.ars; }
+    totalInvested += dep.ars;
+  });
+  return { totalARS:totalARS, totalUSD:totalUSD, totalInvested:totalInvested };
+}
+
+function getInstrumentValue(inst) {
+  // Last valuation wins; if no valuation, sum deposits - withdrawals
+  var movs = inst.movements || [];
+  var valuations = movs.filter(function(m){ return m.type==='valuation'; }).sort(function(a,b){ return a.date>b.date?1:-1; });
+  if (valuations.length) {
+    var last = valuations[valuations.length-1];
+    var ars = last.curr==='USD' ? last.amt*S.cfg.usdRate : last.amt;
+    return { ars:ars, usd:last.curr==='USD'?last.amt:last.amt/S.cfg.usdRate, raw:last.amt, curr:last.curr };
+  }
+  // No valuation: calculate from flows
+  var net = 0;
+  movs.forEach(function(m){
+    if (m.type==='deposit') net += m.curr==='USD'?m.amt*S.cfg.usdRate:m.amt;
+    if (m.type==='withdraw') net -= m.curr==='USD'?m.amt*S.cfg.usdRate:m.amt;
+  });
+  return { ars:Math.max(0,net), usd:Math.max(0,net/S.cfg.usdRate), raw:Math.max(0,net), curr:'ARS' };
+}
+
+function getInstrumentDeposited(inst) {
+  var movs = inst.movements || [];
+  var total = 0;
+  movs.forEach(function(m){
+    if (m.type==='deposit') total += m.curr==='USD'?m.amt*S.cfg.usdRate:m.amt;
+    if (m.type==='withdraw') total -= m.curr==='USD'?m.amt*S.cfg.usdRate:m.amt;
+  });
+  return { ars:Math.max(0,total) };
+}
+
+/* ── RENDER AHORRO TAB ── */
+function renderAhorro() {
+  renderAhorroVs();
+  renderPortfolio();
+  renderMetas();
+}
+
+function renderAhorroVs() {
+  var el = document.getElementById('ahorroVsCard');
+  if (!el) return;
+  // Ahorro calculado: acum desde inicio
+  var totalNet = calcBal(S.txs).total;
+  // Ahorro real: valor total del portfolio
+  var port = getPortfolioTotals();
+  var realARS = port.totalARS;
+  var diff = realARS - totalNet;
+  var diffCls = diff >= 0 ? 'ok' : 'warn';
+  var diffMsg = diff >= 0
+    ? '✓ Tu portfolio vale '+fARS(diff)+' más que tu ahorro calculado'
+    : '↓ Tu portfolio vale '+fARS(Math.abs(diff))+' menos que tu ahorro calculado';
+
+  el.innerHTML =
+    '<div class="ahorro-vs-row"><span class="ahorro-vs-lbl">Ahorro calculado (ingresos − egresos)</span><span class="ahorro-vs-val">'+fARS(totalNet)+'</span></div>'+
+    '<div class="ahorro-vs-row"><span class="ahorro-vs-lbl">Valor real del portfolio</span><span class="ahorro-vs-val c-in">'+fARS(realARS)+'</span></div>'+
+    (realARS > 0 ? '<div class="ahorro-vs-diff '+diffCls+'">'+diffMsg+'</div>' : '<div style="font-size:11px;color:var(--muted);margin-top:6px">Registrá instrumentos para ver la comparación</div>');
+}
+
+function renderPortfolio() {
+  var portfolio = S.portfolio || [];
+
+  // Summary totals
+  var pt = getPortfolioTotals();
+  var totalInv = pt.totalInvested;
+  var rdto = totalInv > 0 ? ((pt.totalARS - totalInv) / totalInv * 100) : 0;
+  var rdtoARS = pt.totalARS - totalInv;
+
+  var totalARSEl = document.getElementById('portfolioTotalARS');
+  var totalUSDEl = document.getElementById('portfolioTotalUSD');
+  var rdtoEl     = document.getElementById('portfolioTotalRdto');
+  if (totalARSEl) totalARSEl.textContent = fARS(pt.totalARS);
+  if (totalUSDEl) totalUSDEl.textContent = 'USD ' + (pt.totalARS/S.cfg.usdRate).toFixed(0);
+  if (rdtoEl && totalInv > 0) {
+    var cls = rdtoARS >= 0 ? 'var(--a2)' : 'var(--red)';
+    rdtoEl.innerHTML = '<span style="color:'+cls+'">'+(rdtoARS>=0?'+':'')+fARS(rdtoARS)+' ('+rdto.toFixed(1)+'%)</span> vs depositado';
+  }
+
+  var list = document.getElementById('instrumentList');
+  if (!list) return;
+
+  if (!portfolio.length) {
+    list.innerHTML = '<div style="text-align:center;padding:20px;color:var(--muted);font-size:12px">Agregá tu primer instrumento de ahorro</div>';
+    return;
+  }
+
+  list.innerHTML = portfolio.map(function(inst) {
+    var v   = getInstrumentValue(inst);
+    var dep = getInstrumentDeposited(inst);
+    var rdto = dep.ars > 0 ? ((v.ars - dep.ars) / dep.ars * 100) : 0;
+    var rdtoARS = v.ars - dep.ars;
+    var rdtoCls = rdto > 0 ? 'pos' : rdto < 0 ? 'neg' : 'neu';
+    var rdtoStr = dep.ars > 0
+      ? (rdtoARS>=0?'+':'')+fARS(rdtoARS)+' ('+rdto.toFixed(1)+'%)'
+      : '—';
+    var icon = INST_TYPES[inst.type] || '💼';
+    var isOpen = (S.ui.openInstrumentId === inst.id);
+    var movs = (inst.movements||[]).slice().sort(function(a,b){ return b.date>a.date?1:-1; });
+
+    var movsHtml = movs.slice(0,8).map(function(m){
+      var amtStr = (m.curr==='USD'?fUSD(m.amt):fARS(m.amt));
+      var cls = m.type==='deposit'?'dep':m.type==='withdraw'?'ret':'val';
+      var lbl = m.type==='deposit'?'↓':m.type==='withdraw'?'↑':'📊';
+      return '<div class="instrument-mov">'+
+        '<span class="mov-date">'+fmtDate(m.date)+'</span>'+
+        '<span class="mov-type">'+lbl+'</span>'+
+        '<span class="mov-desc">'+(m.desc||''||'')+'</span>'+
+        '<span class="mov-amt '+cls+'">'+amtStr+'</span>'+
+      '</div>';
+    }).join('');
+
+    return '<div class="instrument-card">'+
+      '<div class="instrument-hdr" onclick="toggleInstrument(\''+inst.id+'\')">'+
+        '<div class="instrument-icon" style="background:'+inst.color+'22;color:'+inst.color+'">'+icon+'</div>'+
+        '<div class="instrument-info">'+
+          '<div class="instrument-name">'+esc(inst.name)+'</div>'+
+          '<div class="instrument-sub">'+fARS(dep.ars)+' depositado</div>'+
+        '</div>'+
+        '<div class="instrument-right">'+
+          '<div class="instrument-value">'+fARS(v.ars)+'</div>'+
+          '<div class="instrument-rdto '+rdtoCls+'">'+rdtoStr+'</div>'+
+        '</div>'+
+      '</div>'+
+      '<div class="instrument-body'+(isOpen?' open':'')+'">'+
+        movsHtml+
+        '<div class="instrument-actions">'+
+          '<button class="inst-btn primary" onclick="openMovementModal(\''+inst.id+'\',\'deposit\')">+ Depósito</button>'+
+          '<button class="inst-btn primary" onclick="openMovementModal(\''+inst.id+'\',\'valuation\')">📊 Valuar</button>'+
+          '<button class="inst-btn" onclick="openMovementModal(\''+inst.id+'\',\'withdraw\')">↑ Retiro</button>'+
+          '<button class="inst-btn" onclick="openInstrumentModal(\''+inst.id+'\')">✎ Editar</button>'+
+        '</div>'+
+      '</div>'+
+    '</div>';
+  }).join('');
+}
+
+function toggleInstrument(id) {
+  S.ui.openInstrumentId = S.ui.openInstrumentId === id ? null : id;
+  renderPortfolio();
+}
+window.toggleInstrument = toggleInstrument;
+
+/* ── INSTRUMENT MODAL ── */
+function buildInstColorPicker() {
+  var el = document.getElementById('instColorPicker');
+  if (!el) return;
+  el.innerHTML = INST_COLORS.map(function(col){
+    var sel = col === editInstColor;
+    return '<div class="color-chip'+(sel?' sel':'')+'" style="background:'+col+'" data-instcolor="'+col+'" '+
+      'onmouseover="this.style.transform=\'scale(1.12)\'" onmouseout="this.style.transform=\'scale(1)\'"></div>';
+  }).join('');
+}
+
+document.addEventListener('click', function(e) {
+  var d = e.target.closest('[data-instcolor]');
+  if (d) { editInstColor = d.dataset.instcolor; buildInstColorPicker(); }
+});
+
+function openInstrumentModal(id) {
+  editInstId = id;
+  var inst = id ? (S.portfolio||[]).find(function(i){ return i.id===id; }) : null;
+  document.getElementById('modalInstrumentTitle').textContent = inst ? 'Editar instrumento' : 'Nuevo instrumento';
+  document.getElementById('instNameInput').value = inst ? inst.name : '';
+  document.getElementById('instTypeInput').value = inst ? inst.type : 'fci';
+  editInstColor = inst ? inst.color : INST_COLORS[0];
+  buildInstColorPicker();
+  var delBtn = document.getElementById('delInstBtn');
+  if (delBtn) delBtn.style.display = inst ? 'block' : 'none';
+  document.getElementById('modalInstrument').classList.add('open');
+  setTimeout(function(){ document.getElementById('instNameInput').focus(); }, 200);
+}
+window.openInstrumentModal = openInstrumentModal;
+
+function saveInstrument() {
+  var name = document.getElementById('instNameInput').value.trim();
+  var type = document.getElementById('instTypeInput').value;
+  if (!name) { toast('⚠️ Ingresá un nombre'); return; }
+  if (!S.portfolio) S.portfolio = [];
+  if (editInstId) {
+    var idx = S.portfolio.findIndex(function(i){ return i.id===editInstId; });
+    if (idx>=0) S.portfolio[idx] = Object.assign({},S.portfolio[idx],{name:name,type:type,color:editInstColor});
+    toast('✓ Instrumento actualizado');
+  } else {
+    S.portfolio.push({id:uid(),name:name,type:type,color:editInstColor,movements:[],createdAt:Date.now()});
+    toast('✓ Instrumento creado');
+  }
+  save(); closeModal('modalInstrument'); renderPortfolio();
+}
+window.saveInstrument = saveInstrument;
+
+function deleteInstrument() {
+  if (!editInstId) return;
+  if (!confirm('¿Eliminar este instrumento y todos sus movimientos?')) return;
+  S.portfolio = S.portfolio.filter(function(i){ return i.id!==editInstId; });
+  save(); closeModal('modalInstrument'); toast('🗑️ Eliminado'); renderPortfolio();
+}
+window.deleteInstrument = deleteInstrument;
+
+document.getElementById('modalInstrument').addEventListener('click', function(e){
+  if (e.target===this) closeModal('modalInstrument');
+});
+
+/* ── MOVEMENT MODAL ── */
+function openMovementModal(instId, type) {
+  activeInstId   = instId;
+  currentMovType = type || 'deposit';
+  currentMovCurr = 'ARS';
+  document.getElementById('movAmtInput').value  = '';
+  document.getElementById('movDescInput').value = '';
+  document.getElementById('movDateInput').value = todayISO();
+  setMovType(currentMovType);
+  setMovCurr('ARS');
+  var inst = (S.portfolio||[]).find(function(i){ return i.id===instId; });
+  document.getElementById('modalMovementTitle').textContent =
+    (inst ? esc(inst.name)+' — ' : '') +
+    (type==='deposit'?'Depósito':type==='withdraw'?'Retiro':'Valuación');
+  document.getElementById('modalMovement').classList.add('open');
+  setTimeout(function(){ document.getElementById('movAmtInput').focus(); }, 200);
+}
+window.openMovementModal = openMovementModal;
+
+function setMovType(type) {
+  currentMovType = type;
+  ['deposit','withdraw','valuation'].forEach(function(t){
+    var btn = document.getElementById('movType'+t.charAt(0).toUpperCase()+t.slice(1));
+    if (!btn) return;
+    btn.className = 'type-btn';
+    if (t===type) btn.className += t==='deposit'?' sel-in':t==='withdraw'?' sel-out':' sel-in';
+  });
+  var hint = document.getElementById('movValuationHint');
+  if (hint) hint.style.display = type==='valuation' ? 'block' : 'none';
+}
+window.setMovType = setMovType;
+
+function setMovCurr(curr) {
+  currentMovCurr = curr;
+  var arsBtn = document.getElementById('mcARS');
+  var usdBtn = document.getElementById('mcUSD');
+  if (arsBtn) arsBtn.classList.toggle('active', curr==='ARS');
+  if (usdBtn) usdBtn.classList.toggle('active', curr==='USD');
+}
+window.setMovCurr = setMovCurr;
+
+function saveMovement() {
+  var amt  = parseFloat(document.getElementById('movAmtInput').value);
+  var desc = document.getElementById('movDescInput').value.trim();
+  var date = document.getElementById('movDateInput').value || todayISO();
+  if (!amt||amt<=0) { toast('⚠️ Ingresá un monto válido'); return; }
+  var inst = (S.portfolio||[]).find(function(i){ return i.id===activeInstId; });
+  if (!inst) { toast('⚠️ Instrumento no encontrado'); return; }
+  if (!inst.movements) inst.movements = [];
+  inst.movements.push({
+    id:uid(), type:currentMovType, amt:amt, curr:currentMovCurr,
+    desc:desc, date:date, ts:Date.now()
+  });
+  save(); closeModal('modalMovement');
+  toast(currentMovType==='deposit'?'✓ Depósito registrado':currentMovType==='withdraw'?'✓ Retiro registrado':'✓ Valuación actualizada');
+  renderPortfolio();
+  renderAhorroVs();
+}
+window.saveMovement = saveMovement;
+
+document.getElementById('modalMovement').addEventListener('click', function(e){
+  if (e.target===this) closeModal('modalMovement');
+});
+
+/* ── WINDOW EXPORTS (portfolio) ── */
+window.openInstrumentModal = openInstrumentModal;
+window.saveInstrument      = saveInstrument;
+window.deleteInstrument    = deleteInstrument;
+window.openMovementModal   = openMovementModal;
+window.setMovType          = setMovType;
+window.setMovCurr          = setMovCurr;
+window.saveMovement        = saveMovement;
+window.toggleInstrument    = toggleInstrument;
+window.renderAhorro        = renderAhorro;
 window.openDebtModal    = openDebtModal;
 window.saveDebt         = saveDebt;
 window.deleteDebt       = deleteDebt;
