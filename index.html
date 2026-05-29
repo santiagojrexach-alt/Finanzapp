@@ -706,9 +706,31 @@ body{
 .cs-title{font-size:16px;font-weight:700;color:var(--dim);margin-bottom:8px}
 .cs-sub{font-size:12px;line-height:1.7}
 
-@media(min-width:430px){
+/* ── DESKTOP LAYOUT ── */
+@media(min-width:600px){
+  body{ background:var(--bg2) }
+  .app{
+    max-width:600px;
+    border-left:1px solid var(--border);
+    border-right:1px solid var(--border);
+    box-shadow:0 0 60px rgba(0,0,0,.3);
+  }
+  .auth-screen{ background:var(--bg2) }
+  .splash-screen{ background:var(--bg2) }
+}
+@media(min-width:430px) and (max-width:599px){
   .app{border-left:1px solid var(--border);border-right:1px solid var(--border)}
 }
+
+/* ── THEME BTN in header ── */
+.theme-btn-header{
+  width:32px;height:32px;border-radius:10px;
+  background:var(--bg3);border:1px solid var(--border);
+  display:flex;align-items:center;justify-content:center;
+  font-size:16px;cursor:pointer;transition:background .2s;
+  flex-shrink:0;
+}
+.theme-btn-header:hover{background:var(--border)}
 /* ── AUTH SCREEN ── */
 .auth-screen{
   position:fixed;inset:0;background:var(--bg);
@@ -1454,20 +1476,21 @@ body{
         </div>
       </div>
       <div class="header-controls">
+        <!-- Theme toggle — always visible in header -->
+        <button class="theme-btn-header" id="themeBtn" data-action="toggleTheme" title="Cambiar tema">🌙</button>
+
         <div class="user-menu-wrap" id="userMenuWrap">
           <div class="user-btn" id="userBtn" data-action="toggleUserMenu">
             👤<div class="sync-badge" id="syncBadge"></div>
           </div>
           <div class="user-dropdown" id="userDropdown">
             <div class="ud-email" id="udEmail">—</div>
-            <div class="ud-row" data-action="toggleTheme">
-              <span class="ud-lbl" id="udThemeLbl">Tema nocturno</span>
-              <div class="toggle on" id="themeToggle" style="pointer-events:none"><div class="toggle-knob"></div></div>
+            <div class="ud-row" style="cursor:default;pointer-events:none">
+              <span class="ud-lbl" id="syncStatusLabel">Sincronizado</span>
+              <span class="sync-dot" id="syncDotDropdown" style="width:8px;height:8px;border-radius:50%;background:var(--muted);display:inline-block"></span>
             </div>
-            <div class="ud-row" data-action="openLogoutModal">
-              <span class="ud-lbl red">Cerrar sesión</span>
-              <span style="color:var(--red);font-size:16px">→</span>
-            </div>
+          </div>
+        </div>
           </div>
         </div>
         <div class="month-ctrl">
@@ -2046,7 +2069,7 @@ function cacheDOMRefs() {
     'modalReg','modalQuick','modalCat','modalGoal','modalLogout',
     'loginEmail','loginPass','loginBtn','loginError',
     'signupEmail','signupPass','signupBtn','signupError',
-    'udEmail','udThemeLbl','userDropdown',
+    'udEmail','userDropdown',
     'onboarding','obNextBtn',
     'offlineBanner','recurBanner','recurList','budgetAlert',
     'tabLogin','tabSignup','authLoginForm','authSignupForm',
@@ -3711,12 +3734,15 @@ async function confirmLogout() {
 /* ── UPDATE USER MENU ── */
 function updateUserMenu() {
   var emailEl = document.getElementById('udEmail');
-  var togEl   = document.getElementById('themeToggle');
-  var lblEl   = document.getElementById('udThemeLbl');
   var dark    = S.cfg.theme === 'dark';
   if (emailEl && currentUser) emailEl.textContent = currentUser.email;
-  if (togEl)  { if(dark) togEl.classList.add('on'); else togEl.classList.remove('on'); }
-  if (lblEl)  lblEl.textContent = dark ? 'Tema nocturno' : 'Tema diurno';
+  // Update header theme button
+  var btn = document.getElementById('themeBtn');
+  if (btn) btn.textContent = dark ? '☀️' : '🌙';
+  // Update sync status in dropdown
+  var statusEl = document.getElementById('syncStatusLabel');
+  var dotEl    = document.getElementById('syncDotDropdown');
+  // (updated by setSyncState directly)
 }
 
 /* ── MONTH DELTA (v0.4) ── */
