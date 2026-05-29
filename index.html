@@ -2617,7 +2617,14 @@ function initSessionWatch() {
 }
 
 /* ── RENDER RESUMEN ── */
-function renderResumen(){renderCats();renderRecent();renderRecurBanner();renderBudgetAlert();}
+function renderResumen(){
+  renderCats();
+  renderRecent();
+  renderRecurBanner();
+  renderBudgetAlert();
+  renderGlobalBudget();
+  renderWeeklySummary();
+}
 
 function renderCats(){
   var y=S.ui.year,m=S.ui.month;
@@ -2731,20 +2738,28 @@ function renderBudgetAlert(){
 
 /* ── RENDER REGISTRO ── */
 function renderHist(){
-  var period=S.ui.period,query=S.ui.searchQuery.toLowerCase().trim();
+  renderCatFilter();
+  renderTagFilter();
+  var period=S.ui.period;
+  var query=(S.ui.searchQuery||'').toLowerCase().trim();
+  var filterCat = S.ui.filterCat || '';
+  var filterTag = S.ui.filterTag || '';
   var txs=S.txs.filter(function(t){
     if(!inPeriod(t,period))return false;
+    if(filterCat && t.cat!==filterCat) return false;
+    if(filterTag && (!t.tags||t.tags.indexOf(filterTag)===-1)) return false;
     if(!query)return true;
     var c=cat(t.cat);
+    var tagMatch = t.tags&&t.tags.some(function(tag){return tag.toLowerCase().includes(query);});
     return(t.desc&&t.desc.toLowerCase().includes(query))||
-           c.label.toLowerCase().includes(query)||String(t.amt).includes(query);
+           c.label.toLowerCase().includes(query)||String(t.amt).includes(query)||tagMatch;
   }).sort(function(a,b){return b.ts-a.ts;});
   renderPeriodSummary(txs);
   var el=document.getElementById('histList');
   if(!txs.length){
     el.innerHTML='<div class="empty-state"><div class="empty-icon">📋</div>'+
       '<div class="empty-title">Sin resultados</div>'+
-      '<div class="empty-sub">'+(query?'No hay transacciones que coincidan':'No hay transacciones en este período')+'</div></div>';
+      '<div class="empty-sub">'+(query||filterCat||filterTag?'No hay transacciones que coincidan':'No hay transacciones en este período')+'</div></div>';
     return;
   }
   var groups={},order=[];
@@ -3130,8 +3145,12 @@ function renderCfg(){
   if(ri&&document.activeElement!==ri)ri.value=S.cfg.usdRate;
   var mi=document.getElementById('monthlyInput');
   if(mi&&document.activeElement!==mi)mi.value=S.cfg.monthlyIncome||'';
+  var bi=document.getElementById('monthlyBudgetInput');
+  if(bi&&document.activeElement!==bi)bi.value=S.cfg.monthlyBudget||'';
   var emailEl=document.getElementById('cfgUserEmail');
   if(emailEl&&currentUser)emailEl.textContent=currentUser.email;
+  updateUserMenu();
+  updateTCDate();
   renderCatMgmt();
 }
 
@@ -3211,6 +3230,11 @@ function openModal(type,id){
   document.getElementById('delBtn').style.display=isEdit?'block':'none';
   var recurTog=document.getElementById('recurToggle');
   if(S.ui.txRecur)recurTog.classList.add('on');else recurTog.classList.remove('on');
+  // Load tags
+  currentTxTags = (tx&&tx.tags) ? tx.tags.slice() : [];
+  renderTagChips();
+  var tagInp = document.getElementById('tagInput');
+  if (tagInp) tagInp.value = '';
   setType(S.ui.txType);setCurr(S.ui.txCurr);buildChips();
   document.getElementById('modalReg').classList.add('open');
   setTimeout(function(){document.getElementById('amtInput').focus();},200);
@@ -3257,13 +3281,16 @@ function saveTx(){
   if(!amt||amt<=0){toast('⚠️ Ingresá un monto válido');return;}
   var desc=document.getElementById('descInput').value.trim();
   var date=document.getElementById('dateInput').value||todayISO();
+  var tags=currentTxTags.slice();
   var isEdit=Boolean(S.ui.editId);
   if(isEdit){
     var idx=S.txs.findIndex(function(t){return t.id===S.ui.editId;});
-    if(idx>=0)S.txs[idx]=Object.assign({},S.txs[idx],{type:S.ui.txType,amt:amt,curr:S.ui.txCurr,cat:S.ui.txCat,desc:desc,date:date,recurring:S.ui.txRecur});
+    if(idx>=0)S.txs[idx]=Object.assign({},S.txs[idx],{type:S.ui.txType,amt:amt,curr:S.ui.txCurr,cat:S.ui.txCat,desc:desc,date:date,recurring:S.ui.txRecur,tags:tags});
   }else{
-    S.txs.push({id:uid(),type:S.ui.txType,amt:amt,curr:S.ui.txCurr,cat:S.ui.txCat,desc:desc,date:date,ts:Date.now(),recurring:S.ui.txRecur,note:''});
+    S.txs.push({id:uid(),type:S.ui.txType,amt:amt,curr:S.ui.txCurr,cat:S.ui.txCat,desc:desc,date:date,ts:Date.now(),recurring:S.ui.txRecur,note:'',tags:tags});
   }
+  currentTxTags=[];
+  renderTagChips();
   var btn=document.getElementById('saveRegBtn');
   btn.textContent='✓ Guardado';btn.classList.add('done');
   setTimeout(function(){btn.textContent=isEdit?'Guardar cambios':'Guardar movimiento';btn.classList.remove('done');},900);
@@ -3751,6 +3778,7 @@ function renderTab(tab) {
   if (tab === 'registro') { renderHist(); }
   if (tab === 'analisis') { /* charts render on card expand */ }
   if (tab === 'metas')    { renderMetas(); }
+  if (tab === 'deudas')   { renderDeudas(); }
   if (tab === 'config')   { renderCfg(); }
 }
 
@@ -4173,102 +4201,13 @@ function getTopCat(txs) {
   return c.icon+' '+c.label;
 }
 
-/* ══════════════════════════════════════════════════════
-   WIRE NEW FEATURES INTO RENDER PIPELINE
-   ══════════════════════════════════════════════════════ */
+/* ══ WIRE FEATURES INTO RENDER PIPELINE ══ */
 
-// Override renderResumen to include new features
-var _origRenderResumen = renderResumen;
-function renderResumen() {
-  _origRenderResumen();
-  renderGlobalBudget();
-  renderWeeklySummary();
-}
-
-// Override renderHist to include filters
-var _origRenderHist = renderHist;
-function renderHist() {
-  renderCatFilter();
-  renderTagFilter();
-  _origRenderHistFiltered();
-}
-
-function _origRenderHistFiltered() {
-  var period = S.ui.period;
-  var query  = (S.ui.searchQuery||'').toLowerCase().trim();
-  var filterCat = S.ui.filterCat || '';
-  var filterTag = S.ui.filterTag || '';
-
-  var txs = S.txs.filter(function(t) {
-    if (!inPeriod(t,period)) return false;
-    if (filterCat && t.cat !== filterCat) return false;
-    if (filterTag && (!t.tags || t.tags.indexOf(filterTag)===-1)) return false;
-    if (!query) return true;
-    var c = cat(t.cat);
-    var tagMatch = t.tags && t.tags.some(function(tag){ return tag.toLowerCase().includes(query); });
-    return (t.desc&&t.desc.toLowerCase().includes(query)) ||
-           c.label.toLowerCase().includes(query) ||
-           String(t.amt).includes(query) || tagMatch;
-  }).sort(function(a,b){ return b.ts-a.ts; });
-
-  renderPeriodSummary(txs);
-  var elH = document.getElementById('histList');
-  if (!txs.length) {
-    elH.innerHTML='<div class="empty-state"><div class="empty-icon">📋</div>'+
-      '<div class="empty-title">Sin resultados</div>'+
-      '<div class="empty-sub">'+(query||filterCat||filterTag?'No hay transacciones que coincidan':'No hay transacciones en este período')+'</div></div>';
-    return;
-  }
-  var groups={},order=[];
-  txs.forEach(function(t){var key=t.date||'sin-fecha';if(!groups[key]){groups[key]=[];order.push(key);}groups[key].push(t);});
-  var html='';
-  order.forEach(function(dk){html+='<div class="date-sep">'+dateLabel(dk)+'</div>';html+=groups[dk].map(function(tx){return txRow(tx);}).join('');});
-  elH.innerHTML=html;
-  setTimeout(attachSwipeListeners,50);
-}
-
-// Override renderTab to include deudas
-var _origRenderTab = renderTab;
-function renderTab(tab) {
-  if (tab === 'deudas') { renderDeudas(); return; }
-  _origRenderTab(tab);
-}
-
-// Add deudas to renderAfterSave if needed
-// (debts have their own save flow, no need to hook into tx saves)
-
-// Override saveTx to save tags
-var _origSaveTx = saveTx;
-function saveTx() {
-  // Tags are stored in currentTxTags — inject into the tx before saving
-  var origPush = Array.prototype.push;
-  _origSaveTx();
-  // After saveTx runs, update the last tx with tags
-  if (currentTxTags.length && S.txs.length) {
-    var last = S.txs[S.txs.length-1];
-    if (!S.ui.editId) last.tags = currentTxTags.slice();
-    else {
-      var idx = S.txs.findIndex(function(t){ return t.id===S.ui.editId; });
-      if (idx>=0) S.txs[idx].tags = currentTxTags.slice();
-    }
-    save();
-  }
-  currentTxTags = [];
-  renderTagChips();
-}
-
-// Override openModal to load tags
-var _origOpenModal = openModal;
-function openModal(type, id) {
-  _origOpenModal(type, id);
-  // Load existing tags
-  var tx = id ? S.txs.find(function(t){ return t.id===id; }) : null;
-  currentTxTags = (tx && tx.tags) ? tx.tags.slice() : [];
-  renderTagChips();
-  // Reset tag input
-  var inp = document.getElementById('tagInput');
-  if (inp) inp.value = '';
-}
+// Update renderTab to handle deudas tab (extend the existing function)
+var _renderTabBase = null; // will be set after dedup
+document.addEventListener('DOMContentLoaded', function() {
+  // no-op: handled inline below
+});
 
 // Config: monthly budget input
 var debouncedSaveBudget = debounce(function(v){
@@ -4276,23 +4215,10 @@ var debouncedSaveBudget = debounce(function(v){
   updateCfg({monthlyBudget:n>=0?n:0});
   renderGlobalBudget();
 },800);
-document.getElementById('monthlyBudgetInput').addEventListener('input',function(){debouncedSaveBudget(this.value);});
+var mbInp = document.getElementById('monthlyBudgetInput');
+if (mbInp) mbInp.addEventListener('input',function(){debouncedSaveBudget(this.value);});
 
-// Update renderCfg to populate monthlyBudgetInput
-var _origRenderCfg = renderCfg;
-function renderCfg() {
-  _origRenderCfg();
-  var bi = document.getElementById('monthlyBudgetInput');
-  if (bi && document.activeElement!==bi) bi.value = S.cfg.monthlyBudget||'';
-}
-
-// Export debts in JSON
-var _origExportJSON = exportJSON;
-function exportJSON() {
-  dlFile('finanzapp-backup.json','application/json',
-    JSON.stringify({txs:S.txs,goals:S.goals,debts:S.debts,cats:S.cats,cfg:S.cfg},null,2));
-  toast('✓ JSON descargado');
-}
+// Export overridden fns (not using _orig pattern — direct extension below)
 
 /* ── WINDOW EXPORTS (features) ── */
 window.openDebtModal    = openDebtModal;
