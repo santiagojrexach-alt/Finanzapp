@@ -100,7 +100,7 @@ body{
   max-width:430px;margin:0 auto;position:relative;overflow:hidden;
 }
 
-/* ── HEADER ── */
+/* ── HEADER — single compact row ── */
 .header{
   flex-shrink:0;background:var(--card);
   border-bottom:1px solid var(--border);
@@ -109,8 +109,33 @@ body{
 }
 .header-top{
   display:flex;justify-content:space-between;align-items:center;
-  padding:12px 18px 8px;gap:8px;
+  padding:10px 16px 8px;gap:8px;
 }
+/* left: user-menu-wrap acts as identity+sync cluster */
+.user-menu-wrap{
+  display:flex;align-items:center;gap:6px;position:relative;
+}
+.sync-row{
+  display:flex;align-items:center;gap:4px;
+  font-size:10px;color:var(--muted);
+  font-family:'JetBrains Mono',monospace;
+}
+.sync-dot{
+  width:6px;height:6px;border-radius:50%;
+  background:var(--muted);flex-shrink:0;
+  transition:background .3s;
+}
+.sync-dot.syncing{background:var(--amber);animation:pulse .8s infinite}
+.sync-dot.synced {background:var(--a2)}
+.sync-dot.error  {background:var(--red)}
+
+/* ── BALANCE CARD — in Resumen tab ── */
+.balance-card{
+  background:var(--card);border:1px solid var(--border);
+  border-radius:20px;padding:16px 18px 14px;margin-bottom:10px;
+  transition:background .35s,border-color .35s;
+}
+.balance-main-row{margin-bottom:12px}
 .brand{font-size:20px;font-weight:800;color:var(--a2);letter-spacing:-.02em;flex-shrink:0}
 
 .header-controls{display:flex;align-items:center;gap:8px}
@@ -1551,74 +1576,42 @@ body{
 <div class="app" id="mainApp" style="display:none">
 
 
-  <!-- HEADER -->
+  <!-- HEADER — single compact row -->
   <div class="header" id="headerEl">
     <div class="header-top">
-      <div style="display:flex;flex-direction:column;gap:0">
-        <span class="brand">FinanzApp</span>
-        <div class="sync-row" id="syncRow">
-          <span class="sync-dot" id="syncDot"></span>
-          <span id="syncLabel">local</span>
+      <!-- Left: user identity + sync -->
+      <div class="user-menu-wrap" id="userMenuWrap">
+        <div class="user-btn" id="userBtn" data-action="toggleUserMenu">
+          👤<div class="sync-badge" id="syncBadge"></div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:0;cursor:pointer" data-action="toggleUserMenu">
+          <div class="sync-row" id="syncRow">
+            <span class="sync-dot" id="syncDot"></span>
+            <span id="syncLabel">local</span>
+          </div>
+        </div>
+        <div class="user-dropdown" id="userDropdown">
+          <div class="ud-email" id="udEmail">—</div>
+          <div class="ud-row" style="cursor:default;pointer-events:none">
+            <span class="ud-lbl" id="syncStatusLabel">Sincronizado</span>
+            <span class="sync-dot" id="syncDotDropdown" style="width:8px;height:8px;border-radius:50%;background:var(--muted);display:inline-block"></span>
+          </div>
         </div>
       </div>
-      <div class="header-controls">
-        <!-- Theme toggle — always visible in header -->
-        <button class="theme-btn-header" id="themeBtn" data-action="toggleTheme" title="Cambiar tema">🌙</button>
 
-        <div class="user-menu-wrap" id="userMenuWrap">
-          <div class="user-btn" id="userBtn" data-action="toggleUserMenu">
-            👤<div class="sync-badge" id="syncBadge"></div>
-          </div>
-          <div class="user-dropdown" id="userDropdown">
-            <div class="ud-email" id="udEmail">—</div>
-            <div class="ud-row" style="cursor:default;pointer-events:none">
-              <span class="ud-lbl" id="syncStatusLabel">Sincronizado</span>
-              <span class="sync-dot" id="syncDotDropdown" style="width:8px;height:8px;border-radius:50%;background:var(--muted);display:inline-block"></span>
-            </div>
-          </div>
-        </div>
-          </div>
-        </div>
-        <div class="month-ctrl">
-          <button data-action="shiftMonth" data-args="-1">&#8249;</button>
-          <span id="monthLabel"></span>
-          <button data-action="shiftMonth" data-args="1">&#8250;</button>
-        </div>
+      <!-- Center: month navigation -->
+      <div class="month-ctrl">
+        <button data-action="shiftMonth" data-args="-1">&#8249;</button>
+        <span id="monthLabel"></span>
+        <button data-action="shiftMonth" data-args="1">&#8250;</button>
       </div>
+
+      <!-- Right: theme toggle -->
+      <button class="theme-btn-header" id="themeBtn" data-action="toggleTheme" title="Cambiar tema">🌙</button>
     </div>
 
     <div class="offline-banner" id="offlineBanner">
       <span>⚡</span> Sin conexión — los cambios se guardarán cuando vuelva
-    </div>
-
-    <!-- Hero balance (colapsable) -->
-    <div class="hero" id="heroEl">
-      <div class="balance-label">Balance del mes</div>
-      <div class="balance-main">
-        <span class="curr-sym">$</span><span id="balARS">0</span><span id="balDelta" class="balance-delta"></span><span id="balDelta" class="balance-delta"></span>
-      </div>
-      <div id="balUSDRow" class="balance-usd-row"></div>
-      <div class="kpi-row">
-        <div class="kpi">
-          <div class="kpi-lbl">Ingresos</div>
-          <div class="kpi-val c-in" id="kpiIn">$0</div>
-        </div>
-        <div class="kpi">
-          <div class="kpi-lbl">Egresos</div>
-          <div class="kpi-val c-out" id="kpiOut">$0</div>
-        </div>
-        <div class="kpi">
-          <div class="kpi-lbl">Ahorro</div>
-          <div class="kpi-val" id="kpiSave" style="color:var(--amber)">—</div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Compact balance (visible when hero collapsed) -->
-    <div class="balance-compact" id="balCompact">
-      <span id="balCompactMain" style="font-size:16px"></span>
-      <span id="balCompactIn" class="bc-in"></span>
-      <span id="balCompactOut" class="bc-out"></span>
     </div>
 
     <div class="nav-wrapper">
@@ -1638,12 +1631,28 @@ body{
 
     <!-- RESUMEN -->
     <div class="tab-panel active" id="tab-resumen">
-      <!-- Weekly summary (shown Mondays or manually) -->
-      <div id="weeklySummaryCard" style="display:none"></div>
+      <!-- Balance card -->
+      <div class="balance-card" id="balanceCard">
+        <div class="balance-main-row">
+          <div>
+            <div class="balance-label">Balance del mes</div>
+            <div class="balance-main">
+              <span class="curr-sym">$</span><span id="balARS">0</span><span id="balDelta" class="balance-delta"></span>
+            </div>
+            <div id="balUSDRow" class="balance-usd-row"></div>
+          </div>
+        </div>
+        <div class="kpi-row">
+          <div class="kpi"><div class="kpi-lbl">Ingresos</div><div class="kpi-val c-in" id="kpiIn">$0</div></div>
+          <div class="kpi"><div class="kpi-lbl">Egresos</div><div class="kpi-val c-out" id="kpiOut">$0</div></div>
+          <div class="kpi"><div class="kpi-lbl">Ahorro</div><div class="kpi-val" id="kpiSave" style="color:var(--amber)">—</div></div>
+        </div>
+      </div>
 
+      <!-- Weekly summary -->
+      <div id="weeklySummaryCard" style="display:none"></div>
       <!-- Budget global semaphore -->
       <div id="globalBudgetCard"></div>
-
       <!-- Recurring suggestions banner -->
       <div class="recur-banner" id="recurBanner">
         <div class="recur-banner-title">🔁 Movimientos recurrentes pendientes</div>
@@ -1652,16 +1661,17 @@ body{
       <!-- Budget alert -->
       <div class="budget-alert" id="budgetAlert"></div>
 
+      <!-- Cards EXPANDED by default -->
       <div class="card">
-        <div class="card-hdr collapsible collapsed" onclick="toggleCard(this)"><span>Gastos por categoría</span></div>
-        <div class="card-body collapsed"><div id="catList"></div></div>
+        <div class="card-hdr collapsible" onclick="toggleCard(this)"><span>Gastos por categoría</span></div>
+        <div class="card-body"><div id="catList"></div></div>
       </div>
       <div class="card">
-        <div class="card-hdr collapsible collapsed" onclick="toggleCard(this)">
+        <div class="card-hdr collapsible" onclick="toggleCard(this)">
           <span>Últimos movimientos</span>
           <button class="card-hdr-btn" onclick="event.stopPropagation();switchTab('registro')">Ver todos</button>
         </div>
-        <div class="card-body collapsed"><div id="recentList"></div></div>
+        <div class="card-body"><div id="recentList"></div></div>
       </div>
     </div>
 
@@ -2664,44 +2674,40 @@ function renderHeader(){
   var b=calcBal();
   var sign=b.total<0?'−':'';
   var balEl=el('balARS');
-  balEl.textContent=sign+Math.abs(b.total).toLocaleString('es-AR',{maximumFractionDigits:0});
-  balEl.style.color=b.total<0?'var(--red)':'var(--bright)';
+  if(balEl){
+    balEl.textContent=sign+Math.abs(b.total).toLocaleString('es-AR',{maximumFractionDigits:0});
+    balEl.style.color=b.total<0?'var(--red)':'var(--bright)';
+  }
   var usdRow=el('balUSDRow');
-  var hasMixed=b.uIn>0||b.uOut>0;
-  if(hasMixed){
-    usdRow.innerHTML='<span>'+(b.aNet>=0?'+':'−')+fARS(b.aNet)+'</span>'+
-      '<span style="margin:0 5px;color:var(--border)">·</span>'+
-      '<span style="color:var(--blue)">'+(b.uNet>=0?'+':'−')+fUSD(b.uNet)+'</span>'+
-      '<span style="margin:0 5px;color:var(--border)">·</span>'+
-      '<span style="color:var(--muted)">TC $'+S.cfg.usdRate.toLocaleString('es-AR')+'</span>';
-  } else { usdRow.innerHTML=''; }
-  el('kpiIn').textContent =fARS(b.totalIn);
-  el('kpiOut').textContent=fARS(b.totalOut);
+  if(usdRow){
+    var hasMixed=b.uIn>0||b.uOut>0;
+    if(hasMixed){
+      usdRow.innerHTML='<span>'+(b.aNet>=0?'+':'−')+fARS(b.aNet)+'</span>'+
+        '<span style="margin:0 5px;color:var(--border)">·</span>'+
+        '<span style="color:var(--blue)">'+(b.uNet>=0?'+':'−')+fUSD(b.uNet)+'</span>'+
+        '<span style="margin:0 5px;color:var(--border)">·</span>'+
+        '<span style="color:var(--muted)">TC $'+S.cfg.usdRate.toLocaleString('es-AR')+'</span>';
+    }else{usdRow.innerHTML='';}
+  }
+  if(el('kpiIn'))  el('kpiIn').textContent =fARS(b.totalIn);
+  if(el('kpiOut')) el('kpiOut').textContent=fARS(b.totalOut);
   var saveEl=el('kpiSave');
-  if(b.totalIn>0){
-    var pct=(b.total/b.totalIn*100).toFixed(1);
-    saveEl.textContent=pct+'%';
-    saveEl.style.color=parseFloat(pct)>=0?'var(--amber)':'var(--red)';
-  }else{saveEl.textContent='—';saveEl.style.color='var(--amber)';}
-  var deltaEl = el('balDelta');
-  if (deltaEl) {
-    var delta = calcDelta();
-    if (delta !== null) {
-      var pos = delta >= 0;
-      deltaEl.textContent = (pos ? '↑' : '↓') + Math.abs(delta).toFixed(0) + '%';
-      deltaEl.className = 'balance-delta ' + (pos ? 'delta-pos' : 'delta-neg');
-    } else {
-      deltaEl.textContent = '';
-      deltaEl.className = 'balance-delta';
-    }
+  if(saveEl){
+    if(b.totalIn>0){
+      var pct=(b.total/b.totalIn*100).toFixed(1);
+      saveEl.textContent=pct+'%';
+      saveEl.style.color=parseFloat(pct)>=0?'var(--amber)':'var(--red)';
+    }else{saveEl.textContent='—';saveEl.style.color='var(--amber)';}
   }
-  var cMain=el('balCompactMain');
-  if(cMain){
-    cMain.textContent=sign+fARS(Math.abs(b.total));
-    cMain.style.color=b.total<0?'var(--red)':'var(--bright)';
+  var deltaEl=el('balDelta');
+  if(deltaEl){
+    var delta=calcDelta();
+    if(delta!==null){
+      var pos=delta>=0;
+      deltaEl.textContent=(pos?'↑':'↓')+Math.abs(delta).toFixed(0)+'%';
+      deltaEl.className='balance-delta '+(pos?'delta-pos':'delta-neg');
+    }else{deltaEl.textContent='';deltaEl.className='balance-delta';}
   }
-  el('balCompactIn').textContent ='↑'+fARS(b.totalIn);
-  el('balCompactOut').textContent='↓'+fARS(b.totalOut);
 }
 
 /* ── COLLAPSIBLE CARDS ── */
@@ -2826,18 +2832,8 @@ function calcDelta() {
 function initHeaderCollapse() {
   if (S.ui.headerCollapseInited) return;
   S.ui.headerCollapseInited = true;
-  var el = document.getElementById('contentArea');
-  if (!el) return;
-  var sentinel = document.createElement('div');
-  sentinel.style.cssText = 'position:absolute;top:0;left:0;height:1px;width:100%;pointer-events:none';
-  el.prepend(sentinel);
-  new IntersectionObserver(function(entries) {
-    var visible = entries[0].isIntersecting;
-    var hero    = document.getElementById('heroEl');
-    var compact = document.getElementById('balCompact');
-    if (visible) { hero.classList.remove('collapsed'); compact.classList.remove('show'); }
-    else         { hero.classList.add('collapsed');    compact.classList.add('show');    }
-  }, { threshold: 0 }).observe(sentinel);
+  // Header collapse no longer needed - balance is in Resumen tab card
+  S.ui.headerCollapseInited = true; // prevent any stale calls
 }
 
 /* ── SESSION EXPIRED DETECTION ── */
@@ -3952,11 +3948,9 @@ function switchTabV4(name) {
   document.querySelectorAll('.tab-panel').forEach(function(el){
     el.classList.toggle('active', el.id==='tab-'+name);
   });
-  var hero = document.getElementById('heroEl');
-  var compact = document.getElementById('balCompact');
-  var onR = name === 'resumen';
-  if (hero)    hero.classList.toggle('collapsed', !onR);
-  if (compact) compact.classList.toggle('show', !onR);
+  // Balance card only visible on Resumen
+  var balCard = document.getElementById('balanceCard');
+  if (balCard) balCard.style.display = name==='resumen' ? '' : 'none';
   document.getElementById('contentArea').scrollTop = 0;
   renderTab(name);
 }
