@@ -1318,6 +1318,18 @@ body{
 }
 .weekly-stat-lbl{font-size:9px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:2px}
 .weekly-stat-val{font-family:'JetBrains Mono',monospace;font-size:12px;font-weight:600;color:var(--bright)}
+/* ── SPLASH SCREEN ── */
+.splash-screen{
+  position:fixed;inset:0;background:var(--bg);
+  display:flex;flex-direction:column;align-items:center;
+  justify-content:center;z-index:1100;
+  transition:opacity .3s;
+}
+.splash-screen.hiding{opacity:0;pointer-events:none}
+.splash-logo{font-size:64px;margin-bottom:16px;animation:splashPulse 1.2s ease-in-out infinite}
+.splash-brand{font-size:28px;font-weight:800;color:var(--a2);letter-spacing:-.02em}
+.splash-sub{font-size:13px;color:var(--muted);margin-top:8px}
+@keyframes splashPulse{0%,100%{transform:scale(1)}50%{transform:scale(1.06)}}
 </style>
 </head>
 <body>
@@ -1372,7 +1384,15 @@ body{
 </div>
 
 <!-- AUTH SCREEN -->
-<div class="auth-screen" id="authScreen">
+<!-- SPLASH SCREEN (shown while Firebase checks session) -->
+<div id="splashScreen" class="splash-screen">
+  <div class="splash-logo">💰</div>
+  <div class="splash-brand">FinanzApp</div>
+  <div class="splash-sub">Cargando…</div>
+</div>
+
+<!-- AUTH SCREEN (hidden until Firebase confirms no session) -->
+<div class="auth-screen" id="authScreen" style="display:none">
   <div class="auth-logo">💰</div>
   <div class="auth-brand">FinanzApp</div>
   <div class="auth-tagline">Tus finanzas, siempre sincronizadas</div>
@@ -2246,8 +2266,15 @@ function setSyncState(state) {
 }
 
 /* ── AUTH UI ── */
+function hideSplash() {
+  var splash = document.getElementById('splashScreen');
+  if (!splash) return;
+  splash.classList.add('hiding');
+  setTimeout(function(){ splash.style.display = 'none'; }, 320);
+}
+
 function showAuth()  {
-  // Close any open modals
+  hideSplash();
   ['modalLogout','modalReg','modalQuick','modalCat','modalGoal'].forEach(function(id){
     var modal = document.getElementById(id);
     if (modal) modal.classList.remove('open');
@@ -2256,6 +2283,7 @@ function showAuth()  {
   el('mainApp').style.display='none';
 }
 function showApp() {
+  hideSplash();
   el('authScreen').style.display='none';
   el('mainApp').style.display='flex';
   setTimeout(obShow, 400);
