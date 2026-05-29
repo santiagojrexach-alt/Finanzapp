@@ -1708,6 +1708,45 @@ fbAuth.setPersistence(firebase.auth.Auth.Persistence.LOCAL).catch(function(e){
 // Force Firestore to always fetch fresh data from server (not local cache)
 fbDb.settings({ cacheSizeBytes: firebase.firestore.CACHE_SIZE_UNLIMITED });
 
+/* ── DOM CACHE ── */
+/* Call once at init — avoids repeated getElementById in hot render paths */
+var DOM = {};
+function cacheDOMRefs() {
+  var ids = [
+    'monthLabel','balARS','balUSDRow','kpiIn','kpiOut','kpiSave','balDelta',
+    'balCompactMain','balCompactIn','balCompactOut','balCompact','heroEl',
+    'syncDot','syncLabel','syncBadge',
+    'contentArea','authScreen','mainApp',
+    'catList','recentList','histList','periodSummary',
+    'goalsList','goalsEmpty',
+    'donutChart','donutLegend','barChart','lineChart',
+    'themeToggle','usdRateInput','monthlyInput','cfgUserEmail','tcDate',
+    'catMgmtList','catChips','quickGrid',
+    'amtInput','amtSym','descInput','dateInput','recurToggle',
+    'saveRegBtn','delBtn','catChips','acList','accordionBody','accordionLbl',
+    'qAmtInput','qcARS','qcUSD',
+    'searchInput','searchClear','filterBar',
+    'modalReg','modalQuick','modalCat','modalGoal','modalLogout',
+    'loginEmail','loginPass','loginBtn','loginError',
+    'signupEmail','signupPass','signupBtn','signupError',
+    'udEmail','udThemeLbl','userDropdown',
+    'onboarding','obNextBtn',
+    'offlineBanner','recurBanner','recurList','budgetAlert',
+    'tabLogin','tabSignup','authLoginForm','authSignupForm',
+    'goalNameInput','goalTargetInput','goalDeadlineInput','goalColorPicker',
+    'catNameInput','catIconInput','catBudgetInput','colorPicker',
+    'cfgUserEmail','cfgSyncStatus',
+  ];
+  ids.forEach(function(id) {
+    DOM[id] = document.getElementById(id);
+  });
+}
+
+/* Helper: get DOM ref (falls back to getElementById if not cached) */
+function el(id) {
+  return DOM[id] || (DOM[id] = document.getElementById(id));
+}
+
 /* ── CONSTANTS ── */
 var STORE_KEY      = 'finanzapp_v01';
 var SCHEMA_VERSION = 2;
@@ -1753,6 +1792,9 @@ var S = {
     txType:'out',txCurr:'ARS',txCat:'carrefour',txRecur:false,
     qCurr:'ARS',qCat:'otros',
     editCatId:null,editCatColor:'#f5c842',headerCollapsed:false,
+    editGoalId:null,editGoalColor:'#3bc957',
+    obCurrent:0,obTotal:5,
+    barMonths:6,headerCollapseInited:false,
   }
 };
 
@@ -1887,13 +1929,13 @@ function save() {
 
 /* ── SYNC UI ── */
 function setSyncState(state) {
-  var dot   = document.getElementById('syncDot');
-  var label = document.getElementById('syncLabel');
+  var dot   = el('syncDot');
+  var label = el('syncLabel');
   if (!dot) return;
   dot.className   = 'sync-dot ' + state;
   var labels = {syncing:'sincronizando…', synced:'sincronizado', error:'sin conexión', '':'local'};
   label.textContent = labels[state] || state;
-  var cfgStatus = document.getElementById('cfgSyncStatus');
+  var cfgStatus = el('cfgSyncStatus');
   if (cfgStatus) cfgStatus.textContent = labels[state] || state;
 }
 
@@ -1901,15 +1943,15 @@ function setSyncState(state) {
 function showAuth()  {
   // Close any open modals
   ['modalLogout','modalReg','modalQuick','modalCat','modalGoal'].forEach(function(id){
-    var el = document.getElementById(id);
-    if (el) el.classList.remove('open');
+    var modal = document.getElementById(id);
+    if (modal) modal.classList.remove('open');
   });
-  document.getElementById('authScreen').style.display='flex';
-  document.getElementById('mainApp').style.display='none';
+  el('authScreen').style.display='flex';
+  el('mainApp').style.display='none';
 }
 function showApp() {
-  document.getElementById('authScreen').style.display='none';
-  document.getElementById('mainApp').style.display='flex';
+  el('authScreen').style.display='none';
+  el('mainApp').style.display='flex';
   setTimeout(obShow, 400);
 }
 function switchAuthTab(tab) {
@@ -1990,6 +2032,7 @@ fbAuth.onAuthStateChanged(async function(user) {
     applyTheme();
     showApp();
     initHeaderCollapse();
+    initContainerDelegation();
     renderAll();
   } else {
     currentUser = null;
@@ -2076,13 +2119,13 @@ function calcBal(txs){
 
 /* ── RENDER HEADER ── */
 function renderHeader(){
-  document.getElementById('monthLabel').textContent=MONTHS[S.ui.month]+' '+S.ui.year;
+  el('monthLabel').textContent=MONTHS[S.ui.month]+' '+S.ui.year;
   var b=calcBal();
   var sign=b.total<0?'−':'';
-  var el=document.getElementById('balARS');
-  el.textContent=sign+Math.abs(b.total).toLocaleString('es-AR',{maximumFractionDigits:0});
-  el.style.color=b.total<0?'var(--red)':'var(--bright)';
-  var usdRow=document.getElementById('balUSDRow');
+  var balEl=el('balARS');
+  balEl.textContent=sign+Math.abs(b.total).toLocaleString('es-AR',{maximumFractionDigits:0});
+  balEl.style.color=b.total<0?'var(--red)':'var(--bright)';
+  var usdRow=el('balUSDRow');
   var hasMixed=b.uIn>0||b.uOut>0;
   if(hasMixed){
     usdRow.innerHTML='<span>'+(b.aNet>=0?'+':'−')+fARS(b.aNet)+'</span>'+
@@ -2091,16 +2134,15 @@ function renderHeader(){
       '<span style="margin:0 5px;color:var(--border)">·</span>'+
       '<span style="color:var(--muted)">TC $'+S.cfg.usdRate.toLocaleString('es-AR')+'</span>';
   } else { usdRow.innerHTML=''; }
-  document.getElementById('kpiIn').textContent =fARS(b.totalIn);
-  document.getElementById('kpiOut').textContent=fARS(b.totalOut);
-  var saveEl=document.getElementById('kpiSave');
+  el('kpiIn').textContent =fARS(b.totalIn);
+  el('kpiOut').textContent=fARS(b.totalOut);
+  var saveEl=el('kpiSave');
   if(b.totalIn>0){
     var pct=(b.total/b.totalIn*100).toFixed(1);
     saveEl.textContent=pct+'%';
     saveEl.style.color=parseFloat(pct)>=0?'var(--amber)':'var(--red)';
   }else{saveEl.textContent='—';saveEl.style.color='var(--amber)';}
-  // Delta vs previous month
-  var deltaEl = document.getElementById('balDelta');
+  var deltaEl = el('balDelta');
   if (deltaEl) {
     var delta = calcDelta();
     if (delta !== null) {
@@ -2112,10 +2154,13 @@ function renderHeader(){
       deltaEl.className = 'balance-delta';
     }
   }
-  cMain.textContent=sign+fARS(Math.abs(b.total));
-  cMain.style.color=b.total<0?'var(--red)':'var(--bright)';
-  document.getElementById('balCompactIn').textContent ='↑'+fARS(b.totalIn);
-  document.getElementById('balCompactOut').textContent='↓'+fARS(b.totalOut);
+  var cMain=el('balCompactMain');
+  if(cMain){
+    cMain.textContent=sign+fARS(Math.abs(b.total));
+    cMain.style.color=b.total<0?'var(--red)':'var(--bright)';
+  }
+  el('balCompactIn').textContent ='↑'+fARS(b.totalIn);
+  el('balCompactOut').textContent='↓'+fARS(b.totalOut);
 }
 
 /* ── COLLAPSIBLE CARDS ── */
@@ -2237,10 +2282,9 @@ function calcDelta() {
 }
 
 /* ── HEADER COLLAPSE (single-init fix) ── */
-var headerCollapseInited = false;
 function initHeaderCollapse() {
-  if (headerCollapseInited) return;
-  headerCollapseInited = true;
+  if (S.ui.headerCollapseInited) return;
+  S.ui.headerCollapseInited = true;
   var el = document.getElementById('contentArea');
   if (!el) return;
   var sentinel = document.createElement('div');
@@ -2352,7 +2396,7 @@ function renderRecurBanner(){
       '<span style="font-size:18px">'+c.icon+'</span>'+
       '<span class="recur-item-name">'+esc(t.desc||c.label)+'</span>'+
       '<span class="recur-item-amt">'+fmt+'</span>'+
-      '<button class="recur-add-btn" onclick="addRecurTx(\''+t.id+'\')">+ Agregar</button>'+
+      '<button class="recur-add-btn" data-recurid="'+t.id+'">+ Agregar</button>'+
     '</div>';
   }).join('');
 }
@@ -2423,7 +2467,7 @@ function txRow(tx){
   var recurBadge=tx.recurring?'<div class="tx-recur">🔁 recurrente</div>':'';
   var html='<div class="tx-swipe-wrap">'+
     '<div class="tx-delete-bg">🗑️</div>'+
-    '<div class="tx" id="tx-'+tx.id+'" onclick="openEdit(\''+tx.id+'\')">'+
+    '<div class="tx" data-id="'+tx.id+'">'+
       '<div class="tx-icon">'+c.icon+'</div>'+
       '<div class="tx-body"><div class="tx-name">'+esc(desc)+badge+'</div>'+
       '<div class="tx-meta">'+esc(c.label)+'</div>'+recurBadge+'</div>'+
@@ -2448,7 +2492,6 @@ function attachSwipeListeners() {
 var chartDonut = null;
 var chartBar   = null;
 var chartLine  = null;
-var barMonths  = 6;
 
 /* ── CHART COLORS ── */
 function chartTheme() {
@@ -2525,7 +2568,7 @@ function renderDonut() {
 
 function renderBar() {
   var now = new Date();
-  var months = barMonths;
+  var months = S.ui.barMonths;
   var labels=[], incData=[], expData=[];
 
   for(var i=months-1; i>=0; i--) {
@@ -2632,7 +2675,7 @@ document.addEventListener('DOMContentLoaded', function() {
   if(bpr) bpr.addEventListener('click', function(e){
     var chip = e.target.closest('.chart-chip');
     if(!chip) return;
-    barMonths = parseInt(chip.dataset.months);
+    S.ui.barMonths = parseInt(chip.dataset.months);
     bpr.querySelectorAll('.chart-chip').forEach(function(c){
       c.classList.toggle('active', c.dataset.months===chip.dataset.months);
     });
@@ -2683,7 +2726,7 @@ function renderMetas() {
       ? 'Vence '+fmtDate(g.deadline)
       : 'Sin fecha límite';
 
-    return '<div class="goal-item" onclick="openGoalModal(\''+g.id+'\')">' +
+    return '<div class="goal-item" data-id="'+g.id+'">' +
       '<div class="goal-top">' +
         '<div class="goal-name">'+esc(g.name)+'</div>' +
         '<div class="goal-pct" style="color:'+color+'">'+pctDisplay+'</div>' +
@@ -2713,17 +2756,15 @@ function calcSavedForGoal(g) {
 }
 
 /* ── GOAL MODAL ── */
-var editGoalId = null;
-var editGoalColor = GOAL_COLORS[0];
 
 function openGoalModal(id) {
-  editGoalId = id;
+  S.ui.editGoalId = id;
   var existing = id ? S.goals.find(function(g){ return g.id===id; }) : null;
   document.getElementById('modalGoalTitle').textContent = existing ? 'Editar meta' : 'Nueva meta';
   document.getElementById('goalNameInput').value     = existing ? existing.name     : '';
   document.getElementById('goalTargetInput').value   = existing ? existing.target   : '';
   document.getElementById('goalDeadlineInput').value = existing ? (existing.deadline||'') : '';
-  editGoalColor = existing ? (existing.color||GOAL_COLORS[0]) : GOAL_COLORS[0];
+  S.ui.editGoalColor = existing ? (existing.color||GOAL_COLORS[0]) : GOAL_COLORS[0];
   buildGoalColorPicker();
   document.getElementById('delGoalBtn').style.display = existing ? 'block' : 'none';
   document.getElementById('modalGoal').classList.add('open');
@@ -2732,14 +2773,13 @@ function openGoalModal(id) {
 
 function buildGoalColorPicker() {
   document.getElementById('goalColorPicker').innerHTML = GOAL_COLORS.map(function(col){
-    var sel = col === editGoalColor;
-    return '<div class="color-chip'+(sel?' sel':'')+'" style="background:'+col+'" onclick="selGoalColor(\''+col+'\')" '+
-      'onmouseover="this.style.transform=\'scale(1.12)\'" onmouseout="this.style.transform=\'scale(1)\'"></div>';
+    var sel = col === S.ui.editGoalColor;
+    return '<div class="color-chip'+(sel?' sel':'')+'" style="background:'+col+'" data-color="'+col+'" '></div>';
   }).join('');
 }
 
 function selGoalColor(col) {
-  editGoalColor = col;
+  S.ui.editGoalColor = col;
   buildGoalColorPicker();
 }
 
@@ -2750,21 +2790,21 @@ function saveGoal() {
   if(!name)          { toast('⚠️ Ingresá un nombre para la meta'); return; }
   if(!target||target<=0){ toast('⚠️ Ingresá un monto objetivo'); return; }
 
-  if(editGoalId) {
-    var idx = S.goals.findIndex(function(g){ return g.id===editGoalId; });
-    if(idx>=0) S.goals[idx] = Object.assign({},S.goals[idx],{name:name,target:target,deadline:deadline,color:editGoalColor});
+  if(S.ui.editGoalId) {
+    var idx = S.goals.findIndex(function(g){ return g.id===S.ui.editGoalId; });
+    if(idx>=0) S.goals[idx] = Object.assign({},S.goals[idx],{name:name,target:target,deadline:deadline,color:S.ui.editGoalColor});
     toast('✓ Meta actualizada');
   } else {
-    S.goals.push({ id:uid(), name:name, target:target, deadline:deadline, color:editGoalColor, createdAt:todayISO() });
+    S.goals.push({ id:uid(), name:name, target:target, deadline:deadline, color:S.ui.editGoalColor, createdAt:todayISO() });
     toast('✓ Meta creada');
   }
   save(); closeModal('modalGoal'); renderAfterSave('goal');
 }
 
 function deleteGoal() {
-  if(!editGoalId) return;
+  if(!S.ui.editGoalId) return;
   if(!confirm('¿Eliminar esta meta?')) return;
-  S.goals = S.goals.filter(function(g){ return g.id!==editGoalId; });
+  S.goals = S.goals.filter(function(g){ return g.id!==S.ui.editGoalId; });
   save(); closeModal('modalGoal'); toast('🗑️ Meta eliminada'); renderAfterSave('goal');
 }
 
@@ -2800,7 +2840,7 @@ function renderCatMgmt(){
       '</div>'+
       '<div style="display:flex;align-items:center;gap:8px;flex-shrink:0">'+
         '<div style="width:12px;height:12px;border-radius:3px;background:'+c.color+'"></div>'+
-        '<button class="cfg-action" onclick="openCatModal(\''+c.id+'\')">Editar</button>'+
+        '<button class="cfg-action" data-catid="'+c.id+'">Editar</button>'+
       '</div></div>';
   }).join('');
 }
@@ -2895,7 +2935,7 @@ function toggleRecur(){
 function buildChips(){
   var active=S.ui.txCat;
   document.getElementById('catChips').innerHTML=CATS.map(function(c){
-    return'<div class="cat-chip'+(c.id===active?' active':'')+'" data-id="'+c.id+'" onclick="selCat(\''+c.id+'\')">'+c.icon+' '+esc(c.label)+'</div>';
+    return'<div class="cat-chip'+(c.id===active?' active':'')+'" data-id="'+c.id+'">'+c.icon+' '+esc(c.label)+'</div>';
   }).join('');
   setTimeout(function(){var el=document.querySelector('#catChips .cat-chip.active');if(el)el.scrollIntoView({block:'nearest',inline:'center',behavior:'smooth'});},50);
 }
@@ -2944,7 +2984,7 @@ function setQCurr(c){
 };
 function buildQuickGrid(){
   document.getElementById('quickGrid').innerHTML=CATS.map(function(c){
-    return'<div class="quick-tile'+(c.id===S.ui.qCat?' active':'')+'" data-id="'+c.id+'" onclick="selQCat(\''+c.id+'\')">'+
+    return'<div class="quick-tile'+(c.id===S.ui.qCat?' active':'')+'" data-id="'+c.id+'">'+
       '<div class="quick-tile-icon">'+c.icon+'</div>'+
       '<div class="quick-tile-lbl">'+esc(c.label.length>8?c.label.slice(0,7)+'…':c.label)+'</div></div>';
   }).join('');
@@ -2986,7 +3026,7 @@ document.getElementById('modalCat').addEventListener('click',function(e){if(e.ta
 function buildColorPicker(){
   document.getElementById('colorPicker').innerHTML=CAT_COLORS.map(function(col){
     var active=col===S.ui.editCatColor;
-    return'<div onclick="selColor(\''+col+'\')" style="width:28px;height:28px;border-radius:8px;background:'+col+
+    return'<div data-color="'+col+'" style="width:28px;height:28px;border-radius:8px;background:'+col+
       ';cursor:pointer;'+(active?'outline:2px solid var(--bright);outline-offset:2px;':'')+
       'transition:transform .12s" onmouseover="this.style.transform=\'scale(1.12)\'" onmouseout="this.style.transform=\'scale(1)\'"></div>';
   }).join('');
@@ -3091,6 +3131,68 @@ window.saveGoal      = saveGoal;
 window.deleteGoal    = deleteGoal;
 window.selGoalColor  = selGoalColor;
 
+/* ── CONTAINER DELEGATION ── */
+/* One listener per container replaces per-row onclick= in generated HTML */
+function initContainerDelegation() {
+  // TX rows: click → openEdit
+  function txDelegate(e) {
+    var row = e.target.closest('.tx[data-id]');
+    if (row) openEdit(row.dataset.id);
+  }
+  ['histList','recentList'].forEach(function(id) {
+    var el = document.getElementById(id);
+    if (el) el.addEventListener('click', txDelegate);
+  });
+
+  // Category chips in register modal → selCat
+  var chips = document.getElementById('catChips');
+  if (chips) chips.addEventListener('click', function(e) {
+    var c = e.target.closest('.cat-chip[data-id]');
+    if (c) selCat(c.dataset.id);
+  });
+
+  // Quick grid tiles → selQCat
+  var grid = document.getElementById('quickGrid');
+  if (grid) grid.addEventListener('click', function(e) {
+    var t = e.target.closest('.quick-tile[data-id]');
+    if (t) selQCat(t.dataset.id);
+  });
+
+  // Goals list → openGoalModal
+  var goals = document.getElementById('goalsList');
+  if (goals) goals.addEventListener('click', function(e) {
+    var item = e.target.closest('.goal-item[data-id]');
+    if (item) openGoalModal(item.dataset.id);
+  });
+
+  // Cat management → openCatModal
+  var catMgmt = document.getElementById('catMgmtList');
+  if (catMgmt) catMgmt.addEventListener('click', function(e) {
+    var btn = e.target.closest('[data-catid]');
+    if (btn) openCatModal(btn.dataset.catid);
+  });
+
+  // Color pickers → selGoalColor / selColor
+  var gcp = document.getElementById('goalColorPicker');
+  if (gcp) gcp.addEventListener('click', function(e) {
+    var d = e.target.closest('[data-color]');
+    if (d) selGoalColor(d.dataset.color);
+  });
+  var ccp = document.getElementById('colorPicker');
+  if (ccp) ccp.addEventListener('click', function(e) {
+    var d = e.target.closest('[data-color]');
+    if (d) selColor(d.dataset.color);
+  });
+
+  // Recur banner → addRecurTx
+  var rl = document.getElementById('recurList');
+  if (rl) rl.addEventListener('click', function(e) {
+    var btn = e.target.closest('[data-recurid]');
+    if (btn) addRecurTx(btn.dataset.recurid);
+  });
+}
+window.initContainerDelegation = initContainerDelegation;
+
 /* ── EVENT DELEGATION ── */
 (function() {
   var ACTION_MAP = {
@@ -3134,6 +3236,7 @@ window.selGoalColor  = selGoalColor;
 
 /* ── INIT ── */
 // Load local data first so UI has something to show while auth resolves
+cacheDOMRefs();
 loadLocal();
 applyTheme();
 initSessionWatch();
@@ -3285,8 +3388,6 @@ function switchTabV4(name) {
 
 /* ── ONBOARDING ── */
 var OB_KEY = 'finanzapp_ob_done';
-var obCurrent = 0;
-var obTotal   = 5;
 
 function obShow() {
   var done = localStorage.getItem(OB_KEY);
@@ -3296,12 +3397,12 @@ function obShow() {
   if (ob) { ob.style.display='flex'; ob.style.opacity='1'; applyTheme(); }
 }
 function obNext() {
-  obCurrent++;
-  if (obCurrent >= obTotal) { obFinish(); return; }
-  document.querySelectorAll('.ob-slide').forEach(function(s,i){ s.classList.toggle('active',i===obCurrent); });
-  document.querySelectorAll('.ob-dot').forEach(function(d,i){ d.classList.toggle('active',i===obCurrent); });
+  S.ui.obCurrent++;
+  if (S.ui.obCurrent >= S.ui.obTotal) { obFinish(); return; }
+  document.querySelectorAll('.ob-slide').forEach(function(s,i){ s.classList.toggle('active',i===S.ui.obCurrent); });
+  document.querySelectorAll('.ob-dot').forEach(function(d,i){ d.classList.toggle('active',i===S.ui.obCurrent); });
   var btn = document.getElementById('obNextBtn');
-  if (btn) btn.textContent = obCurrent===obTotal-1 ? '¡Empezar!' : 'Siguiente';
+  if (btn) btn.textContent = S.ui.obCurrent===S.ui.obTotal-1 ? '¡Empezar!' : 'Siguiente';
 }
 function obFinish() {
   localStorage.setItem(OB_KEY,'1');
