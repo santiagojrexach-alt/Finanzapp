@@ -6568,7 +6568,7 @@ function toggleRecur(){
   if(S.ui.txRecur)tog.classList.add('on');else tog.classList.remove('on');
 };
 window.openDebtModal    = openDebtModal;
-window.dismissWeekly    = dismissWeekly;
+window.dismissWeekly    = function(){}; /* weekly summary removed */
 window.focusTagInput    = focusTagInput;
 window.addTag           = addTag;
 window.removeTag        = removeTag;
