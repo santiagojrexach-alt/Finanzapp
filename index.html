@@ -309,7 +309,7 @@ body{
   text-align:center;transition:background .12s;user-select:none;
 }
 .emoji-option:hover{background:var(--bg3)}
-.emoji-option.selected{background:rgba(66,212,96,.15)}
+.emoji-option.selected{background:color-mix(in srgb, var(--a2) 15%, transparent)}
 
 /* ── BALANCE CARD content ── */
 .balance-label{
@@ -389,10 +389,10 @@ body{
 .card-hdr-btn{
   font-size:11px;font-weight:700;color:var(--a2);cursor:pointer;
   letter-spacing:.04em;text-transform:none;padding:3px 10px;
-  border-radius:8px;background:rgba(59,201,87,.1);border:none;
+  border-radius:8px;background:color-mix(in srgb, var(--a2) 10%, transparent);border:none;
   transition:background .15s;font-family:'Nunito',sans-serif;
 }
-.card-hdr-btn:hover{background:rgba(59,201,87,.2)}
+.card-hdr-btn:hover{background:color-mix(in srgb, var(--a2) 20%, transparent)}
 
 /* ── PERIOD SUMMARY (Registro) ── */
 .period-summary{
@@ -531,7 +531,7 @@ body{
   transition:all .15s;user-select:none;
 }
 .filter-chip.active{
-  background:rgba(59,201,87,.12);
+  background:color-mix(in srgb, var(--a2) 12%, transparent);
   border-color:var(--a2);color:var(--accent);
 }
 
@@ -642,7 +642,7 @@ input[type=number]{-moz-appearance:textfield}
   font-family:'Nunito',sans-serif;font-size:14px;font-weight:700;
   cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;
   transition:opacity .15s,transform .12s;
-  box-shadow:0 4px 18px rgba(59,201,87,.28);
+  box-shadow:0 4px 18px color-mix(in srgb, var(--a2) 28%, transparent);
 }
 [data-theme="light"] .fab-main{color:#ffffff}
 [data-theme="light"] .nav{background:var(--bg3)}
@@ -718,7 +718,7 @@ input[type=number]{-moz-appearance:textfield}
   font-family:'Nunito',sans-serif;
 }
 .type-btn.sel-out{background:rgba(255,112,112,.1);border-color:var(--red);color:var(--red)}
-.type-btn.sel-in{background:rgba(94,232,122,.1);border-color:var(--accent);color:var(--accent)}
+.type-btn.sel-in{background:color-mix(in srgb, var(--a2) 10%, transparent);border-color:var(--accent);color:var(--accent)}
 
 /* AMOUNT */
 .amount-row{display:flex;gap:8px;margin-bottom:12px}
@@ -784,7 +784,7 @@ input[type=number]{-moz-appearance:textfield}
   cursor:pointer;transition:all .15s;white-space:nowrap;user-select:none;
 }
 .cat-chip.active{
-  background:rgba(59,201,87,.12);border-color:var(--a2);color:var(--accent);
+  background:color-mix(in srgb, var(--a2) 12%, transparent);border-color:var(--a2);color:var(--accent);
 }
 
 /* RECURRING TOGGLE ROW */
@@ -802,7 +802,7 @@ input[type=number]{-moz-appearance:textfield}
   background:var(--a2);border:none;color:#fff;
   font-family:'Nunito',sans-serif;font-size:14px;font-weight:700;
   cursor:pointer;transition:background .15s,opacity .15s;margin-top:4px;
-  box-shadow:0 4px 16px rgba(59,201,87,.25);
+  box-shadow:0 4px 16px color-mix(in srgb, var(--a2) 25%, transparent);
 }
 [data-theme="light"] .save-btn{color:#0a2010}
 .save-btn:hover{opacity:.88}
@@ -832,7 +832,7 @@ input[type=number]{-moz-appearance:textfield}
   min-height:62px;
 }
 .quick-tile:active{transform:scale(.93)}
-.quick-tile.active{background:rgba(59,201,87,.12);border-color:var(--a2)}
+.quick-tile.active{background:color-mix(in srgb, var(--a2) 12%, transparent);border-color:var(--a2)}
 .quick-tile-icon{font-size:20px;line-height:1}
 .quick-tile-lbl{
   font-size:8px;font-weight:700;letter-spacing:.02em;
@@ -913,66 +913,90 @@ input[type=number]{-moz-appearance:textfield}
 /* ── ANALYSIS CONTEXT BAR ── */
 .analysis-context-bar{
   display:flex;align-items:center;justify-content:space-between;
-  padding:8px 18px;background:rgba(66,212,96,.05);
+  padding:8px 18px;background:color-mix(in srgb, var(--a2) 5%, transparent);
   border-bottom:1px solid var(--border);gap:8px;flex-wrap:wrap;
 }
 #analysisContextText{font-weight:700;color:var(--accent);font-size:13px}
 
-/* ── INTERACTIVE TUTORIAL OVERLAY ── */
+/* ── INTERACTIVE TUTORIAL — SPOTLIGHT ── */
 .tutorial-overlay{
-  position:fixed;inset:0;background:var(--overlay);
-  display:none;align-items:center;justify-content:center;
-  z-index:2000;padding:20px;
+  position:fixed;inset:0;z-index:3000;
+  pointer-events:none;display:none;
 }
-.tutorial-overlay.open{display:flex}
-.tutorial-modal-inner{
+.tutorial-overlay.open{display:block}
+
+/* Dark mask with spotlight hole */
+.tutorial-mask{
+  position:absolute;inset:0;
+  background:rgba(0,0,0,.72);
+  transition:all .35s cubic-bezier(.4,0,.2,1);
+}
+
+/* Spotlight ring around highlighted element */
+.tutorial-spotlight{
+  position:absolute;border-radius:14px;
+  box-shadow:0 0 0 4px var(--a2), 0 0 0 9999px rgba(0,0,0,.72);
+  transition:all .35s cubic-bezier(.4,0,.2,1);
+  pointer-events:none;
+  animation:tutorial-pulse 2s ease-in-out infinite;
+}
+@keyframes tutorial-pulse{
+  0%,100%{box-shadow:0 0 0 4px var(--a2), 0 0 0 9999px rgba(0,0,0,.72)}
+  50%    {box-shadow:0 0 0 7px var(--a2), 0 0 0 9999px rgba(0,0,0,.72)}
+}
+
+/* Tooltip card */
+.tutorial-tooltip{
+  position:absolute;
   background:var(--card);border:1px solid var(--border);
-  border-radius:24px;padding:28px 24px 22px;
-  max-width:400px;width:100%;position:relative;
-  box-shadow:0 20px 60px var(--shadow);
+  border-radius:20px;padding:18px 18px 14px;
+  max-width:310px;width:calc(100vw - 40px);
+  box-shadow:0 12px 40px rgba(0,0,0,.5);
+  pointer-events:auto;
+  transition:all .3s cubic-bezier(.4,0,.2,1);
+  z-index:3001;
 }
-.tutorial-close{
-  position:absolute;top:14px;right:14px;
-  background:var(--bg3);border:1px solid var(--border);
-  width:28px;height:28px;border-radius:50%;
-  display:flex;align-items:center;justify-content:center;
-  font-size:13px;cursor:pointer;color:var(--muted);
+.tutorial-tooltip-arrow{
+  position:absolute;width:12px;height:12px;
+  background:var(--card);border:1px solid var(--border);
+  transform:rotate(45deg);
 }
-.tutorial-modal-title{
-  font-size:17px;font-weight:800;color:var(--bright);
-  margin-bottom:12px;line-height:1.3;padding-right:30px;
+.tutorial-tooltip-title{
+  font-size:15px;font-weight:800;color:var(--bright);
+  margin-bottom:8px;line-height:1.3;
 }
-.tutorial-modal-body{
-  font-size:13px;color:var(--muted);line-height:1.7;
-  margin-bottom:20px;
+.tutorial-tooltip-body{
+  font-size:12px;color:var(--muted);line-height:1.65;
+  margin-bottom:14px;
 }
-.tutorial-modal-body strong{color:var(--text)}
-.tutorial-dots{
-  display:flex;gap:6px;justify-content:center;margin-bottom:18px;
-}
-.tutorial-dot{
-  width:7px;height:7px;border-radius:50%;
-  background:var(--border);transition:background .2s;
-}
-.tutorial-dot.active{background:var(--a2);width:20px;border-radius:4px}
-.tutorial-modal-btns{
+.tutorial-tooltip-body strong{color:var(--text)}
+.tutorial-tooltip-footer{
   display:flex;align-items:center;justify-content:space-between;gap:8px;
 }
-.tutorial-btn-pri{
-  padding:10px 20px;border-radius:12px;
-  background:var(--a2);border:none;color:#0a1510;
-  font-family:'Nunito',sans-serif;font-size:13px;font-weight:700;
-  cursor:pointer;transition:opacity .15s;
+.tutorial-dots-row{
+  display:flex;gap:5px;align-items:center;
 }
-.tutorial-btn-pri:hover{opacity:.88}
-.tutorial-btn-sec{
-  padding:10px 16px;border-radius:12px;
-  background:var(--bg3);border:1px solid var(--border);
-  color:var(--text);font-family:'Nunito',sans-serif;
-  font-size:13px;font-weight:600;cursor:pointer;
-  transition:background .15s;
+.tutorial-dot{
+  width:6px;height:6px;border-radius:50%;
+  background:var(--border);transition:all .2s;flex-shrink:0;
 }
-.tutorial-btn-sec:hover{background:var(--border)}
+.tutorial-dot.active{
+  background:var(--a2);width:16px;border-radius:3px;
+}
+.tutorial-btn-next{
+  padding:8px 18px;border-radius:10px;
+  background:var(--a2);border:none;
+  color:#0a1510;font-family:'Nunito',sans-serif;
+  font-size:12px;font-weight:700;cursor:pointer;
+  white-space:nowrap;
+}
+.tutorial-btn-skip{
+  font-size:11px;color:var(--muted);background:none;border:none;
+  cursor:pointer;font-family:'Nunito',sans-serif;padding:4px;
+}
+.tutorial-step-count{
+  font-size:10px;color:var(--muted);font-weight:600;
+}
 .tutorial-steps{display:flex;flex-direction:column;gap:0;padding:4px 0}
 .tutorial-step{
   display:flex;gap:14px;padding:14px 16px;
@@ -1041,7 +1065,7 @@ input[type=number]{-moz-appearance:textfield}
   border:2px solid transparent;transition:all .2s;
 }
 .theme-palette-btn:hover{background:var(--bg3)}
-.theme-palette-btn.active{border-color:var(--a2);background:rgba(66,212,96,.08)}
+.theme-palette-btn.active{border-color:var(--a2);background:color-mix(in srgb, var(--a2) 8%, transparent)}
 .theme-palette-swatch{
   width:36px;height:36px;border-radius:10px;
   display:flex;align-items:center;justify-content:center;
@@ -1115,7 +1139,7 @@ input[type=number]{-moz-appearance:textfield}
   background:var(--a2);border:none;color:#fff;
   font-family:'Nunito',sans-serif;font-size:14px;font-weight:700;
   cursor:pointer;transition:opacity .15s;margin-top:4px;
-  box-shadow:0 4px 16px rgba(59,201,87,.25);
+  box-shadow:0 4px 16px color-mix(in srgb, var(--a2) 25%, transparent);
 }
 [data-theme="light"] .auth-btn{color:#0a2010}
 .auth-btn:hover{opacity:.88}
@@ -1177,7 +1201,7 @@ input[type=number]{-moz-appearance:textfield}
   transition:all .15s;user-select:none;
 }
 .chart-chip.active{
-  background:rgba(59,201,87,.12);border-color:var(--a2);color:var(--accent);
+  background:color-mix(in srgb, var(--a2) 12%, transparent);border-color:var(--a2);color:var(--accent);
 }
 .chart-legend{
   display:flex;flex-wrap:wrap;gap:8px 14px;
@@ -1272,7 +1296,7 @@ input[type=number]{-moz-appearance:textfield}
   background:var(--a2);border:none;color:#fff;
   font-family:'Nunito',sans-serif;font-size:15px;font-weight:700;
   cursor:pointer;transition:opacity .15s;
-  box-shadow:0 4px 16px rgba(59,201,87,.28);
+  box-shadow:0 4px 16px color-mix(in srgb, var(--a2) 28%, transparent);
 }
 [data-theme="light"] .ob-btn{color:#0a2010}
 .ob-btn:hover{opacity:.88}
@@ -1349,7 +1373,7 @@ input[type=number]{-moz-appearance:textfield}
   padding:2px 7px;border-radius:8px;
   vertical-align:middle;cursor:help;
 }
-.delta-pos{background:rgba(66,212,96,.15);color:var(--a2)}
+.delta-pos{background:color-mix(in srgb, var(--a2) 15%, transparent);color:var(--a2)}
 .delta-neg{background:rgba(255,120,120,.15);color:var(--red)}
 .filter-chip-more{background:var(--bg3);border-style:dashed}
 
@@ -1459,7 +1483,7 @@ input[type=number]{-moz-appearance:textfield}
 .tc-date{font-size:10px;color:var(--muted);margin-top:2px}
 /* ── SAVINGS VELOCITY ── */
 .goal-velocity{margin-top:6px;padding:8px 12px;border-radius:10px;font-size:11px;font-weight:600;line-height:1.5}
-.vel-ok{background:rgba(66,212,96,.08);color:var(--a2)}
+.vel-ok{background:color-mix(in srgb, var(--a2) 8%, transparent);color:var(--a2)}
 .vel-slow{background:rgba(255,120,120,.08);color:var(--red)}
 .vel-none{background:var(--bg3);color:var(--muted)}
 /* ══════════════════════════════════════════════
@@ -1496,7 +1520,7 @@ input[type=number]{-moz-appearance:textfield}
   margin-top:8px;font-size:11px;font-weight:600;
   padding:6px 10px;border-radius:8px;
 }
-.budget-proj.ok    {background:rgba(66,212,96,.08);color:var(--a2)}
+.budget-proj.ok    {background:color-mix(in srgb, var(--a2) 8%, transparent);color:var(--a2)}
 .budget-proj.warn  {background:rgba(253,212,74,.08);color:var(--amber)}
 .budget-proj.danger{background:rgba(255,120,120,.08);color:var(--red)}
 
@@ -1514,7 +1538,7 @@ input[type=number]{-moz-appearance:textfield}
 .tags-display:focus-within{border-color:var(--a2)}
 .tag-chip{
   display:inline-flex;align-items:center;gap:4px;
-  background:rgba(66,212,96,.12);border:1px solid rgba(66,212,96,.25);
+  background:color-mix(in srgb, var(--a2) 12%, transparent);border:1px solid color-mix(in srgb, var(--a2) 25%, transparent);
   color:var(--accent);border-radius:8px;
   padding:2px 8px;font-size:11px;font-weight:700;
   white-space:nowrap;
@@ -1547,7 +1571,7 @@ input[type=number]{-moz-appearance:textfield}
 .tx-tags{display:flex;flex-wrap:wrap;gap:3px;margin-top:3px}
 .tx-tag{
   font-size:9px;font-weight:700;color:var(--a2);
-  background:rgba(66,212,96,.08);border-radius:5px;
+  background:color-mix(in srgb, var(--a2) 8%, transparent);border-radius:5px;
   padding:1px 5px;
 }
 
@@ -1564,7 +1588,7 @@ input[type=number]{-moz-appearance:textfield}
   cursor:pointer;transition:all .15s;white-space:nowrap;
 }
 .tag-filter-chip.active{
-  background:rgba(66,212,96,.12);border-color:var(--a2);color:var(--accent);
+  background:color-mix(in srgb, var(--a2) 12%, transparent);border-color:var(--a2);color:var(--accent);
 }
 
 /* ══════════════════════════════════════════════
@@ -1583,7 +1607,7 @@ input[type=number]{-moz-appearance:textfield}
   cursor:pointer;transition:all .15s;white-space:nowrap;
 }
 .cat-filter-chip.active{
-  background:rgba(66,212,96,.12);border-color:var(--a2);color:var(--accent);
+  background:color-mix(in srgb, var(--a2) 12%, transparent);border-color:var(--a2);color:var(--accent);
 }
 
 /* ══════════════════════════════════════════════
@@ -1644,7 +1668,7 @@ input[type=number]{-moz-appearance:textfield}
 .weekly-card::before{
   content:'';position:absolute;top:-20px;right:-20px;
   width:80px;height:80px;border-radius:50%;
-  background:rgba(66,212,96,.06);
+  background:color-mix(in srgb, var(--a2) 6%, transparent);
 }
 .weekly-close{
   position:absolute;top:12px;right:14px;
@@ -1744,7 +1768,7 @@ input[type=number]{-moz-appearance:textfield}
   cursor:pointer;transition:background .15s;font-family:'Nunito',sans-serif;
 }
 .inst-btn:hover{background:var(--border)}
-.inst-btn.primary{background:rgba(66,212,96,.1);border-color:rgba(66,212,96,.3);color:var(--accent)}
+.inst-btn.primary{background:rgba(66,212,96,.1);border-color:color-mix(in srgb, var(--a2) 30%, transparent);color:var(--accent)}
 
 /* Ahorro tab sections */
 .ahorro-section-title{
@@ -1762,7 +1786,7 @@ input[type=number]{-moz-appearance:textfield}
   margin-top:8px;padding:8px 10px;border-radius:10px;
   font-size:12px;font-weight:600;
 }
-.ahorro-vs-diff.ok{background:rgba(66,212,96,.08);color:var(--a2)}
+.ahorro-vs-diff.ok{background:color-mix(in srgb, var(--a2) 8%, transparent);color:var(--a2)}
 .ahorro-vs-diff.warn{background:rgba(255,120,120,.08);color:var(--red)}
 </style>
 </head>
@@ -3472,6 +3496,8 @@ function renderResumen(){
   renderGlobalBudget();
   renderSavingsGoal();
   /* weekly summary disabled */
+
+  renderPmSummaryInicio();
 }
 
 function renderCats(){
@@ -3699,6 +3725,8 @@ function renderAnalysis() {
   renderLine();
   renderCatEvolution();
   renderPmSummary();
+
+  updateAnalysisContext();
 }
 
 function renderDonut() {
@@ -3878,7 +3906,7 @@ function renderPortfolioVsMeta() {
           label: 'Portfolio real',
           data: portfolioData,
           borderColor: 'rgba(66,212,96,1)',
-          backgroundColor: 'rgba(66,212,96,.08)',
+          backgroundColor: 'color-mix(in srgb, var(--a2) 8%, transparent)',
           borderWidth: 2.5,
           pointBackgroundColor: 'rgba(66,212,96,1)',
           pointRadius: 3,
@@ -5921,54 +5949,81 @@ document.addEventListener('click', function(e) {
 });
 
 /* ── INTERACTIVE TUTORIAL ── */
+/* ══════════════════════════════════════════════════════
+   TUTORIAL INTERACTIVO — SPOTLIGHT
+   ══════════════════════════════════════════════════════ */
+var TUTORIAL_KEY = 'finanzapp_tutorial_done_v2';
+var tutorialCurrentStep = 0;
+var tutorialSpotlightTimer = null;
+
 var TUTORIAL_STEPS = [
   {
     title: '👋 Bienvenido a FinanzApp',
-    body: 'Esta guía rápida te muestra cómo usar las funciones principales. Son 6 pasos, podés saltear cualquiera.',
-    action: null,
+    body: 'Esta guía te muestra las funciones principales en <strong>6 pasos</strong>. Podés saltar en cualquier momento.',
+    target: null, // no spotlight — centered modal
+    tab: null,
   },
   {
-    title: '💸 Registrá un gasto',
-    body: 'Tocá <strong>+ Nuevo movimiento</strong> para el registro completo con categoría, medio de pago, etiquetas y fecha. O usá el botón <strong>⚡</strong> para registro rápido: solo monto y categoría.',
-    action: null,
+    title: '💸 Registrá un movimiento',
+    body: 'Tocá <strong>+ Nuevo movimiento</strong> para registrar un ingreso o gasto con categoría, medio de pago y fecha. El botón <strong>⚡</strong> es el registro rápido: solo monto y categoría.',
+    target: '.fab-main',
+    tab: 'resumen',
+    position: 'above',
   },
   {
-    title: '📊 Navegá los tabs',
-    body: '<strong>Inicio</strong>: balance del mes con KPIs.<br><strong>Historial</strong>: todos tus movimientos con filtros y búsqueda.<br><strong>Análisis</strong>: gráficos por categoría y evolución.<br><strong>Ahorro</strong>: portfolio de instrumentos y metas.<br><strong>Deudas</strong>: seguimiento de préstamos.',
-    action: null,
+    title: '📊 Tab Historial',
+    body: 'Todos tus movimientos con búsqueda, filtros por mes y año, y agrupación por día. Deslizá una fila hacia la izquierda para eliminar.',
+    target: '[data-tab="registro"]',
+    tab: 'registro',
+    position: 'below',
   },
   {
-    title: '💳 Medios de pago',
-    body: 'Configurá tus tarjetas en <strong>Config → Finanzas</strong>. Al registrar un gasto elegís con qué pagaste. En Análisis podés ver el gasto total por tarjeta del mes.',
-    action: { label: 'Ir a Config', tab: 'config' },
+    title: '📈 Tab Análisis',
+    body: 'Gráficos de gastos por categoría, evolución mensual, gastos por medio de pago y evolución de una categoría específica.',
+    target: '[data-tab="analisis"]',
+    tab: 'analisis',
+    position: 'below',
   },
   {
-    title: '🏦 Portfolio de ahorro',
-    body: 'En el tab <strong>Ahorro</strong> registrás tus instrumentos financieros (FCI, acciones, dólares, etc.) con depósitos, retiros y valuaciones periódicas.',
-    action: { label: 'Ver Portfolio', tab: 'ahorro' },
+    title: '🏦 Tab Ahorro',
+    body: 'Registrá tus instrumentos de ahorro (FCI, acciones, dólares, etc.). Actualizá el valor periódicamente con <strong>📊 Valuar</strong> para ver tu rendimiento real.',
+    target: '[data-tab="ahorro"]',
+    tab: 'ahorro',
+    position: 'below',
+  },
+  {
+    title: '⚙️ Configuración',
+    body: 'Configurá tu ingreso mensual, meta de ahorro, presupuesto, medios de pago y colores. Todo en un solo lugar.',
+    target: '[data-tab="config"]',
+    tab: 'config',
+    position: 'below',
   },
   {
     title: '✅ ¡Listo!',
-    body: 'Ya sabés lo esencial. Podés volver a este tutorial en <strong>Config → Ayuda</strong> cuando quieras.<br><br>Para instalar como app en el celular: en Chrome tocá <strong>⋮ → Agregar a pantalla de inicio</strong>.',
-    action: null,
-  }
+    body: 'Ya conocés lo esencial. Podés volver a este tutorial en <strong>⚙️ → Ayuda</strong>.<br><br>Para instalar como app: <strong>Chrome → ⋮ → Agregar a pantalla de inicio</strong>.',
+    target: null,
+    tab: null,
+  },
 ];
-
-var tutorialCurrentStep = 0;
-var TUTORIAL_KEY = 'finanzapp_tutorial_done';
 
 function showTutorial() {
   tutorialCurrentStep = 0;
-  renderTutorialStep();
   document.getElementById('tutorialOverlay').classList.add('open');
+  renderTutorialStep();
 }
 window.showTutorial = showTutorial;
 
 function closeTutorial() {
   document.getElementById('tutorialOverlay').classList.remove('open');
+  clearSpotlight();
   localStorage.setItem(TUTORIAL_KEY, '1');
 }
 window.closeTutorial = closeTutorial;
+
+function clearSpotlight() {
+  var sp = document.getElementById('tutorialSpotlight');
+  if (sp) { sp.style.display = 'none'; }
+}
 
 function tutorialNext() {
   if (tutorialCurrentStep < TUTORIAL_STEPS.length - 1) {
@@ -5980,51 +6035,90 @@ function tutorialNext() {
 }
 window.tutorialNext = tutorialNext;
 
-function tutorialPrev() {
-  if (tutorialCurrentStep > 0) {
-    tutorialCurrentStep--;
-    renderTutorialStep();
+function renderTutorialStep() {
+  var step  = TUTORIAL_STEPS[tutorialCurrentStep];
+  var total = TUTORIAL_STEPS.length;
+  if (!step) return;
+
+  // Switch to relevant tab
+  if (step.tab) switchTab(step.tab);
+
+  // Update tooltip content
+  document.getElementById('tutorialTitle').innerHTML = step.title;
+  document.getElementById('tutorialBody').innerHTML  = step.body;
+  document.getElementById('tutorialNextBtn').textContent =
+    tutorialCurrentStep === total-1 ? '¡Listo! ✓' : 'Siguiente →';
+
+  // Dots
+  document.getElementById('tutorialDots').innerHTML =
+    TUTORIAL_STEPS.map(function(_,i){
+      return '<div class="tutorial-dot'+(i===tutorialCurrentStep?' active':'')+'"></div>';
+    }).join('');
+
+  // Position spotlight and tooltip
+  if (step.target) {
+    setTimeout(function() { positionTutorialStep(step); }, 350); // wait for tab switch
+  } else {
+    clearSpotlight();
+    centerTooltip();
   }
 }
-window.tutorialPrev = tutorialPrev;
 
-function tutorialGoToTab(tab) {
-  switchTab(tab);
-  closeTutorial();
+function positionTutorialStep(step) {
+  var target = document.querySelector(step.target);
+  var sp     = document.getElementById('tutorialSpotlight');
+  var tt     = document.getElementById('tutorialTooltip');
+  if (!target || !sp || !tt) { centerTooltip(); return; }
+
+  var rect = target.getBoundingClientRect();
+  var pad  = 8;
+
+  // Position spotlight
+  sp.style.display = 'block';
+  sp.style.left    = (rect.left - pad) + 'px';
+  sp.style.top     = (rect.top  - pad) + 'px';
+  sp.style.width   = (rect.width  + pad*2) + 'px';
+  sp.style.height  = (rect.height + pad*2) + 'px';
+  sp.style.borderRadius = (rect.height > 40 ? '14px' : '12px');
+
+  // Position tooltip: above or below target
+  var vw = window.innerWidth;
+  var vh = window.innerHeight;
+  var ttW = Math.min(310, vw - 40);
+  tt.style.width = ttW + 'px';
+
+  var above = step.position === 'above' || (rect.top > vh * 0.6);
+  if (above) {
+    // tooltip above target
+    var topPos = rect.top - pad - 16;
+    tt.style.bottom = 'auto';
+    // measure tooltip height after render
+    var ttH = tt.offsetHeight || 160;
+    tt.style.top = Math.max(10, topPos - ttH) + 'px';
+  } else {
+    // tooltip below target
+    tt.style.top = (rect.bottom + pad + 12) + 'px';
+  }
+  // Horizontal: centered on target, clamped to viewport
+  var leftPos = rect.left + rect.width/2 - ttW/2;
+  tt.style.left = Math.max(10, Math.min(vw - ttW - 10, leftPos)) + 'px';
 }
-window.tutorialGoToTab = tutorialGoToTab;
 
-function renderTutorialStep() {
-  var step = TUTORIAL_STEPS[tutorialCurrentStep];
-  var total = TUTORIAL_STEPS.length;
-  var el = document.getElementById('tutorialContent');
-  if (!el || !step) return;
-
-  var dots = TUTORIAL_STEPS.map(function(_, i){
-    return '<div class="tutorial-dot'+(i===tutorialCurrentStep?' active':'')+'"></div>';
-  }).join('');
-
-  el.innerHTML =
-    '<div class="tutorial-modal-inner">'+
-      '<button class="tutorial-close" onclick="closeTutorial()">✕</button>'+
-      '<div class="tutorial-modal-title">'+step.title+'</div>'+
-      '<div class="tutorial-modal-body">'+step.body+'</div>'+
-      '<div class="tutorial-dots">'+dots+'</div>'+
-      '<div class="tutorial-modal-btns">'+
-        (tutorialCurrentStep>0?'<button class="tutorial-btn-sec" onclick="tutorialPrev()">← Anterior</button>':'<div></div>')+
-        '<div style="display:flex;gap:8px">'+
-          (step.action?'<button class="tutorial-btn-sec" onclick="tutorialGoToTab(\''+step.action.tab+'\')">'+step.action.label+'</button>':'')+
-          '<button class="tutorial-btn-pri" onclick="tutorialNext()">'+
-            (tutorialCurrentStep===total-1?'Finalizar':'Siguiente →')+'</button>'+
-        '</div>'+
-      '</div>'+
-    '</div>';
+function centerTooltip() {
+  var tt = document.getElementById('tutorialTooltip');
+  if (!tt) return;
+  var vw = window.innerWidth;
+  var vh = window.innerHeight;
+  var ttW = Math.min(320, vw - 40);
+  tt.style.width  = ttW + 'px';
+  tt.style.left   = Math.max(10, (vw - ttW) / 2) + 'px';
+  tt.style.top    = Math.max(10, (vh - 260) / 2) + 'px';
 }
 
-// Auto-show tutorial for new users
+// Auto-show for new users
 fbAuth.onAuthStateChanged(function(user) {
   if (user && !localStorage.getItem(TUTORIAL_KEY)) {
-    setTimeout(showTutorial, 1500);
+    setTimeout(showTutorial, 1800);
   }
 });
 
@@ -6295,25 +6389,27 @@ function updateAnalysisContext() {
 window.updateAnalysisContext = updateAnalysisContext;
 
 /* Wire into renderResumen */
-var _renderResumenPre24 = renderResumen;
-function renderResumen() {
-  _renderResumenPre24();
-  renderPmSummaryInicio();
-}
-window.renderResumen = renderResumen;
+/* renderPmSummaryInicio merged into base renderResumen */
 
 /* Wire into renderAnalysis — but only add context update, not duplicate renderPmSummary */
-var _renderAnalysisPre24 = renderAnalysis;
-function renderAnalysis() {
-  _renderAnalysisPre24();
-  updateAnalysisContext();
-}
-window.renderAnalysis = renderAnalysis;
+/* updateAnalysisContext merged into base renderAnalysis */
 
 </script>
-<!-- TUTORIAL OVERLAY -->
-<div class="tutorial-overlay" id="tutorialOverlay">
-  <div id="tutorialContent"></div>
+<!-- TUTORIAL OVERLAY — spotlight mode -->
+<div id="tutorialOverlay" class="tutorial-overlay">
+  <div class="tutorial-mask" id="tutorialMask"></div>
+  <div class="tutorial-spotlight" id="tutorialSpotlight"></div>
+  <div class="tutorial-tooltip" id="tutorialTooltip">
+    <div class="tutorial-tooltip-title" id="tutorialTitle"></div>
+    <div class="tutorial-tooltip-body" id="tutorialBody"></div>
+    <div class="tutorial-tooltip-footer">
+      <div class="tutorial-dots-row" id="tutorialDots"></div>
+      <div style="display:flex;align-items:center;gap:8px">
+        <button class="tutorial-btn-skip" onclick="closeTutorial()">Saltar</button>
+        <button class="tutorial-btn-next" id="tutorialNextBtn" onclick="tutorialNext()">Siguiente →</button>
+      </div>
+    </div>
+  </div>
 </div>
 
 </body>
