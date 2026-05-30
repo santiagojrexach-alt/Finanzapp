@@ -68,89 +68,31 @@
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 
 /* ══════════════════════════════════════════════
-   COLOR PALETTES — data-color attribute
-   accent-focused vars: --p1 (primary) --p2 (bright)
+   COLOR ACCENTS — 5 pastel accent colors
+   Only --accent, --a2, --bright change.
+   Background, cards, borders stay identical.
    ══════════════════════════════════════════════ */
 
-/* Verde esmeralda (default) */
-[data-color="verde"],[data-color="verde"][data-theme="dark"]{
-  --p-bg:#0e1a0f;--p-bg2:#131f14;--p-bg3:#192619;
-  --p-card:#1a2b1b;--p-card2:#203022;--p-border:#2c4432;
-  --p-accent:#6ef08a;--p-a2:#42d460;--p-muted:#527a5a;--p-dim:#78aa82;
-}
-[data-color="verde"][data-theme="light"]{
-  --p-bg:#f5fdf6;--p-bg2:#eaf7ec;--p-bg3:#d8f0dc;
-  --p-card:#ffffff;--p-card2:#f0faf1;--p-border:#b8ddbf;
-  --p-accent:#0d7a28;--p-a2:#0f9933;--p-muted:#4a7a52;--p-dim:#1e5228;
-}
+/* Verde (default) */
+[data-color="verde"]{--accent:#6ef08a;--a2:#42d460;--bright-accent:#9ffcb0}
+[data-color="verde"][data-theme="light"]{--accent:#0d7a28;--a2:#0f9933;--bright-accent:#0d7a28}
 
-/* Azul océano */
-[data-color="azul"],[data-color="azul"][data-theme="dark"]{
-  --p-bg:#0d1520;--p-bg2:#111c28;--p-bg3:#162030;
-  --p-card:#1a2535;--p-card2:#1e2c3e;--p-border:#2a3d56;
-  --p-accent:#70c8ff;--p-a2:#3aadff;--p-muted:#4a7090;--p-dim:#7aa8c8;
-}
-[data-color="azul"][data-theme="light"]{
-  --p-bg:#f4f8fd;--p-bg2:#e8f2fb;--p-bg3:#d4e8f8;
-  --p-card:#ffffff;--p-card2:#eef5fc;--p-border:#b0ccee;
-  --p-accent:#0560c0;--p-a2:#1470d8;--p-muted:#4a70a0;--p-dim:#1a4880;
-}
+/* Azul celeste */
+[data-color="azul"]{--accent:#7ac8ff;--a2:#3aadff;--bright-accent:#a8d8ff}
+[data-color="azul"][data-theme="light"]{--accent:#0560c0;--a2:#1470d8;--bright-accent:#0560c0}
 
-/* Púrpura violeta */
-[data-color="purpura"],[data-color="purpura"][data-theme="dark"]{
-  --p-bg:#130d1e;--p-bg2:#181228;--p-bg3:#1e1632;
-  --p-card:#221840;--p-card2:#261c48;--p-border:#362858;
-  --p-accent:#c8a0ff;--p-a2:#a870ff;--p-muted:#6a5080;--p-dim:#9878c0;
-}
-[data-color="purpura"][data-theme="light"]{
-  --p-bg:#f7f4ff;--p-bg2:#efe8ff;--p-bg3:#e0d4ff;
-  --p-card:#ffffff;--p-card2:#f4f0ff;--p-border:#c4b0ee;
-  --p-accent:#6820c0;--p-a2:#7c30d8;--p-muted:#6848a0;--p-dim:#3a1880;
-}
+/* Lila */
+[data-color="lila"]{--accent:#c8a0ff;--a2:#a870ff;--bright-accent:#dcc0ff}
+[data-color="lila"][data-theme="light"]{--accent:#6820c0;--a2:#7c30d8;--bright-accent:#6820c0}
 
-/* Naranja ámbar */
-[data-color="naranja"],[data-color="naranja"][data-theme="dark"]{
-  --p-bg:#1e1108;--p-bg2:#261508;--p-bg3:#301a0a;
-  --p-card:#382010;--p-card2:#402815;--p-border:#583818;
-  --p-accent:#ffb840;--p-a2:#ff9810;--p-muted:#8a6030;--p-dim:#c08850;
-}
-[data-color="naranja"][data-theme="light"]{
-  --p-bg:#fff9f0;--p-bg2:#fff3e0;--p-bg3:#ffe8c0;
-  --p-card:#ffffff;--p-card2:#fff7ea;--p-border:#f0c888;
-  --p-accent:#c06000;--p-a2:#d87010;--p-muted:#8a5020;--p-dim:#603010;
-}
+/* Naranja */
+[data-color="naranja"]{--accent:#ffcc70;--a2:#ffaa20;--bright-accent:#ffe0a0}
+[data-color="naranja"][data-theme="light"]{--accent:#c06000;--a2:#d87010;--bright-accent:#c06000}
 
-/* Gris neutro */
-[data-color="neutro"],[data-color="neutro"][data-theme="dark"]{
-  --p-bg:#111214;--p-bg2:#161718;--p-bg3:#1c1e20;
-  --p-card:#202224;--p-card2:#252729;--p-border:#323638;
-  --p-accent:#a0b8c8;--p-a2:#78a0b8;--p-muted:#58686e;--p-dim:#88a0a8;
-}
-[data-color="neutro"][data-theme="light"]{
-  --p-bg:#f6f7f8;--p-bg2:#edeef0;--p-bg3:#e0e2e6;
-  --p-card:#ffffff;--p-card2:#f2f3f5;--p-border:#c8ccd2;
-  --p-accent:#2060a0;--p-a2:#2878c0;--p-muted:#607080;--p-dim:#304050;
-}
+/* Rojo */
+[data-color="rojo"]{--accent:#ff8888;--a2:#ff5555;--bright-accent:#ffaaaa}
+[data-color="rojo"][data-theme="light"]{--accent:#c01818;--a2:#d82828;--bright-accent:#c01818}
 
-/* Apply palette vars to semantic vars */
-[data-color]{
-  --bg:var(--p-bg);--bg2:var(--p-bg2);--bg3:var(--p-bg3);
-  --card:var(--p-card);--card2:var(--p-card2);--border:var(--p-border);
-  --accent:var(--p-accent);--a2:var(--p-a2);
-  --muted:var(--p-muted);--dim:var(--p-dim);
-}
-
-/* Light mode overrides for non-green colors */
-[data-color][data-theme="light"]{
-  --text:#0e1214;--bright:#060a0e;
-  --shadow:rgba(0,0,0,.12);--input-bg:var(--p-bg3);
-  --overlay:rgba(0,0,0,.4);
-}
-[data-color][data-theme="dark"]{
-  --text:#ccd8e0;--bright:#f0f5f8;
-  --shadow:rgba(0,0,0,.55);--input-bg:var(--p-bg2);
-  --overlay:rgba(0,0,0,.75);
-}
 
 /* ══════════════════════════════════════════════
    DARK THEME (default verde — kept for fallback)
@@ -1321,8 +1263,8 @@ body{
 .cfg-section .cfg-hdr.collapsed::after{transform:rotate(0deg)}
 .cfg-body{
   overflow:hidden;
-  transition:max-height .32s cubic-bezier(.4,0,.2,1),opacity .25s;
-  max-height:1200px;opacity:1;
+  transition:max-height .35s cubic-bezier(.4,0,.2,1),opacity .25s;
+  max-height:4000px;opacity:1;
 }
 .cfg-body.collapsed{max-height:0;opacity:0}
 
@@ -2094,10 +2036,6 @@ body{
     </div>
     <div class="tab-panel" id="tab-ahorro">
 
-      <!-- Resumen: ahorro calculado vs real -->
-      <div class="ahorro-section-title">Resumen de ahorro</div>
-      <div class="ahorro-vs" id="ahorroVsCard"></div>
-
       <!-- Portfolio de instrumentos -->
       <div class="ahorro-section-title">Portfolio</div>
       <div class="portfolio-summary" id="portfolioSummary">
@@ -2226,27 +2164,27 @@ body{
             </div>
           </div>
           <div class="cfg-row" style="flex-direction:column;align-items:flex-start;gap:4px">
-            <div class="cfg-lbl">Color del tema</div>
+            <div class="cfg-lbl">Color de acento</div>
             <div class="theme-palette-grid" id="themePaletteGrid">
               <div class="theme-palette-btn active" data-palette="verde" onclick="setColorPalette('verde')">
-                <div class="theme-palette-swatch" style="background:linear-gradient(135deg,#1a2b1b,#42d460)">🌿</div>
+                <div class="theme-palette-swatch" style="background:#42d460">🟢</div>
                 <span class="theme-palette-lbl">Verde</span>
               </div>
               <div class="theme-palette-btn" data-palette="azul" onclick="setColorPalette('azul')">
-                <div class="theme-palette-swatch" style="background:linear-gradient(135deg,#1a2535,#3aadff)">🌊</div>
+                <div class="theme-palette-swatch" style="background:#3aadff">🔵</div>
                 <span class="theme-palette-lbl">Azul</span>
               </div>
-              <div class="theme-palette-btn" data-palette="purpura" onclick="setColorPalette('purpura')">
-                <div class="theme-palette-swatch" style="background:linear-gradient(135deg,#221840,#a870ff)">🔮</div>
-                <span class="theme-palette-lbl">Púrpura</span>
+              <div class="theme-palette-btn" data-palette="lila" onclick="setColorPalette('lila')">
+                <div class="theme-palette-swatch" style="background:#a870ff">🟣</div>
+                <span class="theme-palette-lbl">Lila</span>
               </div>
               <div class="theme-palette-btn" data-palette="naranja" onclick="setColorPalette('naranja')">
-                <div class="theme-palette-swatch" style="background:linear-gradient(135deg,#382010,#ff9810)">🔥</div>
+                <div class="theme-palette-swatch" style="background:#ffaa20">🟠</div>
                 <span class="theme-palette-lbl">Naranja</span>
               </div>
-              <div class="theme-palette-btn" data-palette="neutro" onclick="setColorPalette('neutro')">
-                <div class="theme-palette-swatch" style="background:linear-gradient(135deg,#202224,#78a0b8)">🩶</div>
-                <span class="theme-palette-lbl">Neutro</span>
+              <div class="theme-palette-btn" data-palette="rojo" onclick="setColorPalette('rojo')">
+                <div class="theme-palette-swatch" style="background:#ff5555">🔴</div>
+                <span class="theme-palette-lbl">Rojo</span>
               </div>
             </div>
           </div>
@@ -3200,6 +3138,8 @@ function toggleCard(hdr) {
         if (id === 'portfolioVsMetaChart') renderPortfolioVsMeta();
         if (id === 'catEvoChart')          renderCatEvolution();
       }
+      // Non-canvas cards with dynamic content
+      if (body.querySelector('#pmSummaryList')) renderPmSummary();
     }
   }
 }
@@ -4311,7 +4251,7 @@ function applyTheme(){
   document.documentElement.setAttribute('data-theme', S.cfg.theme);
   document.documentElement.setAttribute('data-color', palette);
   var meta=document.getElementById('themeColorMeta');
-  if(meta) meta.content = dark ? '#111820' : '#f4f6f8';
+  if(meta) meta.content = dark ? '#0e1a0f' : '#f4f6f8';
   var btn=document.getElementById('themeBtn');
   if(btn) btn.textContent = dark ? '☀️' : '🌙';
 }
@@ -5203,7 +5143,6 @@ function getInstrumentDeposited(inst) {
 
 /* ── RENDER AHORRO TAB ── */
 function renderAhorro() {
-  renderAhorroVs();
   renderPortfolioVsMeta();
   renderPortfolio();
   renderMetas();
