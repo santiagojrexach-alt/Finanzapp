@@ -3636,6 +3636,7 @@ function renderAnalysis() {
   renderBar();
   renderLine();
   renderCatEvolution();
+  renderPmSummary();
 }
 
 function renderDonut() {
@@ -3969,6 +3970,7 @@ function openGoalModal(id) {
   document.getElementById('goalDeadlineInput').value = existing ? (existing.deadline||'') : '';
   S.ui.editGoalColor = existing ? (existing.color||GOAL_COLORS[0]) : GOAL_COLORS[0];
   buildGoalColorPicker();
+  buildGoalPortfolioLinks(existing);
   document.getElementById('delGoalBtn').style.display = existing ? 'block' : 'none';
   document.getElementById('modalGoal').classList.add('open');
   setTimeout(function(){ document.getElementById('goalNameInput').focus(); }, 200);
@@ -3993,16 +3995,23 @@ function saveGoal() {
   if(!name)          { toast('⚠️ Ingresá un nombre para la meta'); return; }
   if(!target||target<=0){ toast('⚠️ Ingresá un monto objetivo'); return; }
 
+  // Read portfolio links
+  var links = [];
+  document.querySelectorAll('#goalPortfolioLinks input[data-instid]').forEach(function(inp) {
+    var pct = parseFloat(inp.value)||0;
+    if (pct>0) links.push({instId:inp.dataset.instid, pct:Math.min(100,pct)});
+  });
+
   if(S.ui.editGoalId) {
     var idx = S.goals.findIndex(function(g){ return g.id===S.ui.editGoalId; });
-    if(idx>=0) S.goals[idx] = Object.assign({},S.goals[idx],{name:name,target:target,deadline:deadline,color:S.ui.editGoalColor});
+    if(idx>=0) S.goals[idx] = Object.assign({},S.goals[idx],{name:name,target:target,deadline:deadline,color:S.ui.editGoalColor,portfolioLinks:links});
     toast('✓ Meta actualizada');
   } else {
     S.goals.push({
-    id:uid(), name:name, target:target, deadline:deadline,
-    color:S.ui.editGoalColor, createdAt:todayISO(),
-    portfolioLinks: [] // [{instId, pct}]
-  });
+      id:uid(), name:name, target:target, deadline:deadline,
+      color:S.ui.editGoalColor, createdAt:todayISO(),
+      portfolioLinks:links
+    });
     toast('✓ Meta creada');
   }
   save(); closeModal('modalGoal'); renderAfterSave('goal');
@@ -4163,6 +4172,38 @@ function openModal(type,id){
   setTimeout(function(){document.getElementById('amtInput').focus();},200);
 };
 function saveTx(){
+  // Installments mode check first
+  var instChk = document.getElementById('installmentsCheck');
+  if (instChk && instChk.checked) {
+    var amt2 = parseFloat(document.getElementById('amtInput').value);
+    if (!amt2||amt2<=0) { toast('⚠️ Ingresá un monto válido'); return; }
+    var n = parseInt(document.getElementById('installmentsCount').value)||1;
+    if (n < 2) { toast('⚠️ Ingresá al menos 2 cuotas'); return; }
+    var desc2  = document.getElementById('descInput').value.trim();
+    var dateVal = document.getElementById('dateInput').value || todayISO();
+    var tags2  = currentTxTags.slice();
+    var pmSel2 = document.getElementById('pmSelect');
+    var pm2    = pmSel2 ? pmSel2.value : '';
+    var cuota  = Math.round(amt2 / n * 100) / 100;
+    var parts2 = dateVal.split('-').map(Number);
+    var groupId = uid();
+    for (var i = 0; i < n; i++) {
+      var d2 = new Date(parts2[0], parts2[1]-1+i, parts2[2]||1);
+      var txDate = d2.getFullYear()+'-'+String(d2.getMonth()+1).padStart(2,'0')+'-'+String(d2.getDate()).padStart(2,'0');
+      S.txs.push({
+        id:uid(), type:S.ui.txType, amt:cuota, curr:S.ui.txCurr,
+        cat:S.ui.txCat, desc:(desc2||S.ui.txCat)+' (cuota '+(i+1)+'/'+n+')',
+        date:txDate, ts:Date.now()+i, recurring:false, note:'',
+        tags:tags2.slice(), paymentMethod:pm2, installmentGroup:groupId
+      });
+    }
+    currentTxTags=[]; renderTagChips();
+    vibrate(30); save(); closeModal('modalReg');
+    toast('✓ '+n+' cuotas de '+fARS(cuota)+' creadas');
+    renderAfterSave('tx');
+    return;
+  }
+  // Normal save
   var amt=parseFloat(document.getElementById('amtInput').value);
   if(!amt||amt<=0){toast('⚠️ Ingresá un monto válido');return;}
   var desc=document.getElementById('descInput').value.trim();
@@ -5765,13 +5806,7 @@ document.addEventListener('click', function(e) {
 
 /* ══ WIRE NEW FEATURES INTO EXISTING FNS ══ */
 
-// renderAnalysis: add pm summary
-var __renderAnalysisPrev = renderAnalysis;
-function renderAnalysis() {
-  __renderAnalysisPrev();
-  renderPmSummary();
-}
-window.renderAnalysis = renderAnalysis;
+/* renderAnalysis merged above */
 
 /* ── CAT EVOLUTION SEARCH ── */
 function onCatEvoSearch(val) {
@@ -5957,39 +5992,7 @@ document.addEventListener('input', function(e) {
   }
 });
 
-/* Wrap saveTx to handle installments */
-var _saveTxPre23 = saveTx;
-function saveTx() {
-  var chk = document.getElementById('installmentsCheck');
-  if (!chk || !chk.checked) { _saveTxPre23(); return; }
-  var amt = parseFloat(document.getElementById('amtInput').value);
-  if (!amt||amt<=0) { toast('⚠️ Ingresá un monto válido'); return; }
-  var n = parseInt(document.getElementById('installmentsCount').value)||1;
-  if (n < 2) { toast('⚠️ Ingresá al menos 2 cuotas'); return; }
-  var desc  = document.getElementById('descInput').value.trim();
-  var dateVal = document.getElementById('dateInput').value || todayISO();
-  var tags  = currentTxTags.slice();
-  var pmSel = document.getElementById('pmSelect');
-  var pm    = pmSel ? pmSel.value : '';
-  var cuota = Math.round(amt / n * 100) / 100;
-  var parts = dateVal.split('-').map(Number);
-  var groupId = uid();
-  for (var i = 0; i < n; i++) {
-    var d = new Date(parts[0], parts[1]-1+i, parts[2]||1);
-    var txDate = d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
-    S.txs.push({
-      id:uid(), type:S.ui.txType, amt:cuota, curr:S.ui.txCurr,
-      cat:S.ui.txCat, desc:(desc||S.ui.txCat)+' (cuota '+(i+1)+'/'+n+')',
-      date:txDate, ts:Date.now()+i, recurring:false, note:'',
-      tags:tags.slice(), paymentMethod:pm, installmentGroup:groupId
-    });
-  }
-  currentTxTags=[]; renderTagChips();
-  vibrate(30); save(); closeModal('modalReg');
-  toast('✓ '+n+' cuotas de '+fARS(cuota)+' creadas');
-  renderAfterSave('tx');
-}
-window.saveTx = saveTx;
+/* saveTx installments merged into base above */
 
 /* Reset installments checkbox is handled in base openModal below */
 
@@ -6035,32 +6038,6 @@ function getGoalPortfolioValue(g) {
   });
   return total;
 }
-
-var _openGoalPre23 = openGoalModal;
-function openGoalModal(id) {
-  _openGoalPre23(id);
-  var existing = id ? S.goals.find(function(g){ return g.id===id; }) : null;
-  buildGoalPortfolioLinks(existing);
-}
-window.openGoalModal = openGoalModal;
-
-var _saveGoalPre23 = saveGoal;
-function saveGoal() {
-  var editId = S.ui.editGoalId;
-  _saveGoalPre23();
-  var links = [];
-  document.querySelectorAll('#goalPortfolioLinks input[data-instid]').forEach(function(inp) {
-    var pct = parseFloat(inp.value)||0;
-    if (pct>0) links.push({instId:inp.dataset.instid, pct:Math.min(100,pct)});
-  });
-  if (editId) {
-    var idx = S.goals.findIndex(function(g){ return g.id===editId; });
-    if (idx>=0) { S.goals[idx].portfolioLinks=links; save(); }
-  } else if (S.goals.length) {
-    S.goals[S.goals.length-1].portfolioLinks=links; save();
-  }
-}
-window.saveGoal = saveGoal;
 
 function renderMetas() {
   var goals=S.goals;
