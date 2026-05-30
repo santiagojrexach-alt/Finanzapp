@@ -931,7 +931,66 @@ body{
   .app{border-left:1px solid var(--border);border-right:1px solid var(--border)}
 }
 
-/* ── THEME PICKER ── */
+/* ── TUTORIAL ── */
+.tutorial-steps{display:flex;flex-direction:column;gap:0;padding:4px 0}
+.tutorial-step{
+  display:flex;gap:14px;padding:14px 16px;
+  border-bottom:1px solid var(--border);
+}
+.tutorial-step:last-child{border-bottom:none}
+.tutorial-num{
+  width:24px;height:24px;border-radius:50%;flex-shrink:0;
+  background:var(--a2);color:#0a1510;
+  font-size:12px;font-weight:800;
+  display:flex;align-items:center;justify-content:center;
+}
+.tutorial-title{font-size:13px;font-weight:700;color:var(--bright);margin-bottom:4px}
+.tutorial-desc{font-size:12px;color:var(--muted);line-height:1.6}
+.tutorial-desc strong{color:var(--text)}
+
+/* ── CAT SEARCH ── */
+.cat-search-wrap{position:relative;margin-bottom:2px}
+.cat-suggest{
+  position:absolute;top:100%;left:0;right:0;z-index:40;
+  background:var(--card);border:1px solid var(--border);
+  border-radius:0 0 12px 12px;overflow:hidden;
+  box-shadow:0 6px 20px var(--shadow);display:none;
+}
+.cat-suggest.open{display:block}
+.cat-suggest-item{
+  padding:10px 14px;font-size:13px;cursor:pointer;
+  display:flex;align-items:center;gap:10px;
+  transition:background .12s;border-bottom:1px solid var(--border);
+}
+.cat-suggest-item:last-child{border-bottom:none}
+.cat-suggest-item:hover,.cat-suggest-item.selected{background:var(--bg3)}
+
+/* ── PAYMENT METHODS ── */
+.pm-select-wrap{position:relative}
+.pm-select{
+  width:100%;padding:9px 12px;border-radius:12px;
+  background:var(--bg3);border:1.5px solid var(--border);
+  color:var(--text);font-family:'Nunito',sans-serif;font-size:13px;
+  cursor:pointer;appearance:none;-webkit-appearance:none;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23527a5a' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+  background-repeat:no-repeat;background-position:right 12px center;
+  padding-right:32px;transition:border-color .2s;
+}
+.pm-select:focus{outline:none;border-color:var(--a2)}
+.pm-badge{
+  display:inline-flex;align-items:center;gap:4px;
+  background:rgba(122,192,255,.12);border:1px solid rgba(122,192,255,.25);
+  color:var(--blue);border-radius:8px;padding:2px 7px;
+  font-size:10px;font-weight:700;margin-left:4px;
+}
+/* Payment summary in analysis */
+.pm-summary-row{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:10px 16px;border-bottom:1px solid var(--border);font-size:12px;
+}
+.pm-summary-row:last-child{border-bottom:none}
+.pm-summary-name{font-weight:600;color:var(--bright)}
+.pm-summary-amt{font-family:'JetBrains Mono',monospace;font-weight:600;color:var(--text)}
 .theme-palette-grid{
   display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin-top:8px;
 }
@@ -1951,6 +2010,14 @@ body{
 
       <!-- Evolución por categoría -->
       <div class="card">
+        <div class="card-hdr collapsible collapsed" onclick="toggleCard(this)"><span>Gastos por medio de pago</span></div>
+        <div class="card-body collapsed" id="pmSummaryBody">
+          <div id="pmSummaryList"></div>
+        </div>
+      </div>
+
+      <!-- Evolución por categoría -->
+      <div class="card">
         <div class="card-hdr collapsible collapsed" onclick="toggleCard(this)"><span>Evolución por categoría</span></div>
         <div class="card-body collapsed">
           <div style="padding:10px 0 6px">
@@ -2066,6 +2133,19 @@ body{
             <input class="cfg-inline-input" type="number" inputmode="decimal"
                    id="usdRateInput" placeholder="1200" min="1">
           </div>
+          <div class="cfg-row" style="flex-direction:column;align-items:flex-start;gap:8px">
+            <div>
+              <div class="cfg-lbl">Medios de pago</div>
+              <div class="cfg-sub">Tarjetas y métodos que usás</div>
+            </div>
+            <div id="pmList" style="width:100%"></div>
+            <div style="display:flex;gap:8px;width:100%">
+              <input class="field-input" type="text" id="pmNewInput"
+                     placeholder="Ej: Visa Galicia, Efectivo, Mercado Pago"
+                     maxlength="30" style="flex:1">
+              <button class="cfg-action green" onclick="addPaymentMethod()">+ Agregar</button>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -2179,6 +2259,57 @@ body{
         </div>
       </div>
 
+      <!-- AYUDA -->
+      <div class="cfg-section">
+        <div class="cfg-hdr collapsed" onclick="toggleCfg(this)">Ayuda y tutorial</div>
+        <div class="cfg-body collapsed">
+          <div class="tutorial-steps" id="tutorialSteps">
+            <div class="tutorial-step">
+              <div class="tutorial-num">1</div>
+              <div>
+                <div class="tutorial-title">Registrá tus gastos</div>
+                <div class="tutorial-desc">Tocá <strong>+ Nuevo movimiento</strong> para el modal completo, o <strong>⚡</strong> para registro rápido solo con monto y categoría.</div>
+              </div>
+            </div>
+            <div class="tutorial-step">
+              <div class="tutorial-num">2</div>
+              <div>
+                <div class="tutorial-title">Navegá por tabs</div>
+                <div class="tutorial-desc"><strong>Inicio</strong> muestra tu balance del mes. <strong>Historial</strong> tiene todos tus movimientos con filtros. <strong>Análisis</strong> tiene gráficos. <strong>Ahorro</strong> tiene tu portfolio e instrumentos. <strong>Deudas</strong> para préstamos.</div>
+              </div>
+            </div>
+            <div class="tutorial-step">
+              <div class="tutorial-num">3</div>
+              <div>
+                <div class="tutorial-title">Sincronización automática</div>
+                <div class="tutorial-desc">Tus datos se sincronizan automáticamente entre todos tus dispositivos. El punto verde en el avatar indica que está sincronizado.</div>
+              </div>
+            </div>
+            <div class="tutorial-step">
+              <div class="tutorial-num">4</div>
+              <div>
+                <div class="tutorial-title">Medios de pago</div>
+                <div class="tutorial-desc">Configurá tus tarjetas y métodos de pago en <strong>Config → Finanzas</strong>. Al registrar un gasto podés elegir con qué pagaste. En Análisis → Gastos por medio de pago ves el total de cada tarjeta.</div>
+              </div>
+            </div>
+            <div class="tutorial-step">
+              <div class="tutorial-num">5</div>
+              <div>
+                <div class="tutorial-title">Portfolio de ahorro</div>
+                <div class="tutorial-desc">En el tab <strong>Ahorro</strong> registrás tus instrumentos (FCI, acciones, dólares, etc.). Cada vez que actualizás el valor, el gráfico compara tu portfolio real con tu meta mensual acumulada.</div>
+              </div>
+            </div>
+            <div class="tutorial-step">
+              <div class="tutorial-num">6</div>
+              <div>
+                <div class="tutorial-title">Instalar en el celular</div>
+                <div class="tutorial-desc">Para instalar como app: en Chrome tocá el menú <strong>⋮</strong> → <em>Agregar a pantalla de inicio</em>. En Safari tocá <strong>□↑</strong> → <em>Agregar a pantalla de inicio</em>. Funciona sin conexión con los últimos datos sincronizados.</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
       <div class="version-note">FinanzApp · Firebase · Chart.js · schema v2</div>
     </div>
 
@@ -2218,6 +2349,13 @@ body{
       </div>
       <div class="field">
         <label class="field-lbl">Categoría</label>
+        <div class="cat-search-wrap">
+          <input class="field-input" type="text" id="catSearchInput"
+                 placeholder="Buscar categoría…" autocomplete="off"
+                 oninput="onCatSearch(this.value)" onfocus="onCatSearch(this.value)"
+                 style="margin-bottom:6px">
+          <div class="cat-suggest" id="catSuggest"></div>
+        </div>
         <div class="chip-grid" id="catChips"></div>
       </div>
       <button class="accordion-toggle" onclick="toggleAccordion(this)">
@@ -2225,6 +2363,14 @@ body{
         <span id="accordionLbl">Más opciones</span>
       </button>
       <div class="accordion-body" id="accordionBody">
+        <div class="field">
+          <label class="field-lbl">Medio de pago</label>
+          <div class="pm-select-wrap">
+            <select class="pm-select" id="pmSelect">
+              <option value="">— Sin especificar —</option>
+            </select>
+          </div>
+        </div>
         <div class="field">
           <label class="field-lbl">Etiquetas</label>
           <div class="tags-input-wrap">
@@ -2607,7 +2753,7 @@ var CATS = DEFAULT_CATS.slice();
 
 /* ── STATE ── */
 var S = {
-  txs:[], goals:[], debts:[], portfolio:[], cats:DEFAULT_CATS.slice(),
+  txs:[], goals:[], debts:[], portfolio:[], paymentMethods:[], cats:DEFAULT_CATS.slice(),
   cfg:{theme:'dark',colorPalette:'verde',usdRate:1200,monthlyIncome:0,monthlyBudget:0,savingsGoal:0,budgets:{},schemaVersion:SCHEMA_VERSION},
   ui:{
     tab:'resumen',year:new Date().getFullYear(),month:new Date().getMonth(),
@@ -2648,8 +2794,10 @@ function migrate(d) {
   // v2→v3: add tags to txs, debts array, monthlyBudget to cfg
   if (!d.debts) d.debts = [];
   if (!d.portfolio) d.portfolio = [];
+  if (!d.paymentMethods) d.paymentMethods = [];
   if (d.cfg && d.cfg.monthlyBudget === undefined) d.cfg.monthlyBudget = 0;
   if (d.cfg && d.cfg.savingsGoal   === undefined) d.cfg.savingsGoal   = 0;
+  if (d.txs) d.txs.forEach(function(t){ if (!t.paymentMethod) t.paymentMethod = ''; });
   if (d.txs) d.txs.forEach(function(t) {
     if (!t.tags) t.tags = [];
   });
@@ -2670,6 +2818,7 @@ function loadLocal() {
     if (d.goals) S.goals = d.goals;
     if (d.debts) S.debts = d.debts;
     if (d.portfolio) S.portfolio = d.portfolio;
+    if (d.paymentMethods) S.paymentMethods = d.paymentMethods;
     if (d.cats && d.cats.length) S.cats = d.cats;
     if (d.cfg)   S.cfg   = Object.assign({}, S.cfg, d.cfg);
     if (!S.cfg.budgets) S.cfg.budgets = {};
@@ -2679,7 +2828,7 @@ function loadLocal() {
 function saveLocal() {
   try {
     localStorage.setItem(STORE_KEY, JSON.stringify({
-      txs:S.txs, goals:S.goals, debts:S.debts, portfolio:S.portfolio, cats:S.cats, cfg:S.cfg
+      txs:S.txs, goals:S.goals, debts:S.debts, portfolio:S.portfolio, paymentMethods:S.paymentMethods, cats:S.cats, cfg:S.cfg
     }));
   } catch(e) {}
 }
@@ -2699,6 +2848,7 @@ async function syncToCloud() {
       goals:S.goals,
       debts:S.debts,
       portfolio:S.portfolio,
+      paymentMethods:S.paymentMethods,
       cats: S.cats,
       cfg:  S.cfg,
       updatedAt: Date.now(),
@@ -2723,6 +2873,7 @@ async function loadFromCloud() {
       if (d.goals && d.goals.length)  S.goals = d.goals;
       if (d.debts)                    S.debts = d.debts;
       if (d.portfolio)                 S.portfolio = d.portfolio;
+      if (d.paymentMethods)            S.paymentMethods = d.paymentMethods;
       if (d.cats  && d.cats.length)   S.cats  = d.cats;
       if (d.cfg)  S.cfg = Object.assign({}, S.cfg, d.cfg);
       if (!S.cfg.budgets) S.cfg.budgets = {};
@@ -5479,6 +5630,219 @@ window.setMovCurr          = setMovCurr;
 window.saveMovement        = saveMovement;
 window.toggleInstrument    = toggleInstrument;
 window.renderAhorro        = renderAhorro;
+
+/* ══════════════════════════════════════════════════════
+   MEDIOS DE PAGO
+   ══════════════════════════════════════════════════════ */
+function buildPmSelect() {
+  var sel = document.getElementById('pmSelect');
+  if (!sel) return;
+  var pms = S.paymentMethods || [];
+  sel.innerHTML = '<option value="">— Sin especificar —</option>' +
+    pms.map(function(pm){
+      return '<option value="'+esc(pm.id)+'">'+(pm.icon||'💳')+' '+esc(pm.name)+'</option>';
+    }).join('');
+}
+
+function renderPmList() {
+  var el = document.getElementById('pmList');
+  if (!el) return;
+  var pms = S.paymentMethods || [];
+  if (!pms.length) {
+    el.innerHTML = '<div style="font-size:11px;color:var(--muted);padding:4px 0">Sin medios de pago configurados</div>';
+    return;
+  }
+  el.innerHTML = pms.map(function(pm){
+    return '<div style="display:flex;align-items:center;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--border)">'+
+      '<span style="font-size:13px;font-weight:600">'+(pm.icon||'💳')+' '+esc(pm.name)+'</span>'+
+      '<button onclick="removePaymentMethod(\''+pm.id+'\')" style="background:none;border:none;color:var(--red);cursor:pointer;font-size:18px;padding:0 4px;font-family:inherit">×</button>'+
+    '</div>';
+  }).join('');
+}
+window.renderPmList = renderPmList;
+
+function addPaymentMethod() {
+  var inp = document.getElementById('pmNewInput');
+  if (!inp) return;
+  var name = inp.value.trim();
+  if (!name) { toast('⚠️ Ingresá un nombre'); return; }
+  if (!S.paymentMethods) S.paymentMethods = [];
+  var icon = '💳';
+  var lower = name.toLowerCase();
+  if (lower.includes('efectivo')||lower.includes('cash')) icon='💵';
+  else if (lower.includes('debito')||lower.includes('débito')) icon='🏦';
+  else if (lower.includes('mercado')||lower.includes('mp')) icon='📱';
+  else if (lower.includes('transfer')) icon='🔄';
+  S.paymentMethods.push({id:uid(),name:name,icon:icon});
+  inp.value = '';
+  save();
+  renderPmList();
+  buildPmSelect();
+  toast('✓ Medio de pago agregado');
+}
+window.addPaymentMethod = addPaymentMethod;
+
+function removePaymentMethod(id) {
+  S.paymentMethods = (S.paymentMethods||[]).filter(function(pm){return pm.id!==id;});
+  save();
+  renderPmList();
+  buildPmSelect();
+  toast('🗑️ Eliminado');
+}
+window.removePaymentMethod = removePaymentMethod;
+
+function renderPmSummary() {
+  var el = document.getElementById('pmSummaryList');
+  if (!el) return;
+  var pms = S.paymentMethods || [];
+  var y=S.ui.year, m=S.ui.month;
+  var txs = S.txs.filter(function(t){return inMonth(t,y,m)&&t.type==='out';});
+  var map={'':0};
+  pms.forEach(function(pm){map[pm.id]=0;});
+  txs.forEach(function(t){
+    var k=t.paymentMethod||'';
+    if(map[k]===undefined)map[k]=0;
+    map[k]+=toARS(t.amt,t.curr);
+  });
+  var rows=pms.map(function(pm){return{name:(pm.icon||'💳')+' '+pm.name,amt:map[pm.id]||0};});
+  if(map['']>0)rows.push({name:'— Sin especificar',amt:map['']});
+  rows.sort(function(a,b){return b.amt-a.amt;});
+  var visible=rows.filter(function(r){return r.amt>0;});
+  if(!visible.length){
+    el.innerHTML='<div style="padding:20px;text-align:center;font-size:12px;color:var(--muted)">Sin gastos este mes con medio de pago registrado</div>';
+    return;
+  }
+  el.innerHTML=visible.map(function(r){
+    return '<div class="pm-summary-row">'+
+      '<span class="pm-summary-name">'+r.name+'</span>'+
+      '<span class="pm-summary-amt">'+fARS(r.amt)+'</span>'+
+    '</div>';
+  }).join('');
+}
+
+/* ══════════════════════════════════════════════════════
+   AUTOCOMPLETADO DE CATEGORÍAS
+   ══════════════════════════════════════════════════════ */
+function onCatSearch(val) {
+  var suggest = document.getElementById('catSuggest');
+  var chips   = document.getElementById('catChips');
+  if (!suggest) return;
+  val = (val||'').trim().toLowerCase();
+  if (!val) {
+    suggest.classList.remove('open');
+    if (chips) chips.style.display='';
+    return;
+  }
+  var matches = CATS.filter(function(c){
+    return c.label.toLowerCase().includes(val)||c.id.toLowerCase().includes(val);
+  }).slice(0,8);
+  if (!matches.length) {
+    suggest.classList.remove('open');
+    if (chips) chips.style.display='none';
+    return;
+  }
+  if (chips) chips.style.display='none';
+  suggest.innerHTML = matches.map(function(c){
+    var active = c.id===S.ui.txCat;
+    return '<div class="cat-suggest-item'+(active?' selected':'')+'" onmousedown="selCatSearch(\''+c.id+'\')">'+
+      '<span style="font-size:18px">'+c.icon+'</span>'+
+      '<span style="font-weight:'+(active?'700':'500')+'">'+esc(c.label)+'</span>'+
+      (active?'<span style="margin-left:auto;color:var(--a2);font-size:11px">✓</span>':'')+'</div>';
+  }).join('');
+  suggest.classList.add('open');
+}
+window.onCatSearch = onCatSearch;
+
+function selCatSearch(id) {
+  selCat(id);
+  var inp = document.getElementById('catSearchInput');
+  var suggest = document.getElementById('catSuggest');
+  var chips = document.getElementById('catChips');
+  if (inp) {inp.value=''; inp.blur();}
+  if (suggest) suggest.classList.remove('open');
+  if (chips) chips.style.display='';
+  var c = cat(id);
+  if (inp) inp.placeholder = c.icon+' '+c.label+' ✓';
+}
+window.selCatSearch = selCatSearch;
+
+document.addEventListener('click', function(e) {
+  var wrap = document.querySelector('.cat-search-wrap');
+  if (wrap && !wrap.contains(e.target)) {
+    var sg = document.getElementById('catSuggest');
+    var ch = document.getElementById('catChips');
+    if (sg) sg.classList.remove('open');
+    if (ch) ch.style.display='';
+  }
+});
+
+/* ══ WIRE NEW FEATURES INTO EXISTING FNS ══ */
+
+// openModal: populate pmSelect + reset cat search
+var __openModalPrev = openModal;
+function openModal(type, id) {
+  __openModalPrev(type, id);
+  buildPmSelect();
+  var sel = document.getElementById('pmSelect');
+  var tx = id ? S.txs.find(function(t){return t.id===id;}) : null;
+  if (sel) sel.value = (tx&&tx.paymentMethod)||'';
+  var catInp = document.getElementById('catSearchInput');
+  if (catInp) {
+    catInp.value='';
+    var c = cat(S.ui.txCat);
+    catInp.placeholder = c ? c.icon+' '+c.label+' ✓' : 'Buscar categoría…';
+  }
+  var chips = document.getElementById('catChips');
+  if (chips) chips.style.display='';
+}
+window.openModal = openModal;
+
+// saveTx: save paymentMethod
+var __saveTxPrev = saveTx;
+function saveTx() {
+  var pmSel = document.getElementById('pmSelect');
+  var pmValue = pmSel ? pmSel.value : '';
+  var editId = S.ui.editId;
+  __saveTxPrev();
+  // patch paymentMethod onto the saved tx
+  if (editId) {
+    var idx = S.txs.findIndex(function(t){return t.id===editId;});
+    if (idx>=0){S.txs[idx].paymentMethod=pmValue; save();}
+  } else if (S.txs.length) {
+    S.txs[S.txs.length-1].paymentMethod = pmValue;
+    save();
+  }
+}
+window.saveTx = saveTx;
+
+// renderAnalysis: add pm summary
+var __renderAnalysisPrev = renderAnalysis;
+function renderAnalysis() {
+  __renderAnalysisPrev();
+  renderPmSummary();
+}
+window.renderAnalysis = renderAnalysis;
+
+// renderCfg: populate pm list
+var __renderCfgPrev = renderCfg;
+function renderCfg() {
+  __renderCfgPrev();
+  renderPmList();
+  buildPmSelect();
+}
+window.renderCfg = renderCfg;
+
+// selCat: update cat search placeholder
+var __selCatPrev = selCat;
+function selCat(id) {
+  __selCatPrev(id);
+  var catInp = document.getElementById('catSearchInput');
+  if (catInp && !catInp.value) {
+    var c = cat(id);
+    catInp.placeholder = c ? c.icon+' '+c.label+' ✓' : 'Buscar categoría…';
+  }
+}
+window.selCat = selCat;
 window.openDebtModal    = openDebtModal;
 window.saveDebt         = saveDebt;
 window.deleteDebt       = deleteDebt;
