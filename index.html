@@ -702,12 +702,24 @@ body{
 .modal-backdrop.open .modal-sheet{transform:translateY(0)}
 .modal-handle{
   width:40px;height:4px;background:var(--border);
-  border-radius:2px;margin:0 auto 16px;
+  border-radius:2px;margin:0 auto 14px;flex-shrink:0;
+}
+.modal-title-row{
+  display:flex;align-items:center;justify-content:space-between;
+  margin-bottom:14px;flex-shrink:0;gap:8px;
 }
 .modal-title{
   font-size:18px;font-weight:800;color:var(--bright);
-  margin-bottom:14px;letter-spacing:-.01em;
+  letter-spacing:-.01em;flex:1;
 }
+.modal-close-btn{
+  width:30px;height:30px;border-radius:50%;
+  background:var(--bg3);border:1px solid var(--border);
+  display:flex;align-items:center;justify-content:center;
+  font-size:15px;cursor:pointer;color:var(--muted);
+  transition:background .15s,color .15s;flex-shrink:0;line-height:1;
+}
+.modal-close-btn:hover{background:var(--border);color:var(--text)}
 
 /* TYPE ROW */
 .type-row{display:flex;gap:8px;margin-bottom:12px}
@@ -1227,10 +1239,11 @@ body{
 .balance-delta{
   font-size:11px;font-weight:600;margin-left:8px;
   padding:2px 7px;border-radius:8px;
-  vertical-align:middle;
+  vertical-align:middle;cursor:help;
 }
 .delta-pos{background:rgba(66,212,96,.15);color:var(--a2)}
 .delta-neg{background:rgba(255,120,120,.15);color:var(--red)}
+.filter-chip-more{background:var(--bg3);border-style:dashed}
 
 /* ── LOGOUT MODAL ── */
 .logout-modal-bg{
@@ -1820,7 +1833,7 @@ body{
           <div>
             <div class="balance-label">Balance del mes</div>
             <div class="balance-main">
-              <span class="curr-sym">$</span><span id="balARS">0</span><span id="balDelta" class="balance-delta"></span>
+              <span class="curr-sym">$</span><span id="balARS">0</span><span id="balDelta" class="balance-delta" title="Variación vs mes anterior"></span>
             </div>
             <div id="balUSDRow" class="balance-usd-row"></div>
           </div>
@@ -1869,10 +1882,15 @@ body{
       </div>
       <div class="filter-bar" id="filterBar">
         <div class="filter-chip active" data-period="month">Este mes</div>
-        <div class="filter-chip" data-period="week">Esta semana</div>
-        <div class="filter-chip" data-period="quarter">Trimestre</div>
+        <div class="filter-chip" data-period="week">Semana</div>
         <div class="filter-chip" data-period="year">Este año</div>
-        <div class="filter-chip" data-period="all">Todo</div>
+        <div class="filter-chip filter-chip-more" id="filterMore" onclick="toggleFilterMore()">Más ↓</div>
+      </div>
+      <div class="filter-bar-more" id="filterBarMore" style="display:none;padding:0 18px 8px">
+        <div class="filter-bar" style="margin-bottom:0">
+          <div class="filter-chip" data-period="quarter">Trimestre</div>
+          <div class="filter-chip" data-period="all">Todo</div>
+        </div>
       </div>
       <!-- Advanced filters: collapsible -->
       <div class="adv-filter-toggle" id="advFilterToggle" onclick="toggleAdvFilters()">
@@ -2144,7 +2162,7 @@ body{
 <div class="modal-backdrop" id="modalReg">
   <div class="modal-sheet" style="max-height:92vh;padding:18px 18px 0">
     <div class="modal-handle"></div>
-    <div class="modal-title" id="modalRegTitle">Nuevo movimiento</div>
+    <div class="modal-title-row"><div class="modal-title" id="modalRegTitle">Nuevo movimiento</div><button class="modal-close-btn" onclick="closeModal('modalReg')">✕</button></div>
     <div class="modal-scroll">
       <div class="type-row">
         <button class="type-btn sel-out" id="typOut" data-action="setType" data-args="out">&#8595; Gasto</button>
@@ -2216,7 +2234,7 @@ body{
 <div class="modal-backdrop" id="modalQuick">
   <div class="modal-sheet" style="max-height:85vh;display:flex;flex-direction:column;padding:18px 18px 0">
     <div class="modal-handle"></div>
-    <div class="modal-title">&#9889; Registro rápido</div>
+    <div class="modal-title-row"><div class="modal-title">&#9889; Registro rápido</div><button class="modal-close-btn" onclick="closeModal('modalQuick')">✕</button></div>
     <div class="amount-row" style="margin-bottom:14px;flex-shrink:0">
       <div class="amount-box">
         <span class="amount-sym">$</span>
@@ -2243,7 +2261,7 @@ body{
 <div class="modal-backdrop" id="modalCat">
   <div class="modal-sheet" style="max-height:72vh">
     <div class="modal-handle"></div>
-    <div class="modal-title" id="modalCatTitle">Nueva categoría</div>
+    <div class="modal-title-row"><div class="modal-title" id="modalCatTitle">Nueva categoría</div><button class="modal-close-btn" onclick="closeModal('modalCat')">✕</button></div>
     <div class="field">
       <label class="field-lbl">Nombre</label>
       <input class="field-input" type="text" id="catNameInput"
@@ -2292,7 +2310,7 @@ body{
 <div class="modal-backdrop" id="modalDebt">
   <div class="modal-sheet" style="max-height:85vh;padding:18px 18px 0">
     <div class="modal-handle"></div>
-    <div class="modal-title" id="modalDebtTitle">Nueva deuda / préstamo</div>
+    <div class="modal-title-row"><div class="modal-title" id="modalDebtTitle">Nueva deuda / préstamo</div><button class="modal-close-btn" onclick="closeModal('modalDebt')">✕</button></div>
     <div class="modal-scroll">
       <div class="type-row">
         <button class="type-btn sel-in" id="debtTypeLend" onclick="setDebtType('lend')">📤 Le presté</button>
@@ -2332,7 +2350,7 @@ body{
 <div class="modal-backdrop" id="modalInstrument">
   <div class="modal-sheet" style="max-height:82vh;padding:18px 18px 0">
     <div class="modal-handle"></div>
-    <div class="modal-title" id="modalInstrumentTitle">Nuevo instrumento</div>
+    <div class="modal-title-row"><div class="modal-title" id="modalInstrumentTitle">Nuevo instrumento</div><button class="modal-close-btn" onclick="closeModal('modalInstrument')">✕</button></div>
     <div class="modal-scroll">
       <div class="field">
         <label class="field-lbl">Nombre</label>
@@ -2368,7 +2386,7 @@ body{
 <div class="modal-backdrop" id="modalMovement">
   <div class="modal-sheet" style="max-height:75vh;padding:18px 18px 0">
     <div class="modal-handle"></div>
-    <div class="modal-title" id="modalMovementTitle">Registrar movimiento</div>
+    <div class="modal-title-row"><div class="modal-title" id="modalMovementTitle">Registrar movimiento</div><button class="modal-close-btn" onclick="closeModal('modalMovement')">✕</button></div>
     <div class="modal-scroll">
       <div class="type-row">
         <button class="type-btn sel-in"  id="movTypeDeposit"   onclick="setMovType('deposit')">↓ Depósito</button>
@@ -2407,7 +2425,7 @@ body{
 <div class="modal-backdrop" id="modalGoal">
   <div class="modal-sheet" style="max-height:80vh">
     <div class="modal-handle"></div>
-    <div class="modal-title" id="modalGoalTitle">Nueva meta</div>
+    <div class="modal-title-row"><div class="modal-title" id="modalGoalTitle">Nueva meta</div><button class="modal-close-btn" onclick="closeModal('modalGoal')">✕</button></div>
 
     <div class="field">
       <label class="field-lbl">Nombre</label>
@@ -2838,7 +2856,7 @@ function uid() {
     ? crypto.randomUUID()
     : Date.now().toString(36)+Math.random().toString(36).slice(2);
 }
-function fARS(n){return '$'+Math.abs(n).toLocaleString('es-AR',{maximumFractionDigits:0});}
+function fARS(n){var v=Number(n)||0;return '$'+Math.abs(v).toLocaleString('es-AR',{maximumFractionDigits:0});}
 function fUSD(n){return 'USD '+Math.abs(n).toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});}
 function toARS(amount,curr){return curr==='USD'?amount*S.cfg.usdRate:amount;}
 function todayISO(){return new Date().toISOString().slice(0,10);}
@@ -3448,14 +3466,23 @@ function renderDonut() {
     }
   });
 
-  // Custom legend
+  // Custom legend — show all cats, group <3% as Otros
   var total = data.reduce(function(a,b){return a+b;},0)||1;
-  document.getElementById('donutLegend').innerHTML = entries.slice(0,6).map(function(e){
+  var threshold = total * 0.03;
+  var mainE = entries.filter(function(e){ return e[1] >= threshold; });
+  var otherE = entries.filter(function(e){ return e[1] < threshold; });
+  var otherTotal = otherE.reduce(function(s,e){ return s+e[1]; }, 0);
+  var legendHtml = mainE.map(function(e){
     var c=cat(e[0]);
     var pct=(e[1]/total*100).toFixed(0);
     return '<div class="chart-legend-item"><div class="chart-legend-dot" style="background:'+c.color+'"></div>'+
       esc(c.label)+' <span style="color:var(--muted)">'+pct+'%</span></div>';
   }).join('');
+  if (otherTotal > 0) {
+    legendHtml += '<div class="chart-legend-item"><div class="chart-legend-dot" style="background:var(--muted)"></div>'+
+      'Otros <span style="color:var(--muted)">'+(otherTotal/total*100).toFixed(0)+'%</span></div>';
+  }
+  document.getElementById('donutLegend').innerHTML = legendHtml;
 }
 
 function renderBar() {
@@ -5161,7 +5188,30 @@ document.addEventListener('click', function(e) {
   });
 });
 
-/* ── WINDOW EXPORTS (portfolio) ── */
+/* ── FILTER BAR MORE ── */
+function toggleFilterMore() {
+  var more = document.getElementById('filterBarMore');
+  var btn  = document.getElementById('filterMore');
+  if (!more) return;
+  var open = more.style.display !== 'none';
+  more.style.display = open ? 'none' : 'block';
+  if (btn) btn.textContent = open ? 'Más ↓' : 'Menos ↑';
+}
+window.toggleFilterMore = toggleFilterMore;
+
+function updateFilterMoreBtn() {
+  // If active period is in the "more" section, auto-show it
+  var morePeriods = ['quarter','all'];
+  var btn  = document.getElementById('filterMore');
+  var more = document.getElementById('filterBarMore');
+  if (!btn || !more) return;
+  if (morePeriods.indexOf(S.ui.period) >= 0) {
+    more.style.display = 'block';
+    btn.textContent = 'Menos ↑';
+  }
+}
+
+/* ── WINDOW EXPORTS (bugs) ── */
 window.openInstrumentModal = openInstrumentModal;
 window.saveInstrument      = saveInstrument;
 window.deleteInstrument    = deleteInstrument;
