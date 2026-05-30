@@ -3420,6 +3420,7 @@ function renderCats(){
   var entries=Object.keys(map).map(function(k){return[k,map[k]];});
   entries.sort(function(a,b){return b[1]-a[1];});
   var el=document.getElementById('catList');
+  if(!el) return;
   if(!entries.length){
     el.innerHTML='<div class="empty-state"><div class="empty-icon">🗂️</div>'+
       '<div class="empty-title">Sin gastos este mes</div>'+
@@ -4150,6 +4151,11 @@ function openModal(type,id){
     catInp.placeholder = c ? c.icon+' '+c.label+' ✓' : 'Buscar categoría…';
   }
   if (chips) chips.style.display = '';
+  // Reset installments
+  var instChk  = document.getElementById('installmentsCheck');
+  var instBody = document.getElementById('installmentsBody');
+  if (instChk)  instChk.checked = false;
+  if (instBody) instBody.style.display = 'none';
   setType(S.ui.txType);
   setCurr(S.ui.txCurr);
   buildChips();
@@ -5985,16 +5991,7 @@ function saveTx() {
 }
 window.saveTx = saveTx;
 
-/* Reset installments checkbox on openModal */
-var _openModalPre23 = openModal;
-function openModal(type, id) {
-  _openModalPre23(type, id);
-  var chk  = document.getElementById('installmentsCheck');
-  var body = document.getElementById('installmentsBody');
-  if (chk)  chk.checked = false;
-  if (body) body.style.display = 'none';
-}
-window.openModal = openModal;
+/* Reset installments checkbox is handled in base openModal below */
 
 /* ══════════════════════════════════════════════════════
    FEATURE 13 — METAS CON PORTFOLIO LINKING
