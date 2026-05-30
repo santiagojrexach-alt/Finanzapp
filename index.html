@@ -68,56 +68,90 @@
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 
 /* ══════════════════════════════════════════════
-   COLOR ACCENTS — 5 pastel accent colors
-   Only --accent, --a2, --bright change.
-   Background, cards, borders stay identical.
-   ══════════════════════════════════════════════ */
-
-/* Verde (default) */
-[data-color="verde"]{--accent:#6ef08a;--a2:#42d460;--bright-accent:#9ffcb0}
-[data-color="verde"][data-theme="light"]{--accent:#0d7a28;--a2:#0f9933;--bright-accent:#0d7a28}
-
-/* Azul celeste */
-[data-color="azul"]{--accent:#7ac8ff;--a2:#3aadff;--bright-accent:#a8d8ff}
-[data-color="azul"][data-theme="light"]{--accent:#0560c0;--a2:#1470d8;--bright-accent:#0560c0}
-
-/* Lila */
-[data-color="lila"]{--accent:#c8a0ff;--a2:#a870ff;--bright-accent:#dcc0ff}
-[data-color="lila"][data-theme="light"]{--accent:#6820c0;--a2:#7c30d8;--bright-accent:#6820c0}
-
-/* Naranja */
-[data-color="naranja"]{--accent:#ffcc70;--a2:#ffaa20;--bright-accent:#ffe0a0}
-[data-color="naranja"][data-theme="light"]{--accent:#c06000;--a2:#d87010;--bright-accent:#c06000}
-
-/* Rojo */
-[data-color="rojo"]{--accent:#ff8888;--a2:#ff5555;--bright-accent:#ffaaaa}
-[data-color="rojo"][data-theme="light"]{--accent:#c01818;--a2:#d82828;--bright-accent:#c01818}
-
-
-/* ══════════════════════════════════════════════
-   DARK THEME (default verde — kept for fallback)
+   DARK THEME — base (verde)
    ══════════════════════════════════════════════ */
 [data-theme="dark"]{
-  --bg:#0e1a0f;--bg2:#131f14;--bg3:#192619;
-  --card:#1a2b1b;--card2:#203022;--border:#2c4432;
-  --muted:#527a5a;--dim:#78aa82;--text:#ccddd0;--bright:#f0f7f2;
+  --bg:#0a1a0c;--bg2:#0e1f10;--bg3:#162018;
+  --card:#172619;--card2:#1c2e1e;--border:#2a4030;
+  --muted:#5a8060;--dim:#8ab890;--text:#d4e8d8;--bright:#f0f7f2;
   --accent:#6ef08a;--a2:#42d460;--red:#ff7878;--amber:#fdd44a;
   --blue:#7ac0ff;--purple:#c0aaff;--teal:#6ef0e0;
-  --shadow:rgba(0,0,0,.55);--input-bg:#131f14;--overlay:rgba(0,0,0,.75);
+  --shadow:rgba(0,0,0,.6);--input-bg:#0e1f10;--overlay:rgba(0,0,0,.78);
 }
 
 /* ══════════════════════════════════════════════
-   LIGHT THEME — redesigned for real contrast
+   LIGHT THEME
    ══════════════════════════════════════════════ */
 [data-theme="light"]{
-  --bg:#f4f6f8;--bg2:#ebeef2;--bg3:#e0e5ea;
-  --card:#ffffff;--card2:#f8fafb;--border:#d0d8e0;
-  --muted:#607888;--dim:#344858;--text:#1a2530;--bright:#0a1520;
-  --accent:#0d7a28;--a2:#0a6020;--red:#c0181818;--amber:#8a5800;
+  --bg:#f3f7f4;--bg2:#e8f0ea;--bg3:#dde8df;
+  --card:#ffffff;--card2:#f5faf6;--border:#c8daca;
+  --muted:#5a7860;--dim:#2a4830;--text:#162018;--bright:#0a1510;
+  --accent:#0d7a28;--a2:#0a6020;--red:#c01818;--amber:#8a5800;
   --blue:#0850a0;--purple:#4828b0;--teal:#0b7070;
-  --shadow:rgba(0,0,0,.10);--input-bg:#f0f2f5;--overlay:rgba(0,0,0,.4);
-  --red:#c01818;
+  --shadow:rgba(0,0,0,.10);--input-bg:#edf5ef;--overlay:rgba(0,0,0,.42);
 }
+
+/* ══════════════════════════════════════════════
+   COLOR PALETTES — tint bg + card + accent globally
+   ══════════════════════════════════════════════ */
+
+/* Azul */
+[data-color="azul"][data-theme="dark"]{
+  --bg:#0a1220;--bg2:#0e1828;--bg3:#142030;
+  --card:#162238;--card2:#1c2c44;--border:#28405a;
+  --muted:#5078a0;--dim:#80a8d0;--text:#ccd8ee;--bright:#eef4ff;
+  --accent:#7ac8ff;--a2:#3aadff;--input-bg:#0e1828;
+}
+[data-color="azul"][data-theme="light"]{
+  --bg:#f2f6fd;--bg2:#e8effa;--bg3:#dce8f6;
+  --card:#ffffff;--card2:#f0f6ff;--border:#b8ccee;
+  --muted:#4870a8;--dim:#1a3870;--text:#101828;--bright:#080f1e;
+  --accent:#0560c0;--a2:#1470d8;--input-bg:#eaf2ff;
+}
+
+/* Lila */
+[data-color="lila"][data-theme="dark"]{
+  --bg:#130c20;--bg2:#180e28;--bg3:#1e1232;
+  --card:#201440;--card2:#281a50;--border:#382860;
+  --muted:#7050a0;--dim:#a888d8;--text:#dccef8;--bright:#f2eeff;
+  --accent:#c8a0ff;--a2:#a870ff;--input-bg:#180e28;
+}
+[data-color="lila"][data-theme="light"]{
+  --bg:#f6f2ff;--bg2:#ede8ff;--bg3:#e2d8ff;
+  --card:#ffffff;--card2:#f5f0ff;--border:#c8b8f0;
+  --muted:#6848b0;--dim:#381880;--text:#120a20;--bright:#08041a;
+  --accent:#6820c0;--a2:#7c30d8;--input-bg:#ede8ff;
+}
+
+/* Naranja */
+[data-color="naranja"][data-theme="dark"]{
+  --bg:#1e1008;--bg2:#261408;--bg3:#301a0a;
+  --card:#382010;--card2:#402818;--border:#583818;
+  --muted:#a06030;--dim:#d09050;--text:#eeddc8;--bright:#fff4e0;
+  --accent:#ffcc70;--a2:#ffaa20;--input-bg:#261408;
+}
+[data-color="naranja"][data-theme="light"]{
+  --bg:#fff8f0;--bg2:#fff0e0;--bg3:#ffe4c8;
+  --card:#ffffff;--card2:#fff8f0;--border:#f0c890;
+  --muted:#a06020;--dim:#603010;--text:#201008;--bright:#100804;
+  --accent:#c06000;--a2:#d87010;--input-bg:#fff0e0;
+}
+
+/* Rojo */
+[data-color="rojo"][data-theme="dark"]{
+  --bg:#1e0808;--bg2:#280a0a;--bg3:#320c0c;
+  --card:#3a1010;--card2:#441414;--border:#602020;
+  --muted:#a04040;--dim:#d07070;--text:#eed8d8;--bright:#ffeeee;
+  --accent:#ff8888;--a2:#ff5555;--input-bg:#280a0a;
+}
+[data-color="rojo"][data-theme="light"]{
+  --bg:#fff2f2;--bg2:#ffe8e8;--bg3:#ffd8d8;
+  --card:#ffffff;--card2:#fff5f5;--border:#f0b8b8;
+  --muted:#a02020;--dim:#601010;--text:#200808;--bright:#100404;
+  --accent:#c01818;--a2:#d82828;--input-bg:#ffe8e8;
+}
+
+
 
 html{height:100%;background:var(--bg)}
 body{
@@ -875,6 +909,14 @@ input[type=number]{-moz-appearance:textfield}
 @media(min-width:430px) and (max-width:599px){
   .app{border-left:1px solid var(--border);border-right:1px solid var(--border)}
 }
+
+/* ── ANALYSIS CONTEXT BAR ── */
+.analysis-context-bar{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:8px 18px;background:rgba(66,212,96,.05);
+  border-bottom:1px solid var(--border);gap:8px;flex-wrap:wrap;
+}
+#analysisContextText{font-weight:700;color:var(--accent);font-size:13px}
 
 /* ── INTERACTIVE TUTORIAL OVERLAY ── */
 .tutorial-overlay{
@@ -1923,7 +1965,16 @@ input[type=number]{-moz-appearance:textfield}
       <!-- Budget alert -->
       <div class="budget-alert" id="budgetAlert"></div>
 
-      <!-- Cards: only Últimos movimientos in Inicio (Gastos x cat → Análisis) -->
+      <!-- Cards: PM summary + Últimos movimientos -->
+      <div class="card" id="pmInicioCard" style="display:none">
+        <div class="card-hdr collapsible collapsed" onclick="toggleCard(this)">
+          <span>Gastos por medio de pago</span>
+        </div>
+        <div class="card-body collapsed">
+          <div id="pmSummaryListInicio"></div>
+        </div>
+      </div>
+
       <div class="card">
         <div class="card-hdr collapsible collapsed" onclick="toggleCard(this)">
           <span>Últimos movimientos</span>
@@ -1962,6 +2013,12 @@ input[type=number]{-moz-appearance:textfield}
 
     <!-- ANÁLISIS -->
     <div class="tab-panel" id="tab-analisis">
+      <!-- Period context banner -->
+      <div class="analysis-context-bar" id="analysisContextBar">
+        <span id="analysisContextText"></span>
+        <span style="color:var(--muted);font-size:10px">El selector de mes del encabezado afecta los gráficos mensuales</span>
+      </div>
+
       <!-- Torta categorías -->
       <div class="card">
         <div class="card-hdr collapsible collapsed" onclick="toggleCard(this)">
@@ -1977,7 +2034,10 @@ input[type=number]{-moz-appearance:textfield}
 
       <!-- Barras evolución mensual -->
       <div class="card">
-        <div class="card-hdr collapsible collapsed" onclick="toggleCard(this)"><span>Evolución mensual</span></div>
+        <div class="card-hdr collapsible collapsed" onclick="toggleCard(this)">
+          <span>Evolución mensual</span>
+          <span style="font-size:10px;font-weight:400;text-transform:none;letter-spacing:0;color:var(--dim);margin-left:8px">últimos meses</span>
+        </div>
         <div class="card-body collapsed">
           <div class="chart-period-row" id="barPeriodRow">
             <div class="chart-chip active" data-months="6">6 meses</div>
@@ -1990,16 +2050,6 @@ input[type=number]{-moz-appearance:textfield}
             <div class="chart-legend-item"><div class="chart-legend-dot" style="background:var(--accent)"></div>Ingresos</div>
             <div class="chart-legend-item"><div class="chart-legend-dot" style="background:var(--red)"></div>Egresos</div>
           </div>
-        </div>
-      </div>
-
-      <!-- Portfolio vs Meta de Ahorro -->
-      <div class="card">
-        <div class="card-hdr collapsible collapsed" onclick="toggleCard(this)"><span>Portfolio vs ahorro ideal proyectado</span></div>
-        <div class="card-body collapsed">
-          <div id="portfolioVsMetaLegend" style="display:flex;gap:14px;padding:10px 16px 4px;font-size:11px"></div>
-          <div class="chart-canvas-wrap" style="height:200px"><canvas id="portfolioVsMetaChart"></canvas></div>
-          <div id="portfolioVsMetaMsg" style="padding:8px 16px 12px;font-size:11px;color:var(--muted)"></div>
         </div>
       </div>
 
@@ -2034,6 +2084,18 @@ input[type=number]{-moz-appearance:textfield}
       </div>
     </div>
     <div class="tab-panel" id="tab-ahorro">
+
+      <!-- Portfolio vs ahorro ideal proyectado -->
+      <div class="card" style="margin-bottom:10px">
+        <div class="card-hdr collapsible collapsed" onclick="toggleCard(this)">
+          <span>Portfolio vs ahorro ideal proyectado</span>
+        </div>
+        <div class="card-body collapsed">
+          <div id="portfolioVsMetaLegend" style="display:flex;gap:14px;padding:10px 16px 4px;font-size:11px"></div>
+          <div class="chart-canvas-wrap" style="height:200px"><canvas id="portfolioVsMetaChart"></canvas></div>
+          <div id="portfolioVsMetaMsg" style="padding:8px 16px 12px;font-size:11px;color:var(--muted)"></div>
+        </div>
+      </div>
 
       <!-- Portfolio de instrumentos -->
       <div class="ahorro-section-title">Portfolio</div>
@@ -5295,9 +5357,12 @@ function renderPortfolio() {
     var rdto = dep.ars > 0 ? ((v.ars - dep.ars) / dep.ars * 100) : 0;
     var rdtoARS = v.ars - dep.ars;
     var rdtoCls = rdto > 0 ? 'pos' : rdto < 0 ? 'neg' : 'neu';
-    var rdtoStr = dep.ars > 0
-      ? (rdtoARS>=0?'+':'')+fARS(rdtoARS)+' ('+rdto.toFixed(1)+'%)'
-      : '—';
+    var hasValuation = (inst.movements||[]).some(function(m){ return m.type==='valuation'; });
+    var rdtoStr = !hasValuation
+      ? '<span style="color:var(--muted);font-size:10px">Sin valuaciones — tocá 📊 Valuar</span>'
+      : dep.ars > 0
+        ? (rdtoARS>=0?'+':'')+fARS(rdtoARS)+' ('+rdto.toFixed(1)+'%)'
+        : '—';
     var icon = INST_TYPES[inst.type] || '💼';
     var isOpen = (S.ui.openInstrumentId === inst.id);
     var movs = (inst.movements||[]).slice().sort(function(a,b){ return b.date>a.date?1:-1; });
@@ -6188,6 +6253,62 @@ window.openGoalModal   = openGoalModal;
 window.saveGoal        = saveGoal;
 window.deleteGoal      = deleteGoal;
 window.selGoalColor    = selGoalColor;
+
+/* ══════════════════════════════════════════════
+   SESSION 2 FEATURES
+   ══════════════════════════════════════════════ */
+
+/* ── PM SUMMARY IN INICIO ── */
+function renderPmSummaryInicio() {
+  var card = document.getElementById('pmInicioCard');
+  var el   = document.getElementById('pmSummaryListInicio');
+  if (!el) return;
+  var pms = S.paymentMethods || [];
+  if (!pms.length) { if (card) card.style.display='none'; return; }
+  var y=S.ui.year, m=S.ui.month;
+  var txs = S.txs.filter(function(t){ return inMonth(t,y,m)&&t.type==='out'&&t.paymentMethod; });
+  var map = {};
+  pms.forEach(function(pm){ map[pm.id]=0; });
+  txs.forEach(function(t){
+    if (map[t.paymentMethod]!==undefined) map[t.paymentMethod]+=toARS(t.amt,t.curr);
+  });
+  var rows = pms.map(function(pm){ return {name:(pm.icon||'💳')+' '+pm.name, amt:map[pm.id]||0}; })
+    .filter(function(r){ return r.amt>0; })
+    .sort(function(a,b){ return b.amt-a.amt; });
+  if (!rows.length) { if (card) card.style.display='none'; return; }
+  if (card) card.style.display='block';
+  el.innerHTML = rows.map(function(r){
+    return '<div class="pm-summary-row">'+
+      '<span class="pm-summary-name">'+r.name+'</span>'+
+      '<span class="pm-summary-amt">'+fARS(r.amt)+'</span>'+
+    '</div>';
+  }).join('');
+}
+window.renderPmSummaryInicio = renderPmSummaryInicio;
+
+/* ── ANALYSIS CONTEXT BAR ── */
+function updateAnalysisContext() {
+  var el = document.getElementById('analysisContextText');
+  if (!el) return;
+  el.textContent = MONTHS[S.ui.month]+' '+S.ui.year;
+}
+window.updateAnalysisContext = updateAnalysisContext;
+
+/* Wire into renderResumen */
+var _renderResumenPre24 = renderResumen;
+function renderResumen() {
+  _renderResumenPre24();
+  renderPmSummaryInicio();
+}
+window.renderResumen = renderResumen;
+
+/* Wire into renderAnalysis — but only add context update, not duplicate renderPmSummary */
+var _renderAnalysisPre24 = renderAnalysis;
+function renderAnalysis() {
+  _renderAnalysisPre24();
+  updateAnalysisContext();
+}
+window.renderAnalysis = renderAnalysis;
 
 </script>
 <!-- TUTORIAL OVERLAY -->
