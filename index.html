@@ -2798,6 +2798,233 @@ var MONTHS = ['Enero','Febrero','Marzo','Abril','Mayo','Junio',
               'Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
 var DAYS = ['domingo','lunes','martes','miércoles','jueves','viernes','sábado'];
 
+/* ── DOM ID CONSTANTS ── */
+/* Central registry of all DOM IDs used in JS.
+   If an element is renamed in HTML, you get one clear error here. */
+var DOM = {
+  // Auth
+  authScreen:'authScreen', mainApp:'mainApp', splashScreen:'splashScreen',
+  loginEmail:'loginEmail', loginPass:'loginPass',
+  signupEmail:'signupEmail', signupPass:'signupPass',
+  // Header
+  syncDot:'syncDot', syncLabel:'syncLabel', syncBadge:'syncBadge',
+  themeBtn:'themeBtn', themeColorMeta:'themeColorMeta',
+  userDropdown:'userDropdown', userMenuWrap:'userMenuWrap',
+  udEmail:'udEmail', monthLabel:'monthLabel',
+  monthSelectorRow:'monthSelectorRow', monthSelectorAnalisis:'monthSelectorAnalisis',
+  monthLabelAnalisis:'monthLabelAnalisis',
+  offlineBanner:'offlineBanner', navEl:'navEl',
+  // Balance / Resumen
+  balARS:'balARS', balDelta:'balDelta', balUSDRow:'balUSDRow',
+  kpiIn:'kpiIn', kpiOut:'kpiOut', kpiSave:'kpiSave',
+  balanceCard:'balanceCard', globalBudgetCard:'globalBudgetCard',
+  savingsGoalCard:'savingsGoalCard', recentList:'recentList',
+  recurBanner:'recurBanner', budgetAlert:'budgetAlert',
+  periodSummary:'periodSummary', pmInicioCard:'pmInicioCard',
+  pmSummaryListInicio:'pmSummaryListInicio',
+  // Historial
+  histList:'histList', searchInput:'searchInput', searchClear:'searchClear',
+  filterBar:'filterBar', filterBarMore:'filterBarMore', filterMore:'filterMore',
+  advFilterBody:'advFilterBody', advFilterArrow:'advFilterArrow',
+  advFilterLabel:'advFilterLabel', advFilterCount:'advFilterCount',
+  catFilterRow:'catFilterRow', tagFilterRow:'tagFilterRow',
+  // Análisis
+  donutChart:'donutChart', donutLegend:'donutLegend',
+  barChart:'barChart', barPeriodRow:'barPeriodRow',
+  catEvoChart:'catEvoChart', catEvoLegend:'catEvoLegend',
+  catEvoPeriodRow:'catEvoPeriodRow', catEvoSearchInput:'catEvoSearchInput',
+  catEvoSuggest:'catEvoSuggest', catEvolutionSelect:'catEvolutionSelect',
+  pmSummaryList:'pmSummaryList', pmUnspecifiedNotice:'pmUnspecifiedNotice',
+  pmCompareChart:'pmCompareChart', pmCompareSelect:'pmCompareSelect',
+  pmComparePeriodRow:'pmComparePeriodRow', pmCompareTotals:'pmCompareTotals',
+  // Ahorro
+  instrumentList:'instrumentList', portfolioTotalARS:'portfolioTotalARS',
+  portfolioTotalUSD:'portfolioTotalUSD', portfolioTotalRdto:'portfolioTotalRdto',
+  portfolioVsMetaChart:'portfolioVsMetaChart',
+  portfolioVsMetaLegend:'portfolioVsMetaLegend', portfolioVsMetaMsg:'portfolioVsMetaMsg',
+  goalsEmpty:'goalsEmpty', goalsList:'goalsList',
+  // Config
+  themeToggle:'themeToggle', themePaletteGrid:'themePaletteGrid',
+  usdRateInput:'usdRateInput', monthlyInput:'monthlyInput',
+  monthlyBudgetInput:'monthlyBudgetInput', savingsGoalInput:'savingsGoalInput',
+  tcDate:'tcDate', catMgmtList:'catMgmtList',
+  pmList:'pmList', pmNewInput:'pmNewInput',
+  cfgUserEmail:'cfgUserEmail', cfgSyncStatus:'cfgSyncStatus',
+  // Register modal
+  modalReg:'modalReg', modalRegTitle:'modalRegTitle',
+  amtInput:'amtInput', amtSym:'amtSym', descInput:'descInput',
+  dateInput:'dateInput', dateOptional:'dateOptional', dateOptionalMsg:'dateOptionalMsg',
+  catChips:'catChips', catSearchInput:'catSearchInput', catSuggest:'catSuggest',
+  pmSelect:'pmSelect', recurToggle:'recurToggle',
+  tagsChips:'tagsChips', tagInput:'tagInput', tagSuggest:'tagSuggest',
+  installmentsCheck:'installmentsCheck', installmentsBody:'installmentsBody',
+  installmentsCount:'installmentsCount', installmentAmt:'installmentAmt',
+  accordionBody:'accordionBody', accordionLbl:'accordionLbl',
+  saveRegBtn:'saveRegBtn', delBtn:'delBtn',
+  typOut:'typOut', typIn:'typIn', cARS:'cARS', cUSD:'cUSD',
+  acList:'acList',
+  // Quick modal
+  modalQuick:'modalQuick', qAmtInput:'qAmtInput',
+  quickGrid:'quickGrid', qcARS:'qcARS', qcUSD:'qcUSD',
+  // Other modals
+  modalCat:'modalCat', modalCatTitle:'modalCatTitle',
+  catNameInput:'catNameInput', catIconInput:'catIconInput',
+  catIconSelected:'catIconSelected', colorPicker:'colorPicker',
+  catBudgetInput:'catBudgetInput', emojiGrid:'emojiGrid',
+  delCatBtn:'delCatBtn',
+  modalGoal:'modalGoal', modalGoalTitle:'modalGoalTitle',
+  goalNameInput:'goalNameInput', goalTargetInput:'goalTargetInput',
+  goalDeadlineInput:'goalDeadlineInput', goalColorPicker:'goalColorPicker',
+  goalPortfolioLinks:'goalPortfolioLinks', goalPortfolioEmpty:'goalPortfolioEmpty',
+  delGoalBtn:'delGoalBtn',
+  modalDebt:'modalDebt', modalDebtTitle:'modalDebtTitle',
+  debtPersonInput:'debtPersonInput', debtAmtInput:'debtAmtInput',
+  debtDescInput:'debtDescInput', debtDateInput:'debtDateInput',
+  debtList:'debtList', debtEmpty:'debtEmpty',
+  debtOweTotal:'debtOweTotal', debtOwedTotal:'debtOwedTotal',
+  delDebtBtn:'delDebtBtn',
+  modalInstrument:'modalInstrument', modalInstrumentTitle:'modalInstrumentTitle',
+  instNameInput:'instNameInput', instTypeInput:'instTypeInput',
+  instColorPicker:'instColorPicker', delInstBtn:'delInstBtn',
+  modalMovement:'modalMovement', modalMovementTitle:'modalMovementTitle',
+  movAmtInput:'movAmtInput', movDescInput:'movDescInput',
+  movDateInput:'movDateInput', movValuationHint:'movValuationHint',
+  mcARS:'mcARS', mcUSD:'mcUSD',
+  modalLogout:'modalLogout',
+  // Toast / Onboarding / Tutorial
+  toast:'toast', onboarding:'onboarding', obNextBtn:'obNextBtn',
+  tutorialOverlay:'tutorialOverlay', tutorialSpotlight:'tutorialSpotlight',
+  tutorialTooltip:'tutorialTooltip', tutorialTitle:'tutorialTitle',
+  tutorialBody:'tutorialBody', tutorialDots:'tutorialDots',
+  tutorialNextBtn:'tutorialNextBtn',
+  // Misc
+  contentArea:'contentArea', syncDotDropdown:'syncDotDropdown',
+  syncStatusLabel:'syncStatusLabel', recurList:'recurList',
+};
+
+/**
+ * $() — safe getElementById wrapper.
+ * Returns the element or null. In development, logs a warning if not found.
+ */
+function $(id) {
+  var el = document.getElementById(id);
+  if (!el) {
+    // Only warn for IDs we know should exist (registered in DOM)
+    if (DOM[id] !== undefined) {
+      // Silently return null — element may not be in current view
+    }
+  }
+  return el;
+}
+
+/* ── SCHEMA VALIDATORS ── */
+/* Each validator returns {ok:true} or {ok:false, error:'message'}.
+   Called before any write to S.txs / S.goals / S.debts / S.portfolio. */
+
+var VALID_TX_TYPES  = ['in','out'];
+var VALID_CURR      = ['ARS','USD'];
+var VALID_MOV_TYPES = ['deposit','withdraw','valuation'];
+
+function validateTx(tx) {
+  if (!tx || typeof tx !== 'object')        return {ok:false, error:'Transacción inválida'};
+  if (!tx.id || typeof tx.id !== 'string')  return {ok:false, error:'ID inválido'};
+  var amt = Number(tx.amt);
+  if (isNaN(amt) || amt <= 0)               return {ok:false, error:'Monto debe ser mayor a 0'};
+  if (VALID_TX_TYPES.indexOf(tx.type) < 0)  return {ok:false, error:'Tipo debe ser "in" o "out"'};
+  if (VALID_CURR.indexOf(tx.curr) < 0)      return {ok:false, error:'Moneda debe ser ARS o USD'};
+  if (!tx.cat || typeof tx.cat !== 'string') return {ok:false, error:'Categoría requerida'};
+  if (!tx.date || typeof tx.date !== 'string') return {ok:false, error:'Fecha requerida'};
+  // Date format: YYYY-MM-DD or YYYY-MM-00
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(tx.date)) return {ok:false, error:'Formato de fecha inválido'};
+  return {ok:true};
+}
+
+function validateGoal(goal) {
+  if (!goal || typeof goal !== 'object')     return {ok:false, error:'Meta inválida'};
+  if (!goal.name || !goal.name.trim())       return {ok:false, error:'Nombre de meta requerido'};
+  var target = Number(goal.target);
+  if (isNaN(target) || target <= 0)          return {ok:false, error:'Monto objetivo debe ser mayor a 0'};
+  if (goal.deadline && !/^\d{4}-\d{2}(-\d{2})?$/.test(goal.deadline))
+                                             return {ok:false, error:'Fecha límite inválida'};
+  return {ok:true};
+}
+
+function validateDebt(debt) {
+  if (!debt || typeof debt !== 'object')     return {ok:false, error:'Deuda inválida'};
+  if (!debt.person || !debt.person.trim())   return {ok:false, error:'Nombre requerido'};
+  var amt = Number(debt.amt);
+  if (isNaN(amt) || amt <= 0)               return {ok:false, error:'Monto debe ser mayor a 0'};
+  if (VALID_CURR.indexOf(debt.curr) < 0)     return {ok:false, error:'Moneda debe ser ARS o USD'};
+  if (['lend','borrow'].indexOf(debt.type) < 0) return {ok:false, error:'Tipo debe ser "lend" o "borrow"'};
+  return {ok:true};
+}
+
+function validateInstrument(inst) {
+  if (!inst || typeof inst !== 'object')     return {ok:false, error:'Instrumento inválido'};
+  if (!inst.name || !inst.name.trim())       return {ok:false, error:'Nombre requerido'};
+  if (!inst.type || typeof inst.type !== 'string') return {ok:false, error:'Tipo requerido'};
+  return {ok:true};
+}
+
+function validateMovement(mov) {
+  if (!mov || typeof mov !== 'object')                return {ok:false, error:'Movimiento inválido'};
+  if (VALID_MOV_TYPES.indexOf(mov.type) < 0)          return {ok:false, error:'Tipo de movimiento inválido'};
+  var amt = Number(mov.amt);
+  if (isNaN(amt) || amt <= 0)                         return {ok:false, error:'Monto debe ser mayor a 0'};
+  if (VALID_CURR.indexOf(mov.curr) < 0)               return {ok:false, error:'Moneda inválida'};
+  if (!mov.date || !/^\d{4}-\d{2}-\d{2}$/.test(mov.date)) return {ok:false, error:'Fecha inválida'};
+  return {ok:true};
+}
+
+/* ── IMPORT VALIDATOR ── */
+/* Used when importing JSON backups — sanitizes each record */
+function validateImport(data) {
+  if (!data || typeof data !== 'object') return {ok:false, error:'Archivo JSON inválido'};
+  var errors = [];
+  var warnings = [];
+
+  // Validate txs
+  if (data.txs) {
+    if (!Array.isArray(data.txs)) { errors.push('txs debe ser un array'); }
+    else {
+      var badTxs = 0;
+      data.txs = data.txs.filter(function(tx) {
+        var r = validateTx(tx);
+        if (!r.ok) { badTxs++; return false; }
+        return true;
+      });
+      if (badTxs > 0) warnings.push(badTxs+' transacciones inválidas ignoradas');
+    }
+  }
+
+  // Validate goals
+  if (data.goals && Array.isArray(data.goals)) {
+    var badGoals = 0;
+    data.goals = data.goals.filter(function(g) {
+      var r = validateGoal(g);
+      if (!r.ok) { badGoals++; return false; }
+      return true;
+    });
+    if (badGoals > 0) warnings.push(badGoals+' metas inválidas ignoradas');
+  }
+
+  // Validate debts
+  if (data.debts && Array.isArray(data.debts)) {
+    var badDebts = 0;
+    data.debts = data.debts.filter(function(d) {
+      var r = validateDebt(d);
+      if (!r.ok) { badDebts++; return false; }
+      return true;
+    });
+    if (badDebts > 0) warnings.push(badDebts+' deudas inválidas ignoradas');
+  }
+
+  if (errors.length) return {ok:false, error:errors.join('; ')};
+  return {ok:true, warnings:warnings, data:data};
+}
+
+
+
 var DEFAULT_CATS = [
   {id:'edesur',    label:'Edesur',           icon:'⚡', color:'#f5c842', builtin:true},
   {id:'metrogas',  label:'Metrogas',          icon:'🔥', color:'#ff9a42', builtin:true},
@@ -2939,26 +3166,49 @@ function userDocRef(uid) {
   return fbDb.collection('users').doc(uid);
 }
 
-async function syncToCloud() {
+async/* ── FIRESTORE SYNC ── */
+var _syncFailCount = 0;
+var _syncRetryTimer = null;
+var _MAX_SYNC_RETRIES = 3;
+var _SYNC_RETRY_DELAY = 5000; // 5s between retries
+
+function syncToCloud() {
   if (!currentUser) return;
   setSyncState('syncing');
-  try {
-    await userDocRef(currentUser.uid).set({
-      txs:  S.txs,
-      goals:S.goals,
-      debts:S.debts,
-      portfolio:S.portfolio,
-      paymentMethods:S.paymentMethods,
-      cats: S.cats,
-      cfg:  S.cfg,
-      updatedAt: Date.now(),
-    });
+  clearTimeout(_syncRetryTimer);
+
+  userDocRef(currentUser.uid).set({
+    txs:  S.txs,
+    goals:S.goals,
+    debts:S.debts,
+    portfolio:S.portfolio,
+    paymentMethods:S.paymentMethods,
+    cats: S.cats,
+    cfg:  S.cfg,
+    updatedAt: Date.now(),
+  }).then(function() {
+    _syncFailCount = 0;
     setSyncState('synced');
     console.log('[sync] OK — txs:', S.txs.length);
-  } catch(e) {
-    console.error('[sync] ERROR:', e.code, e.message);
+  }).catch(function(e) {
+    _syncFailCount++;
+    console.error('[sync] ERROR ('+_syncFailCount+'/'+_MAX_SYNC_RETRIES+'):', e.code, e.message);
     setSyncState('error');
-  }
+
+    if (_syncFailCount < _MAX_SYNC_RETRIES) {
+      // Auto-retry with backoff
+      _syncRetryTimer = setTimeout(function() {
+        console.log('[sync] Reintentando...');
+        syncToCloud();
+      }, _SYNC_RETRY_DELAY * _syncFailCount);
+    } else {
+      // Give up — show user a visible error
+      _syncFailCount = 0;
+      toast('⚠️ No se pudo sincronizar. Los datos están guardados localmente.');
+      var cfgStatus = document.getElementById('cfgSyncStatus');
+      if (cfgStatus) cfgStatus.textContent = 'Error de sincronización — datos locales';
+    }
+  });
 }
 
 async function loadFromCloud() {
@@ -4038,26 +4288,22 @@ function saveGoal() {
   var name     = document.getElementById('goalNameInput').value.trim();
   var target   = parseFloat(document.getElementById('goalTargetInput').value);
   var deadline = document.getElementById('goalDeadlineInput').value || null;
-  if(!name)          { toast('⚠️ Ingresá un nombre para la meta'); return; }
-  if(!target||target<=0){ toast('⚠️ Ingresá un monto objetivo'); return; }
-
-  // Read portfolio links
   var links = [];
   document.querySelectorAll('#goalPortfolioLinks input[data-instid]').forEach(function(inp) {
     var pct = parseFloat(inp.value)||0;
     if (pct>0) links.push({instId:inp.dataset.instid, pct:Math.min(100,pct)});
   });
 
+  var draft = {name:name, target:target, deadline:deadline};
+  var vr = validateGoal(draft);
+  if (!vr.ok) { toast('⚠️ '+vr.error); return; }
+
   if(S.ui.editGoalId) {
     var idx = S.goals.findIndex(function(g){ return g.id===S.ui.editGoalId; });
     if(idx>=0) S.goals[idx] = Object.assign({},S.goals[idx],{name:name,target:target,deadline:deadline,color:S.ui.editGoalColor,portfolioLinks:links});
     toast('✓ Meta actualizada');
   } else {
-    S.goals.push({
-      id:uid(), name:name, target:target, deadline:deadline,
-      color:S.ui.editGoalColor, createdAt:todayISO(),
-      portfolioLinks:links
-    });
+    S.goals.push({id:uid(),name:name,target:target,deadline:deadline,color:S.ui.editGoalColor,createdAt:todayISO(),portfolioLinks:links});
     toast('✓ Meta creada');
   }
   save(); closeModal('modalGoal'); renderAfterSave('goal');
@@ -4249,7 +4495,7 @@ function saveTx(){
     renderAfterSave('tx');
     return;
   }
-  // Normal save
+  // Normal save — validate first
   var amt=parseFloat(document.getElementById('amtInput').value);
   if(!amt||amt<=0){toast('⚠️ Ingresá un monto válido');return;}
   var desc=document.getElementById('descInput').value.trim();
@@ -4262,11 +4508,22 @@ function saveTx(){
   var pmSel = document.getElementById('pmSelect');
   var pm = pmSel ? pmSel.value : '';
   var isEdit=Boolean(S.ui.editId);
+
+  // Build draft tx for validation
+  var draftTx = {
+    id: isEdit ? S.ui.editId : uid(),
+    type:S.ui.txType, amt:amt, curr:S.ui.txCurr,
+    cat:S.ui.txCat, desc:desc, date:date,
+    recurring:S.ui.txRecur, tags:tags, paymentMethod:pm
+  };
+  var vr = validateTx(draftTx);
+  if (!vr.ok) { toast('⚠️ '+vr.error); return; }
+
   if(isEdit){
     var idx=S.txs.findIndex(function(t){return t.id===S.ui.editId;});
-    if(idx>=0)S.txs[idx]=Object.assign({},S.txs[idx],{type:S.ui.txType,amt:amt,curr:S.ui.txCurr,cat:S.ui.txCat,desc:desc,date:date,recurring:S.ui.txRecur,tags:tags,paymentMethod:pm});
+    if(idx>=0)S.txs[idx]=Object.assign({},S.txs[idx],{type:draftTx.type,amt:draftTx.amt,curr:draftTx.curr,cat:draftTx.cat,desc:draftTx.desc,date:draftTx.date,recurring:draftTx.recurring,tags:draftTx.tags,paymentMethod:draftTx.paymentMethod});
   }else{
-    S.txs.push({id:uid(),type:S.ui.txType,amt:amt,curr:S.ui.txCurr,cat:S.ui.txCat,desc:desc,date:date,ts:Date.now(),recurring:S.ui.txRecur,note:'',tags:tags,paymentMethod:pm});
+    S.txs.push(Object.assign({ts:Date.now(),note:''},draftTx));
   }
   currentTxTags=[];
   renderTagChips();
@@ -4408,7 +4665,7 @@ function setColorPalette(palette) {
 window.setColorPalette = setColorPalette;
 
 var debouncedSaveRate = debounce(function(v){var n=parseFloat(v);if(n>0){updateCfg({usdRate:n,usdRateUpdated:Date.now()});renderHeader();updateTCDate();toast('✓ TC actualizado');}},800);
-var debouncedSaveIncome = debounce(function(v){var n=parseFloat(v);S.cfg.monthlyIncome=n>=0?n:0;save();renderHeader();},800);
+var debouncedSaveIncome = debounce(function(v){var n=parseFloat(v);updateCfg({monthlyIncome:n>=0?n:0});renderHeader();},800);
 
 function exportCSV(){
   if(!S.txs.length){toast('Sin transacciones');return;}
@@ -4426,7 +4683,7 @@ function dlFile(name,type,content){
 }
 function confirmClear(){
   if(confirm('¿Borrar TODOS los datos? No se puede deshacer.')){
-    S.txs=[];S.goals=[];S.cfg.budgets={};save();renderHeader();renderTab(S.ui.tab);toast('🗑️ Datos eliminados');
+    S.txs=[];S.goals=[];updateCfg({budgets:{}});save();renderHeader();renderTab(S.ui.tab);toast('🗑️ Datos eliminados');
   }
 };;
 
@@ -4579,19 +4836,31 @@ function importJSON() {
     var reader = new FileReader();
     reader.onload = function(ev) {
       try {
-        var d = migrate(JSON.parse(ev.target.result));
-        var txCount = (d.txs && d.txs.length) || 0;
-        var goalsCount = (d.goals && d.goals.length) || 0;
-        if (!confirm('¿Importar ' + txCount + ' transacciones y ' + goalsCount + ' metas? Los datos actuales se reemplazarán.')) return;
+        var raw = JSON.parse(ev.target.result);
+        var d = migrate(raw);
+
+        // Validate and sanitize
+        var vr = validateImport(d);
+        if (!vr.ok) { toast('⚠️ '+vr.error); return; }
+
+        var txCount    = (d.txs    && d.txs.length)    || 0;
+        var goalsCount = (d.goals  && d.goals.length)  || 0;
+        var warnMsg    = vr.warnings && vr.warnings.length ? '\n\nAvisos: '+vr.warnings.join('; ') : '';
+
+        if (!confirm('¿Importar '+txCount+' transacciones y '+goalsCount+' metas? Los datos actuales se reemplazarán.'+warnMsg)) return;
+
         if (d.txs   && d.txs.length)   S.txs   = d.txs;
         if (d.goals && d.goals.length)  S.goals = d.goals;
+        if (d.debts && d.debts.length)  S.debts = d.debts;
+        if (d.portfolio)                S.portfolio = d.portfolio;
+        if (d.paymentMethods)           S.paymentMethods = d.paymentMethods;
         if (d.cats  && d.cats.length)  { S.cats = d.cats; CATS = S.cats; }
         if (d.cfg) S.cfg = Object.assign({}, S.cfg, d.cfg);
         if (!S.cfg.budgets) S.cfg.budgets = {};
         save();
         renderHeader();
         renderTab(S.ui.tab);
-        toast('✓ ' + txCount + ' transacciones importadas');
+        toast('✓ '+txCount+' transacciones importadas'+(vr.warnings&&vr.warnings.length?' (con avisos)':''));
       } catch(err) {
         toast('⚠️ Archivo inválido o corrupto');
         console.error('importJSON error', err);
@@ -5415,14 +5684,13 @@ function saveMovement() {
   var amt  = parseFloat(document.getElementById('movAmtInput').value);
   var desc = document.getElementById('movDescInput').value.trim();
   var date = document.getElementById('movDateInput').value || todayISO();
-  if (!amt||amt<=0) { toast('⚠️ Ingresá un monto válido'); return; }
+  var draft = {type:currentMovType, amt:amt, curr:currentMovCurr, date:date};
+  var vr = validateMovement(draft);
+  if (!vr.ok) { toast('⚠️ '+vr.error); return; }
   var inst = (S.portfolio||[]).find(function(i){ return i.id===activeInstId; });
   if (!inst) { toast('⚠️ Instrumento no encontrado'); return; }
   if (!inst.movements) inst.movements = [];
-  inst.movements.push({
-    id:uid(), type:currentMovType, amt:amt, curr:currentMovCurr,
-    desc:desc, date:date, ts:Date.now()
-  });
+  inst.movements.push({id:uid(), type:currentMovType, amt:amt, curr:currentMovCurr, desc:desc, date:date, ts:Date.now()});
   save(); closeModal('modalMovement');
   toast(currentMovType==='deposit'?'✓ Depósito registrado':currentMovType==='withdraw'?'✓ Retiro registrado':'✓ Valuación actualizada');
   renderPortfolio();
@@ -6196,7 +6464,66 @@ function renderMetas() {
 }
 window.renderMetas = renderMetas;
 
-/* ── MODAL HELPERS (restored) ── */
+/* ── DEBT CRUD (missing functions restored) ── */
+function saveDebt() {
+  var person = (document.getElementById('debtPersonInput').value||'').trim();
+  var amt    = parseFloat(document.getElementById('debtAmtInput').value);
+  var desc   = (document.getElementById('debtDescInput').value||'').trim();
+  var date   = document.getElementById('debtDateInput').value || todayISO();
+
+  var draft = {person:person, amt:amt, curr:currentDebtCurr, type:currentDebtType, desc:desc, date:date};
+  var vr = validateDebt(draft);
+  if (!vr.ok) { toast('⚠️ '+vr.error); return; }
+
+  if (!S.debts) S.debts = [];
+  if (editDebtId) {
+    var idx = S.debts.findIndex(function(d){ return d.id===editDebtId; });
+    if (idx>=0) S.debts[idx] = Object.assign({},S.debts[idx],{person:person,amt:amt,curr:currentDebtCurr,type:currentDebtType,desc:desc,date:date});
+    toast('✓ Deuda actualizada');
+  } else {
+    S.debts.push({id:uid(),person:person,amt:amt,curr:currentDebtCurr,type:currentDebtType,desc:desc,date:date,settled:false,createdAt:todayISO()});
+    toast('✓ Deuda registrada');
+  }
+  save(); closeModal('modalDebt'); renderDeudas();
+}
+
+function deleteDebt() {
+  if (!editDebtId) return;
+  S.debts = (S.debts||[]).filter(function(d){ return d.id!==editDebtId; });
+  save(); closeModal('modalDebt'); renderDeudas();
+  toast('🗑️ Deuda eliminada');
+}
+
+function setDebtType(type) {
+  currentDebtType = type;
+  var lendBtn   = document.getElementById('debtTypeLend');
+  var borrowBtn = document.getElementById('debtTypeBorrow');
+  if (lendBtn)   lendBtn.className   = 'type-btn'+(type==='lend'  ?' sel-in':'');
+  if (borrowBtn) borrowBtn.className = 'type-btn'+(type==='borrow'?' sel-out':'');
+}
+
+function setDebtCurr(c) {
+  currentDebtCurr = c;
+  var arsBtn = document.getElementById('mcARS');
+  var usdBtn = document.getElementById('mcUSD');
+  if (arsBtn) arsBtn.classList.toggle('active', c==='ARS');
+  if (usdBtn) usdBtn.classList.toggle('active', c==='USD');
+}
+
+function toggleDebtSettled(id) {
+  var debt = (S.debts||[]).find(function(d){ return d.id===id; });
+  if (!debt) return;
+  debt.settled = !debt.settled;
+  save(); renderDeudas();
+  toast(debt.settled ? '✓ Marcado como saldado' : '↩️ Marcado como pendiente');
+}
+window.saveDebt          = saveDebt;
+window.deleteDebt        = deleteDebt;
+window.setDebtType       = setDebtType;
+window.setDebtCurr       = setDebtCurr;
+window.toggleDebtSettled = toggleDebtSettled;
+
+
 function buildChips(){
   var active=S.ui.txCat;
   var el=document.getElementById('catChips');
@@ -6231,11 +6558,7 @@ function toggleRecur(){
   if(S.ui.txRecur)tog.classList.add('on');else tog.classList.remove('on');
 };
 window.openDebtModal    = openDebtModal;
-window.saveDebt         = saveDebt;
-window.deleteDebt       = deleteDebt;
-window.setDebtType      = setDebtType;
-window.setDebtCurr      = setDebtCurr;
-window.toggleDebtSettled= toggleDebtSettled;
+/* debt exports moved to saveDebt block */
 window.dismissWeekly    = dismissWeekly;
 window.focusTagInput    = focusTagInput;
 window.addTag           = addTag;
