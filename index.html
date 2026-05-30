@@ -1949,15 +1949,6 @@ body{
         </div>
       </div>
 
-      <!-- Línea ahorro acumulado -->
-      <div class="card">
-        <div class="card-hdr collapsible collapsed" onclick="toggleCard(this)"><span>Ahorro acumulado</span></div>
-        <div class="card-body collapsed">
-          <div class="chart-wrap">
-            <div class="chart-canvas-wrap" style="height:180px"><canvas id="lineChart"></canvas></div>
-          </div>
-        </div>
-      </div>
       <!-- Evolución por categoría -->
       <div class="card">
         <div class="card-hdr collapsible collapsed" onclick="toggleCard(this)"><span>Evolución por categoría</span></div>
@@ -1981,6 +1972,19 @@ body{
       <!-- Resumen: ahorro calculado vs real -->
       <div class="ahorro-section-title">Resumen de ahorro</div>
       <div class="ahorro-vs" id="ahorroVsCard"></div>
+
+      <!-- Portfolio vs Meta Ideal -->
+      <div class="ahorro-section-title">Portfolio vs meta acumulada</div>
+      <div class="card" style="margin-bottom:10px">
+        <div class="card-hdr collapsible collapsed" onclick="toggleCard(this)">
+          <span>Evolución del portfolio</span>
+        </div>
+        <div class="card-body collapsed">
+          <div id="portfolioVsMetaLegend" style="display:flex;gap:14px;padding:10px 16px 4px;font-size:11px"></div>
+          <div class="chart-canvas-wrap" style="height:200px"><canvas id="portfolioVsMetaChart"></canvas></div>
+          <div id="portfolioVsMetaMsg" style="padding:8px 16px 12px;font-size:11px;color:var(--muted)"></div>
+        </div>
+      </div>
 
       <!-- Portfolio de instrumentos -->
       <div class="ahorro-section-title">Portfolio</div>
@@ -3021,9 +3025,11 @@ function toggleCard(hdr) {
       var canvas = body.querySelector('canvas');
       if (canvas) {
         var id = canvas.id;
-        if (id === 'donutChart') renderDonut();
-        if (id === 'barChart')   renderBar();
-        if (id === 'lineChart')  renderLine();
+        if (id === 'donutChart')           renderDonut();
+        if (id === 'barChart')             renderBar();
+        if (id === 'lineChart')            renderLine();
+        if (id === 'portfolioVsMetaChart') renderPortfolioVsMeta();
+        if (id === 'catEvoChart')          renderCatEvolution();
       }
     }
   }
@@ -3061,17 +3067,13 @@ function initSwipe(el, txId) {
   el.addEventListener('touchend', function() {
     swiping = false;
     if (curX < -60) {
-      // Confirm delete
-      el.style.transform = 'translateX(-80px)';
+      // Direct delete with undo toast (no confirm dialog)
+      el.style.transform = 'translateX(-100%)';
+      el.style.opacity = '0';
+      el.style.transition = 'transform .25s, opacity .2s';
       setTimeout(function() {
-        if (confirm('¿Eliminar este movimiento?')) {
-          S.txs = S.txs.filter(function(t) { return t.id !== txId; });
-          save(); renderAfterSave('tx'); toast('🗑️ Eliminado'); vibrate(20);
-        } else {
-          el.style.transform = '';
-          wrap.classList.remove('swiping');
-        }
-      }, 100);
+        deleteTxWithUndo(txId);
+      }, 220);
     } else {
       el.style.transform = '';
       wrap.classList.remove('swiping');
@@ -3595,63 +3597,129 @@ function renderBar() {
   });
 }
 
-function renderLine() {
-  var now = new Date();
-  var months = 12;
-  var labels=[], lineData=[], cumulative=0;
+/* ── PORTFOLIO VS META IDEAL ── */
+var chartPortfolioVsMeta = null;
 
-  for(var i=months-1; i>=0; i--) {
-    var d = new Date(now.getFullYear(), now.getMonth()-i, 1);
-    var y=d.getFullYear(), m=d.getMonth();
-    var txs=S.txs.filter(function(t){ return inMonth(t,y,m); });
-    if(!txs.length && i>0) continue;
-    var b=calcBal(txs);
-    cumulative += b.total;
-    labels.push(MONTHS[m].slice(0,3)+' '+String(y).slice(2));
-    lineData.push(Math.round(cumulative));
+function renderPortfolioVsMeta() {
+  var canvas = document.getElementById('portfolioVsMetaChart');
+  if (!canvas) return;
+
+  var goal = S.cfg.savingsGoal || 0;
+  // Start date: October 2025 (or first tx date if later)
+  var startYear = 2025, startMonth = 9; // Oct 2025 = month index 9
+
+  var now = new Date();
+  var labels = [], portfolioData = [], idealData = [];
+  var monthsFromStart = (now.getFullYear()-startYear)*12 + (now.getMonth()-startMonth) + 1;
+  monthsFromStart = Math.max(1, Math.min(monthsFromStart, 24));
+
+  for (var i = 0; i < monthsFromStart; i++) {
+    var d = new Date(startYear, startMonth + i, 1);
+    labels.push(MONTHS[d.getMonth()].slice(0,3)+" '"+String(d.getFullYear()).slice(2));
+
+    // Ideal: savingsGoal × months elapsed
+    idealData.push(goal * (i + 1));
+
+    // Real: latest portfolio value as of that month
+    // Use last valuation before end of month across all instruments
+    var monthEnd = new Date(d.getFullYear(), d.getMonth()+1, 0, 23, 59, 59);
+    var totalReal = 0;
+    (S.portfolio||[]).forEach(function(inst) {
+      var movs = (inst.movements||[]).sort(function(a,b){return a.date>b.date?1:-1;});
+      // Find last valuation on or before monthEnd
+      var valuations = movs.filter(function(m){
+        return m.type==='valuation' && m.date && m.date <= monthEnd.toISOString().slice(0,10);
+      });
+      if (valuations.length) {
+        var last = valuations[valuations.length-1];
+        totalReal += last.curr==='USD' ? last.amt*S.cfg.usdRate : last.amt;
+      } else {
+        // Fall back to net deposits up to that month
+        var net = 0;
+        movs.forEach(function(m){
+          if (!m.date || m.date > monthEnd.toISOString().slice(0,10)) return;
+          if (m.type==='deposit')  net += m.curr==='USD'?m.amt*S.cfg.usdRate:m.amt;
+          if (m.type==='withdraw') net -= m.curr==='USD'?m.amt*S.cfg.usdRate:m.amt;
+        });
+        totalReal += Math.max(0, net);
+      }
+    });
+    portfolioData.push(Math.round(totalReal));
   }
 
-  var canvas = document.getElementById('lineChart');
-  if(!canvas) return;
   var th = chartTheme();
+  if (chartPortfolioVsMeta) { chartPortfolioVsMeta.destroy(); chartPortfolioVsMeta=null; }
 
-  if(chartLine) { chartLine.destroy(); chartLine=null; }
-
-  if(labels.length < 2) {
-    canvas.parentElement.innerHTML='<div style="height:180px;display:flex;align-items:center;justify-content:center;font-size:12px;color:var(--muted)">Registrá al menos 2 meses para ver la curva</div>';
+  if (!goal && !(S.portfolio||[]).length) {
+    canvas.parentElement.innerHTML = '<div style="height:200px;display:flex;align-items:center;justify-content:center;font-size:12px;color:var(--muted);padding:20px;text-align:center">Configurá una meta de ahorro mensual en Config → Finanzas y registrá instrumentos en Portfolio para ver este gráfico</div>';
     return;
   }
 
-  chartLine = new Chart(canvas, {
-    type:'line',
-    data:{
-      labels:labels,
-      datasets:[{
-        label:'Ahorro acumulado',
-        data:lineData,
-        borderColor:'#3bc957',
-        backgroundColor:'rgba(59,201,87,.08)',
-        borderWidth:2,
-        pointBackgroundColor:'#3bc957',
-        pointRadius:3,
-        tension:.35,
-        fill:true,
-      }]
+  chartPortfolioVsMeta = new Chart(canvas.getContext('2d'), {
+    type: 'line',
+    data: {
+      labels: labels,
+      datasets: [
+        {
+          label: 'Portfolio real',
+          data: portfolioData,
+          borderColor: 'rgba(66,212,96,1)',
+          backgroundColor: 'rgba(66,212,96,.08)',
+          borderWidth: 2.5,
+          pointBackgroundColor: 'rgba(66,212,96,1)',
+          pointRadius: 3,
+          tension: .3,
+          fill: true,
+        },
+        {
+          label: goal ? 'Meta ideal ('+fARS(goal)+'/mes)' : 'Meta ideal',
+          data: idealData,
+          borderColor: 'rgba(253,212,74,.8)',
+          borderWidth: 1.5,
+          borderDash: [5,4],
+          pointRadius: 0,
+          fill: false,
+        }
+      ]
     },
-    options:{
-      responsive:true, maintainAspectRatio:false,
-      plugins:{ legend:{display:false}, tooltip:{
-        callbacks:{ label:function(ctx){ return ' '+fARS(ctx.parsed.y); } }
-      }},
-      scales:{
-        x:{ grid:{color:th.grid}, ticks:{color:th.text,font:{size:10},maxRotation:0} },
-        y:{ grid:{color:th.grid}, ticks:{color:th.text,font:{size:10},
-          callback:function(v){ return v>=1000?'$'+(v/1000).toFixed(0)+'k':'$'+v; }
+    options: {
+      responsive: true, maintainAspectRatio: false, animation:{duration:400},
+      plugins: {
+        legend: { display: false },
+        tooltip: { callbacks: { label: function(ctx){ return ctx.dataset.label+': '+fARS(ctx.parsed.y); } } }
+      },
+      scales: {
+        x: { grid:{color:th.grid}, ticks:{color:th.text,font:{size:10},maxRotation:0,maxTicksLimit:8} },
+        y: { grid:{color:th.grid}, ticks:{color:th.text,font:{size:10},
+          callback:function(v){ return v>=1000000?'$'+(v/1000000).toFixed(1)+'M':v>=1000?'$'+(v/1000).toFixed(0)+'k':'$'+v; }
         }}
       }
     }
   });
+
+  // Legend
+  var legEl = document.getElementById('portfolioVsMetaLegend');
+  if (legEl) {
+    legEl.innerHTML =
+      '<div style="display:flex;align-items:center;gap:5px"><div style="width:12px;height:12px;border-radius:50%;background:rgba(66,212,96,1)"></div>Portfolio real</div>'+
+      (goal ? '<div style="display:flex;align-items:center;gap:5px"><div style="width:16px;height:2px;background:rgba(253,212,74,.8)"></div>Meta ideal</div>' : '');
+  }
+
+  // Message: difference in last month
+  var last = portfolioData[portfolioData.length-1];
+  var lastIdeal = idealData[idealData.length-1];
+  var msgEl = document.getElementById('portfolioVsMetaMsg');
+  if (msgEl && goal) {
+    var diff = last - lastIdeal;
+    msgEl.innerHTML = diff >= 0
+      ? '<span style="color:var(--a2)">✓ Tu portfolio supera la meta en '+fARS(diff)+'</span>'
+      : '<span style="color:var(--red)">↓ Tu portfolio está '+fARS(Math.abs(diff))+' por debajo de la meta</span>';
+  }
 }
+window.renderPortfolioVsMeta = renderPortfolioVsMeta;
+
+/* kept for compat but replaced in UI */
+function renderLine() { /* replaced by renderPortfolioVsMeta */ }
 
 /* ── BAR PERIOD TOGGLE ── */
 document.addEventListener('DOMContentLoaded', function() {
@@ -3986,8 +4054,7 @@ function saveTx(){
 };
 function deleteTx(){
   if(!S.ui.editId)return;
-  S.txs=S.txs.filter(function(t){return t.id!==S.ui.editId;});
-  save();closeModal('modalReg');toast('🗑️ Eliminado');vibrate(20);renderAfterSave('tx');
+  deleteTxWithUndo(S.ui.editId);
 };
 
 /* ── QUICK MODAL ── */
@@ -4991,6 +5058,7 @@ function getInstrumentDeposited(inst) {
 /* ── RENDER AHORRO TAB ── */
 function renderAhorro() {
   renderAhorroVs();
+  renderPortfolioVsMeta();
   renderPortfolio();
   renderMetas();
 }
@@ -5360,7 +5428,48 @@ function toggleDateOptional() {
 }
 window.toggleDateOptional = toggleDateOptional;
 
-/* ── WINDOW EXPORTS (bugs) ── */
+/* ── UNDO DELETE ── */
+var _undoStack = null; // { txs, tx, timeout }
+
+function deleteTxWithUndo(txId) {
+  var tx = S.txs.find(function(t){ return t.id === txId; });
+  if (!tx) return;
+  // Remove from array
+  S.txs = S.txs.filter(function(t){ return t.id !== txId; });
+  save();
+  closeModal('modalReg');
+  renderAfterSave('tx');
+  vibrate(20);
+  // Clear previous undo if pending
+  if (_undoStack && _undoStack.timeout) clearTimeout(_undoStack.timeout);
+  // Show undo toast
+  var toastEl = document.getElementById('toast');
+  if (toastEl) {
+    toastEl.innerHTML = '🗑️ Eliminado <button onclick="undoDelete()" style="margin-left:10px;background:rgba(255,255,255,.15);border:none;color:inherit;font-weight:700;padding:2px 10px;border-radius:8px;cursor:pointer;font-family:inherit;font-size:12px">Deshacer</button>';
+    toastEl.classList.add('show');
+    // Store undo data
+    _undoStack = {
+      tx: tx,
+      timeout: setTimeout(function() {
+        toastEl.classList.remove('show');
+        toastEl.innerHTML = '';
+        _undoStack = null;
+      }, 4500)
+    };
+  }
+}
+
+function undoDelete() {
+  if (!_undoStack || !_undoStack.tx) return;
+  clearTimeout(_undoStack.timeout);
+  S.txs.push(_undoStack.tx);
+  S.txs.sort(function(a,b){ return b.ts - a.ts; });
+  save();
+  renderAfterSave('tx');
+  toast('↩️ Movimiento restaurado');
+  _undoStack = null;
+}
+window.undoDelete = undoDelete;
 window.openInstrumentModal = openInstrumentModal;
 window.saveInstrument      = saveInstrument;
 window.deleteInstrument    = deleteInstrument;
