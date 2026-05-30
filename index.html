@@ -4105,7 +4105,9 @@ function openModal(type,id){
     catInp.placeholder = c ? c.icon+' '+c.label+' ✓' : 'Buscar categoría…';
   }
   if (chips) chips.style.display = '';
-  setType(S.ui.txType);setCurr(S.ui.txCurr);buildChips();
+  setType(S.ui.txType);
+  setCurr(S.ui.txCurr);
+  buildChips();
   document.getElementById('modalReg').classList.add('open');
   setTimeout(function(){document.getElementById('amtInput').focus();},200);
 };
@@ -5875,7 +5877,35 @@ fbAuth.onAuthStateChanged(function(user) {
   }
 });
 
-/* ── WINDOW EXPORTS (v20) ── */
+/* ── MODAL HELPERS (restored) ── */
+function openEdit(id){openModal(null,id);};
+function closeModal(id){document.getElementById(id).classList.remove('open');};
+function setType(t){
+  S.ui.txType=t;
+  var outBtn=document.getElementById('typOut');
+  var inBtn=document.getElementById('typIn');
+  if(outBtn)outBtn.className='type-btn'+(t==='out'?' sel-out':'');
+  if(inBtn) inBtn.className ='type-btn'+(t==='in' ?' sel-in' :'');
+};
+function setCurr(c){
+  S.ui.txCurr=c;
+  var arsBtn=document.getElementById('cARS');
+  var usdBtn=document.getElementById('cUSD');
+  var sym=document.getElementById('amtSym');
+  if(arsBtn)arsBtn.classList.toggle('active',c==='ARS');
+  if(usdBtn)usdBtn.classList.toggle('active',c==='USD');
+  if(sym)sym.textContent=c==='USD'?'US$':'$';
+};
+function toggleRecur(){
+  S.ui.txRecur=!S.ui.txRecur;
+  var tog=document.getElementById('recurToggle');
+  if(S.ui.txRecur)tog.classList.add('on');else tog.classList.remove('on');
+};
+window.openEdit    = openEdit;
+window.closeModal  = closeModal;
+window.setType     = setType;
+window.setCurr     = setCurr;
+window.toggleRecur = toggleRecur;
 window.openDebtModal    = openDebtModal;
 window.saveDebt         = saveDebt;
 window.deleteDebt       = deleteDebt;
