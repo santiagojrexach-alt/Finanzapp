@@ -2801,7 +2801,7 @@ var DAYS = ['domingo','lunes','martes','miércoles','jueves','viernes','sábado'
 /* ── DOM ID CONSTANTS ── */
 /* Central registry of all DOM IDs used in JS.
    If an element is renamed in HTML, you get one clear error here. */
-var DOM = {
+var DOM_IDS = {
   // Auth
   authScreen:'authScreen', mainApp:'mainApp', splashScreen:'splashScreen',
   loginEmail:'loginEmail', loginPass:'loginPass',
@@ -2909,8 +2909,8 @@ var DOM = {
 function $(id) {
   var el = document.getElementById(id);
   if (!el) {
-    // Only warn for IDs we know should exist (registered in DOM)
-    if (DOM[id] !== undefined) {
+    // Only warn for IDs we know should exist (registered in DOM_IDS)
+    if (DOM_IDS[id] !== undefined) {
       // Silently return null — element may not be in current view
     }
   }
@@ -3469,6 +3469,144 @@ function calcBal(txs){
   return{aIn:aIn,aOut:aOut,uIn:uIn,uOut:uOut,aNet:aIn-aOut,uNet:uIn-uOut,total:(aIn-aOut)+(uIn-uOut)*rate,totalIn:aIn+uIn*rate,totalOut:aOut+uOut*rate};
 }
 
+/* ══════════════════════════════════════════════════════
+   DATA LAYER — pure functions, no DOM access.
+   Input: state (S) + parameters. Output: plain objects.
+   These can be called from anywhere without side effects.
+   ══════════════════════════════════════════════════════ */
+
+/**
+ * calcSavedForGoal — estimate how much has been "saved" toward a goal
+ * based on transaction history (rough heuristic: cumulative net balance
+ * since the goal was created).
+ */
+function calcSavedForGoal(goal) {
+  if (!goal || !goal.createdAt) return 0;
+  var txs = S.txs.filter(function(t){ return t.date >= goal.createdAt; });
+  return Math.max(0, calcBal(txs).total);
+}
+
+/**
+ * calcPortfolioHistory — returns {labels, portfolioData, idealData} arrays
+ * for the portfolio-vs-ideal chart. Pure: no DOM, no chart.js.
+ */
+function calcPortfolioHistory(savingsGoal, startYear, startMonth) {
+  startYear  = startYear  || 2025;
+  startMonth = startMonth || 9; // Oct 2025
+  savingsGoal = savingsGoal || 0;
+
+  var now = new Date();
+  var monthsFromStart = (now.getFullYear()-startYear)*12 + (now.getMonth()-startMonth) + 1;
+  monthsFromStart = Math.max(1, Math.min(monthsFromStart, 24));
+
+  var labels = [], portfolioData = [], idealData = [];
+
+  for (var i = 0; i < monthsFromStart; i++) {
+    var d = new Date(startYear, startMonth + i, 1);
+    labels.push(MONTHS[d.getMonth()].slice(0,3)+" '"+String(d.getFullYear()).slice(2));
+    idealData.push(savingsGoal * (i + 1));
+
+    var monthEndStr = new Date(d.getFullYear(), d.getMonth()+1, 0, 23, 59, 59).toISOString().slice(0,10);
+    var totalReal = 0;
+    (S.portfolio||[]).forEach(function(inst) {
+      var movs = (inst.movements||[]).slice().sort(function(a,b){ return a.date>b.date?1:-1; });
+      var valuations = movs.filter(function(m){
+        return m.type==='valuation' && m.date && m.date <= monthEndStr;
+      });
+      if (valuations.length) {
+        var last = valuations[valuations.length-1];
+        totalReal += last.curr==='USD' ? last.amt*S.cfg.usdRate : last.amt;
+      } else {
+        var net = 0;
+        movs.forEach(function(m){
+          if (!m.date || m.date > monthEndStr) return;
+          var ars = m.curr==='USD' ? m.amt*S.cfg.usdRate : m.amt;
+          if (m.type==='deposit')  net += ars;
+          if (m.type==='withdraw') net -= ars;
+        });
+        totalReal += Math.max(0, net);
+      }
+    });
+    portfolioData.push(Math.round(totalReal));
+  }
+  return { labels:labels, portfolioData:portfolioData, idealData:idealData };
+}
+
+/**
+ * calcPmHistoryByMonth — returns spending per payment method per month.
+ * Returns {labels, datasets} ready for chart.js. Pure function.
+ */
+function calcPmHistoryByMonth(months, pmIds) {
+  var now = new Date();
+  var labels = [], monthKeys = [];
+  for (var i = months-1; i >= 0; i--) {
+    var d = new Date(now.getFullYear(), now.getMonth()-i, 1);
+    labels.push(MONTHS[d.getMonth()].slice(0,3)+" '"+String(d.getFullYear()).slice(2));
+    monthKeys.push({y:d.getFullYear(), m:d.getMonth()});
+  }
+  var result = {};
+  (pmIds||[]).forEach(function(pmId) {
+    result[pmId] = monthKeys.map(function(mk) {
+      return S.txs.filter(function(t){
+        return t.type==='out' && t.paymentMethod===pmId && inMonth(t,mk.y,mk.m);
+      }).reduce(function(s,t){ return s+toARS(t.amt,t.curr); }, 0);
+    });
+  });
+  return { labels:labels, dataByPm:result };
+}
+
+/**
+ * calcPmTotalsAllTime — total spending per payment method since beginning.
+ */
+function calcPmTotalsAllTime() {
+  var totals = {};
+  (S.paymentMethods||[]).forEach(function(pm) { totals[pm.id] = 0; });
+  S.txs.filter(function(t){ return t.type==='out' && t.paymentMethod; })
+    .forEach(function(t){
+      if (totals[t.paymentMethod] !== undefined) totals[t.paymentMethod] += toARS(t.amt,t.curr);
+    });
+  return totals;
+}
+
+/**
+ * calcCatEvolutionData — monthly spending for one category over N months.
+ */
+function calcCatEvolutionData(catId, months) {
+  var now = new Date();
+  var labels = [], data = [];
+  for (var i = months-1; i >= 0; i--) {
+    var d = new Date(now.getFullYear(), now.getMonth()-i, 1);
+    labels.push(MONTHS[d.getMonth()].slice(0,3)+" '"+String(d.getFullYear()).slice(2));
+    var sum = S.txs.filter(function(t){
+      return t.type==='out' && t.cat===catId && inMonth(t,d.getFullYear(),d.getMonth());
+    }).reduce(function(s,t){ return s+toARS(t.amt,t.curr); }, 0);
+    data.push(sum);
+  }
+  var avg = data.filter(Boolean).length > 0
+    ? data.reduce(function(a,b){return a+b;},0) / data.filter(Boolean).length
+    : 0;
+  return { labels:labels, data:data, avg:avg };
+}
+
+/* ══════════════════════════════════════════════════════
+   SAFE RENDER — wraps any render call in try/catch.
+   Prevents one broken render from crashing the whole app.
+   ══════════════════════════════════════════════════════ */
+
+/**
+ * safeRender(fn, name) — calls fn(), catches any error and logs it.
+ * Never throws. Use for all top-level render calls.
+ */
+function safeRender(fn, name) {
+  try {
+    fn();
+  } catch(e) {
+    console.error('[FinanzApp render error] '+name+':', e.message, e);
+    // Don't show toast for render errors — they're usually benign
+    // (e.g. element not in DOM on current tab)
+  }
+}
+
 /* ── RENDER HEADER ── */
 function renderHeader(){
   var monthText = MONTHS[S.ui.month]+' '+S.ui.year;
@@ -3646,16 +3784,6 @@ function renderCatEvolution() {
   var legend = document.getElementById('catEvoLegend');
   if (!select || !canvas) return;
 
-  // Populate select with categories that have transactions
-  var usedCats = {};
-  S.txs.filter(function(t){return t.type==='out';}).forEach(function(t){ usedCats[t.cat]=true; });
-  var currentVal = select.value;
-  select.innerHTML = '<option value="">— Elegí una categoría —</option>' +
-    S.cats.filter(function(c){ return usedCats[c.id]; }).map(function(c){
-      return '<option value="'+c.id+'"'+(c.id===currentVal?' selected':'')+'>'+ c.icon+' '+esc(c.label)+'</option>';
-    }).join('');
-  select.value = currentVal;
-
   var catId = select.value;
   if (!catId) {
     if (legend) legend.textContent = 'Seleccioná una categoría para ver su evolución';
@@ -3663,67 +3791,53 @@ function renderCatEvolution() {
     return;
   }
 
-  // Build month buckets going back catEvoMonths months from current
-  var now = new Date();
-  var labels = [], data = [], totals = [];
-  for (var i = catEvoMonths-1; i >= 0; i--) {
-    var d = new Date(now.getFullYear(), now.getMonth()-i, 1);
-    var y = d.getFullYear(), m = d.getMonth();
-    labels.push(MONTHS[m].slice(0,3)+" '"+String(y).slice(2));
-    var sum = S.txs.filter(function(t){
-      return t.type==='out' && t.cat===catId && inMonth(t,y,m);
-    }).reduce(function(s,t){ return s+toARS(t.amt,t.curr); }, 0);
-    data.push(sum);
-    totals.push(sum);
-  }
-
-  var avg = totals.reduce(function(a,b){return a+b;},0)/totals.filter(Boolean).length||0;
-  var c = cat(catId);
-  var color = c.color || 'rgba(66,212,96,1)';
+  // Pure data computation
+  var evo   = calcCatEvolutionData(catId, catEvoMonths);
+  var c     = cat(catId);
+  var color = c && c.color ? c.color : 'rgba(66,212,96,1)';
+  var th    = chartTheme();
 
   if (catEvoChartInstance) catEvoChartInstance.destroy();
-  var isDark = S.cfg.theme === 'dark';
-  var gridColor = isDark ? 'rgba(255,255,255,.06)' : 'rgba(0,0,0,.06)';
-  var textColor = isDark ? '#78aa82' : '#607888';
 
   catEvoChartInstance = new Chart(canvas.getContext('2d'), {
     type: 'bar',
     data: {
-      labels: labels,
-      datasets: [{
-        label: c.label,
-        data: data,
-        backgroundColor: color+'99',
-        borderColor: color,
-        borderWidth: 2,
-        borderRadius: 6,
-      }, {
-        label: 'Promedio',
-        data: data.map(function(){ return avg; }),
-        type: 'line',
-        borderColor: 'rgba(253,212,74,.7)',
-        borderWidth: 1.5,
-        borderDash: [4,4],
-        pointRadius: 0,
-        fill: false,
-      }]
+      labels: evo.labels,
+      datasets: [
+        {
+          label: c ? c.label : catId,
+          data: evo.data,
+          backgroundColor: color+'99',
+          borderColor: color,
+          borderWidth: 2,
+          borderRadius: 6,
+        },
+        {
+          label: 'Promedio',
+          data: evo.data.map(function(){ return evo.avg; }),
+          type: 'line',
+          borderColor: 'rgba(253,212,74,.7)',
+          borderWidth: 1.5,
+          borderDash: [4,4],
+          pointRadius: 0,
+          fill: false,
+        }
+      ]
     },
     options: {
       responsive:true, maintainAspectRatio:false, animation:{duration:400},
-      plugins:{ legend:{display:false}, tooltip:{
-        callbacks:{ label:function(ctx){ return fARS(ctx.raw); } }
-      }},
+      plugins:{ legend:{display:false}, tooltip:{ callbacks:{ label:function(ctx){ return fARS(ctx.raw); } } } },
       scales:{
-        x:{ grid:{color:gridColor}, ticks:{color:textColor,font:{size:10}} },
-        y:{ grid:{color:gridColor}, ticks:{color:textColor,font:{size:10},
+        x:{ grid:{color:th.grid}, ticks:{color:th.text,font:{size:10}} },
+        y:{ grid:{color:th.grid}, ticks:{color:th.text,font:{size:10},
           callback:function(v){ return '$'+Math.round(v/1000)+'k'; } } }
       }
     }
   });
 
   if (legend) {
-    var maxMonth = labels[data.indexOf(Math.max.apply(null,data))];
-    legend.innerHTML = 'Promedio mensual: <strong>'+fARS(avg)+'</strong> · Pico: '+maxMonth;
+    var maxMonth = evo.labels[evo.data.indexOf(Math.max.apply(null, evo.data))];
+    legend.innerHTML = 'Promedio mensual: <strong>'+fARS(evo.avg)+'</strong>'+(maxMonth?' · Pico: '+maxMonth:'');
   }
 }
 window.renderCatEvolution = renderCatEvolution;
@@ -4109,55 +4223,18 @@ function renderPortfolioVsMeta() {
   if (!canvas) return;
 
   var goal = S.cfg.savingsGoal || 0;
-  // Start date: October 2025 (or first tx date if later)
-  var startYear = 2025, startMonth = 9; // Oct 2025 = month index 9
 
-  var now = new Date();
-  var labels = [], portfolioData = [], idealData = [];
-  var monthsFromStart = (now.getFullYear()-startYear)*12 + (now.getMonth()-startMonth) + 1;
-  monthsFromStart = Math.max(1, Math.min(monthsFromStart, 24));
-
-  for (var i = 0; i < monthsFromStart; i++) {
-    var d = new Date(startYear, startMonth + i, 1);
-    labels.push(MONTHS[d.getMonth()].slice(0,3)+" '"+String(d.getFullYear()).slice(2));
-
-    // Ideal: savingsGoal × months elapsed
-    idealData.push(goal * (i + 1));
-
-    // Real: latest portfolio value as of that month
-    // Use last valuation before end of month across all instruments
-    var monthEnd = new Date(d.getFullYear(), d.getMonth()+1, 0, 23, 59, 59);
-    var totalReal = 0;
-    (S.portfolio||[]).forEach(function(inst) {
-      var movs = (inst.movements||[]).sort(function(a,b){return a.date>b.date?1:-1;});
-      // Find last valuation on or before monthEnd
-      var valuations = movs.filter(function(m){
-        return m.type==='valuation' && m.date && m.date <= monthEnd.toISOString().slice(0,10);
-      });
-      if (valuations.length) {
-        var last = valuations[valuations.length-1];
-        totalReal += last.curr==='USD' ? last.amt*S.cfg.usdRate : last.amt;
-      } else {
-        // Fall back to net deposits up to that month
-        var net = 0;
-        movs.forEach(function(m){
-          if (!m.date || m.date > monthEnd.toISOString().slice(0,10)) return;
-          if (m.type==='deposit')  net += m.curr==='USD'?m.amt*S.cfg.usdRate:m.amt;
-          if (m.type==='withdraw') net -= m.curr==='USD'?m.amt*S.cfg.usdRate:m.amt;
-        });
-        totalReal += Math.max(0, net);
-      }
-    });
-    portfolioData.push(Math.round(totalReal));
+  if (!goal && !(S.portfolio||[]).length) {
+    canvas.parentElement.innerHTML = '<div style="height:200px;display:flex;align-items:center;justify-content:center;font-size:12px;color:var(--muted);padding:20px;text-align:center">Configurá una meta de ahorro mensual en ⚙️ → Finanzas y registrá instrumentos para ver este gráfico</div>';
+    return;
   }
+
+  // Pure data computation
+  var hist = calcPortfolioHistory(goal);
+  var labels = hist.labels, portfolioData = hist.portfolioData, idealData = hist.idealData;
 
   var th = chartTheme();
   if (chartPortfolioVsMeta) { chartPortfolioVsMeta.destroy(); chartPortfolioVsMeta=null; }
-
-  if (!goal && !(S.portfolio||[]).length) {
-    canvas.parentElement.innerHTML = '<div style="height:200px;display:flex;align-items:center;justify-content:center;font-size:12px;color:var(--muted);padding:20px;text-align:center">Configurá una meta de ahorro mensual en Config → Finanzas y registrá instrumentos en Portfolio para ver este gráfico</div>';
-    return;
-  }
 
   chartPortfolioVsMeta = new Chart(canvas.getContext('2d'), {
     type: 'line',
@@ -4209,9 +4286,9 @@ function renderPortfolioVsMeta() {
       (goal ? '<div style="display:flex;align-items:center;gap:5px"><div style="width:16px;height:2px;background:rgba(253,212,74,.8)"></div>Meta ideal</div>' : '');
   }
 
-  // Message: difference in last month
-  var last = portfolioData[portfolioData.length-1];
-  var lastIdeal = idealData[idealData.length-1];
+  // Message
+  var last = portfolioData[portfolioData.length-1] || 0;
+  var lastIdeal = idealData[idealData.length-1] || 0;
   var msgEl = document.getElementById('portfolioVsMetaMsg');
   if (msgEl && goal) {
     var diff = last - lastIdeal;
@@ -4243,17 +4320,7 @@ var GOAL_COLORS = ['#3bc957','#f5c842','#6ab4f5','#ff7070','#b09af5','#f5a442','
 /* ── GOALS RENDER ── */
 
 
-function calcSavedForGoal(g) {
-  // Option A: balance acumulado desde la fecha de creación de la meta
-  var since = g.createdAt ? new Date(g.createdAt) : new Date(0);
-  since.setHours(0,0,0,0);
-  var txs = S.txs.filter(function(t) {
-    if(!t.date) return false;
-    var p = t.date.split('-').map(Number);
-    return new Date(p[0],p[1]-1,p[2]) >= since;
-  });
-  return Math.max(0, calcBal(txs).total);
-}
+
 
 /* ── GOAL MODAL ── */
 
@@ -4324,7 +4391,7 @@ document.getElementById('modalGoal').addEventListener('click', function(e){
 function renderCfg(){
   var dark=S.cfg.theme==='dark';
   var tog=document.getElementById('themeToggle');
-  if(dark)tog.classList.add('on');else tog.classList.remove('on');
+  if(tog){ if(dark)tog.classList.add('on');else tog.classList.remove('on'); }
   var ri=document.getElementById('usdRateInput');
   if(ri&&document.activeElement!==ri)ri.value=S.cfg.usdRate;
   var mi=document.getElementById('monthlyInput');
@@ -4342,7 +4409,6 @@ function renderCfg(){
   updateUserMenu();
   updateTCDate();
   renderCatMgmt();
-  // Payment methods
   renderPmList();
   buildPmSelect();
 }
@@ -5038,29 +5104,28 @@ window.onunhandledrejection = function(e) {
 
 /* ── GRANULAR RENDER (replaces renderAll) ── */
 function renderTab(tab) {
-  renderHeader();
-  if (tab === 'resumen')  { renderResumen(); }
-  if (tab === 'registro') { renderHist(); }
-  if (tab === 'analisis') { /* charts render on card expand */ }
-  if (tab === 'ahorro')   { renderAhorro(); }
-  if (tab === 'deudas')   { renderDeudas(); }
-  if (tab === 'config')   { renderCfg(); }
+  safeRender(renderHeader, 'renderHeader');
+  if (tab === 'resumen')  { safeRender(renderResumen,  'renderResumen'); }
+  if (tab === 'registro') { safeRender(renderHist,     'renderHist'); }
+  if (tab === 'analisis') { /* charts render on card expand — no-op here */ }
+  if (tab === 'ahorro')   { safeRender(renderAhorro,   'renderAhorro'); }
+  if (tab === 'deudas')   { safeRender(renderDeudas,   'renderDeudas'); }
+  if (tab === 'config')   { safeRender(renderCfg,      'renderCfg'); }
 }
 
 /* render only what changed after a save */
 function renderAfterSave(context) {
-  renderHeader(); // balance always needs update
+  safeRender(renderHeader, 'renderHeader');
   var tab = S.ui.tab;
   if (context === 'tx') {
-    if (tab === 'resumen')  { renderResumen(); }
-    if (tab === 'registro') { renderHist(); }
-    // other tabs don't need immediate update
+    if (tab === 'resumen')  { safeRender(renderResumen, 'renderResumen'); }
+    if (tab === 'registro') { safeRender(renderHist,    'renderHist'); }
   }
   if (context === 'goal') {
-    if (tab === 'ahorro') { renderAhorro(); }
+    if (tab === 'ahorro') { safeRender(renderAhorro, 'renderAhorro'); }
   }
   if (context === 'cat') {
-    if (tab === 'config') { renderCfg(); }
+    if (tab === 'config') { safeRender(renderCfg, 'renderCfg'); }
   }
 }
 
@@ -5990,11 +6055,9 @@ function renderPmSummary() {
   }
 }
 
-/* ══════════════════════════════════════════════════════
-   PM COMPARISON CHART — consumo por tarjeta histórico
-   ══════════════════════════════════════════════════════ */
 var pmCompareChartInstance = null;
 var pmCompareMonths = 6;
+var PM_CHART_COLORS = ['rgba(66,212,96,1)','rgba(122,192,255,1)','rgba(200,160,255,1)','rgba(255,204,112,1)','rgba(255,136,136,1)'];
 
 function renderPmComparison() {
   var canvas   = document.getElementById('pmCompareChart');
@@ -6014,36 +6077,29 @@ function renderPmComparison() {
     pms.map(function(pm){ return '<option value="'+pm.id+'">'+(pm.icon||'💳')+' '+esc(pm.name)+'</option>'; }).join('');
   if (curVal) sel.value = curVal;
 
-  var selectedId = sel.value;
+  var selectedId  = sel.value;
   var selectedPms = selectedId === 'all' ? pms : pms.filter(function(pm){ return pm.id===selectedId; });
+  var pmIds       = selectedPms.map(function(pm){ return pm.id; });
 
-  // Build month labels
-  var now = new Date();
-  var labels = [], monthKeys = [];
-  for (var i = pmCompareMonths-1; i >= 0; i--) {
-    var d = new Date(now.getFullYear(), now.getMonth()-i, 1);
-    labels.push(MONTHS[d.getMonth()].slice(0,3)+" '"+String(d.getFullYear()).slice(2));
-    monthKeys.push({y:d.getFullYear(), m:d.getMonth()});
-  }
-
-  // Colors for multiple cards
-  var CHART_COLORS = ['rgba(66,212,96,1)','rgba(122,192,255,1)','rgba(200,160,255,1)','rgba(255,204,112,1)','rgba(255,136,136,1)'];
+  // Pure data computation
+  var hist = calcPmHistoryByMonth(pmCompareMonths, pmIds);
+  var allTotals = calcPmTotalsAllTime();
 
   var datasets = selectedPms.map(function(pm, pi) {
-    var color = CHART_COLORS[pi % CHART_COLORS.length];
-    var data = monthKeys.map(function(mk) {
-      return S.txs.filter(function(t){
-        return t.type==='out' && t.paymentMethod===pm.id && inMonth(t,mk.y,mk.m);
-      }).reduce(function(s,t){ return s+toARS(t.amt,t.curr); }, 0);
-    });
-    return { label:(pm.icon||'💳')+' '+pm.name, data:data, backgroundColor:color.replace(',1)',', .7)'), borderColor:color, borderWidth:1.5, borderRadius:5 };
+    var color = PM_CHART_COLORS[pi % PM_CHART_COLORS.length];
+    return {
+      label:(pm.icon||'💳')+' '+pm.name,
+      data: hist.dataByPm[pm.id] || [],
+      backgroundColor:color.replace(',1)',', .7)'),
+      borderColor:color, borderWidth:1.5, borderRadius:5
+    };
   });
 
   var th = chartTheme();
   if (pmCompareChartInstance) { pmCompareChartInstance.destroy(); pmCompareChartInstance=null; }
   pmCompareChartInstance = new Chart(canvas.getContext('2d'), {
     type: 'bar',
-    data: { labels:labels, datasets:datasets },
+    data: { labels: hist.labels, datasets: datasets },
     options: {
       responsive:true, maintainAspectRatio:false, animation:{duration:300},
       plugins: {
@@ -6059,12 +6115,10 @@ function renderPmComparison() {
     }
   });
 
-  // Totals summary
+  // Totals summary using pure data
   if (totalsEl) {
     var parts = selectedPms.map(function(pm) {
-      var total = S.txs.filter(function(t){ return t.type==='out'&&t.paymentMethod===pm.id; })
-        .reduce(function(s,t){ return s+toARS(t.amt,t.curr); }, 0);
-      return (pm.icon||'💳')+' '+pm.name+': <strong>'+fARS(total)+'</strong> acumulado';
+      return (pm.icon||'💳')+' '+pm.name+': <strong>'+fARS(allTotals[pm.id]||0)+'</strong> acumulado';
     });
     totalsEl.innerHTML = parts.join(' &nbsp;·&nbsp; ');
   }
