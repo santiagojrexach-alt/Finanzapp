@@ -152,7 +152,6 @@
 }
 
 
-
 html{height:100%;background:var(--bg)}
 body{
   height:100%;min-height:100vh;background:var(--bg);color:var(--text);
@@ -1767,7 +1766,7 @@ input[type=number]{-moz-appearance:textfield}
   cursor:pointer;transition:background .15s;font-family:'Nunito',sans-serif;
 }
 .inst-btn:hover{background:var(--border)}
-.inst-btn.primary{background:rgba(66,212,96,.1);border-color:color-mix(in srgb, var(--a2) 30%, transparent);color:var(--accent)}
+.inst-btn.primary{background:color-mix(in srgb, var(--a2) 10%, transparent);border-color:color-mix(in srgb, var(--a2) 30%, transparent);color:var(--accent)}
 
 /* Ahorro tab sections */
 .ahorro-section-title{
@@ -3290,7 +3289,6 @@ function toggleCard(hdr) {
     }
   }
 }
-window.toggleCard = toggleCard;
 
 function toggleCfg(hdr) {
   hdr.classList.toggle('collapsed');
@@ -3299,7 +3297,6 @@ function toggleCfg(hdr) {
     body.classList.toggle('collapsed');
   }
 }
-window.toggleCfg = toggleCfg;
 
 /* ── SWIPE TO DELETE ── */
 function initSwipe(el, txId) {
@@ -3367,13 +3364,8 @@ function closeAC() {
   var list = document.getElementById('acList');
   if (list) list.classList.remove('open');
 }
-window.onDescInput = onDescInput;
-window.pickAC      = pickAC;
-window.closeAC     = closeAC;
 
 /* ── LOGOUT MODAL ── */
-window.openLogoutModal = openLogoutModal;
-window.confirmLogout   = confirmLogout;
 
 /* ── MONTH VS PREV MONTH DELTA ── */
 function calcDelta() {
@@ -3742,7 +3734,7 @@ function chartTheme() {
 function renderAnalysis() {
   renderDonut();
   renderBar();
-  renderLine();
+  /* renderLine: replaced by portfolioVsMeta */
   renderCatEvolution();
   renderPmSummary();
   renderPmComparison();
@@ -3980,8 +3972,6 @@ function renderPortfolioVsMeta() {
 }
 window.renderPortfolioVsMeta = renderPortfolioVsMeta;
 
-/* kept for compat but replaced in UI */
-function renderLine() { /* replaced by renderPortfolioVsMeta */ }
 
 /* ── BAR PERIOD TOGGLE ── */
 document.addEventListener('DOMContentLoaded', function() {
@@ -4001,61 +3991,7 @@ document.addEventListener('DOMContentLoaded', function() {
 var GOAL_COLORS = ['#3bc957','#f5c842','#6ab4f5','#ff7070','#b09af5','#f5a442','#5ee8d4','#f48fb1'];
 
 /* ── GOALS RENDER ── */
-function renderMetas() {
-  var goals = S.goals;
-  var emptyEl = document.getElementById('goalsEmpty');
-  var listEl  = document.getElementById('goalsList');
-  if(!emptyEl || !listEl) return;
 
-  if(!goals.length) {
-    emptyEl.style.display = 'block';
-    listEl.innerHTML = '';
-    return;
-  }
-  emptyEl.style.display = 'none';
-
-  // Calculate savings since goal creation date
-  listEl.innerHTML = goals.map(function(g) {
-    var saved = calcSavedForGoal(g);
-    var pct   = g.target > 0 ? Math.min(saved/g.target*100, 100) : 0;
-    var pctDisplay = pct.toFixed(0)+'%';
-    var color = g.color || '#3bc957';
-
-    // Pace indicator
-    var paceHtml = '';
-    if(g.deadline) {
-      var daysLeft = Math.ceil((new Date(g.deadline) - new Date()) / 86400000);
-      var needed   = g.target - saved;
-      if(daysLeft > 0 && needed > 0) {
-        var perMonth = needed / (daysLeft/30);
-        paceHtml = '<div class="goal-pace" style="color:var(--muted)">Necesitás '+fARS(perMonth)+'/mes para llegar a tiempo</div>';
-      } else if(saved >= g.target) {
-        paceHtml = '<div class="goal-pace" style="color:var(--accent)">✓ Meta alcanzada</div>';
-      } else if(daysLeft <= 0) {
-        paceHtml = '<div class="goal-pace" style="color:var(--red)">Fecha límite vencida</div>';
-      }
-    }
-
-    var deadlineLbl = g.deadline
-      ? 'Vence '+fmtDate(g.deadline)
-      : 'Sin fecha límite';
-
-    return '<div class="goal-item" data-id="'+g.id+'">' +
-      '<div class="goal-top">' +
-        '<div class="goal-name">'+esc(g.name)+'</div>' +
-        '<div class="goal-pct" style="color:'+color+'">'+pctDisplay+'</div>' +
-      '</div>' +
-      '<div class="goal-bar-track">' +
-        '<div class="goal-bar-fill" style="width:'+pct+'%;background:'+color+'"></div>' +
-      '</div>' +
-      '<div class="goal-meta">' +
-        '<span>'+fARS(saved)+' de '+fARS(g.target)+'</span>' +
-        '<span>'+deadlineLbl+'</span>' +
-      '</div>' +
-      paceHtml +
-    '</div>';
-  }).join('');
-}
 
 function calcSavedForGoal(g) {
   // Option A: balance acumulado desde la fecha de creación de la meta
@@ -4521,10 +4457,6 @@ document.getElementById('fabMain').addEventListener('click',function(){openModal
 document.getElementById('fabQuick').addEventListener('click',openQuick);
 
 // Expose goal functions called from inline HTML
-window.openGoalModal = openGoalModal;
-window.saveGoal      = saveGoal;
-window.deleteGoal    = deleteGoal;
-window.selGoalColor  = selGoalColor;
 
 /* ── CONTAINER DELEGATION ── */
 /* One listener per container replaces per-row onclick= in generated HTML */
@@ -4669,7 +4601,6 @@ function importJSON() {
   };
   input.click();
 }
-window.importJSON = importJSON;
 
 /* ── USER MENU (v0.4) ── */
 function toggleUserMenu() {
@@ -4926,7 +4857,6 @@ function focusTagInput() {
   var inp = document.getElementById('tagInput');
   if (inp) inp.focus();
 }
-window.focusTagInput = focusTagInput;
 
 function renderTagChips() {
   var el = document.getElementById('tagsChips');
@@ -4955,7 +4885,6 @@ function onTagInput(val) {
   }).join('');
   suggest.classList.add('open');
 }
-window.onTagInput = onTagInput;
 
 function onTagKey(e) {
   var inp = e.target;
@@ -4972,7 +4901,6 @@ function onTagKey(e) {
     renderTagChips();
   }
 }
-window.onTagKey = onTagKey;
 
 function addTag(tag) {
   if (!tag) return;
@@ -4983,13 +4911,11 @@ function addTag(tag) {
   document.getElementById('tagSuggest').classList.remove('open');
   renderTagChips();
 }
-window.addTag = addTag;
 
 function removeTag(tag) {
   currentTxTags = currentTxTags.filter(function(t){ return t !== tag; });
   renderTagChips();
 }
-window.removeTag = removeTag;
 
 function getAllTags() {
   var tags = {};
@@ -5119,72 +5045,6 @@ function openDebtModal(id) {
   document.getElementById('modalDebt').classList.add('open');
   setTimeout(function(){ document.getElementById('debtPersonInput').focus(); }, 200);
 }
-window.openDebtModal = openDebtModal;
-
-function setDebtType(type) {
-  currentDebtType = type;
-  var lendBtn   = document.getElementById('debtTypeLend');
-  var borrowBtn = document.getElementById('debtTypeBorrow');
-  if (lendBtn)   lendBtn.className   = 'type-btn'+(type==='lend'?' sel-in':'');
-  if (borrowBtn) borrowBtn.className = 'type-btn'+(type==='borrow'?' sel-out':'');
-}
-window.setDebtType = setDebtType;
-
-function setDebtCurr(curr) {
-  currentDebtCurr = curr;
-  var arsBtn = document.getElementById('dcARS');
-  var usdBtn = document.getElementById('dcUSD');
-  if (arsBtn) arsBtn.classList.toggle('active', curr==='ARS');
-  if (usdBtn) usdBtn.classList.toggle('active', curr==='USD');
-}
-window.setDebtCurr = setDebtCurr;
-
-function saveDebt() {
-  var person = document.getElementById('debtPersonInput').value.trim();
-  var amt    = parseFloat(document.getElementById('debtAmtInput').value);
-  var desc   = document.getElementById('debtDescInput').value.trim();
-  var date   = document.getElementById('debtDateInput').value || todayISO();
-  if (!person) { toast('⚠️ Ingresá el nombre de la persona'); return; }
-  if (!amt||amt<=0) { toast('⚠️ Ingresá un monto válido'); return; }
-  if (!S.debts) S.debts = [];
-  if (editDebtId) {
-    var idx = S.debts.findIndex(function(d){ return d.id===editDebtId; });
-    if (idx>=0) S.debts[idx] = Object.assign({},S.debts[idx],{person:person,amt:amt,curr:currentDebtCurr,desc:desc,date:date,type:currentDebtType});
-    toast('✓ Deuda actualizada');
-  } else {
-    S.debts.push({id:uid(),person:person,amt:amt,curr:currentDebtCurr,desc:desc,date:date,type:currentDebtType,settled:false,createdAt:Date.now()});
-    toast('✓ Deuda registrada');
-  }
-  save(); closeModal('modalDebt'); renderDeudas();
-}
-window.saveDebt = saveDebt;
-
-function deleteDebt() {
-  if (!editDebtId) return;
-  if (!confirm('¿Eliminar esta deuda?')) return;
-  S.debts = S.debts.filter(function(d){ return d.id!==editDebtId; });
-  save(); closeModal('modalDebt'); toast('🗑️ Eliminada'); renderDeudas();
-}
-window.deleteDebt = deleteDebt;
-
-function toggleDebtSettled(id) {
-  var d = (S.debts||[]).find(function(x){ return x.id===id; });
-  if (!d) return;
-  d.settled = !d.settled;
-  save(); renderDeudas();
-  toast(d.settled ? '✓ Marcada como saldada' : 'Reabierta');
-}
-window.toggleDebtSettled = toggleDebtSettled;
-
-// Container delegation for debt list
-document.addEventListener('click', function(e) {
-  var item = e.target.closest('.debt-item[data-debtid]');
-  if (item) openDebtModal(item.dataset.debtid);
-});
-
-document.getElementById('modalDebt').addEventListener('click', function(e){
-  /* backdrop click disabled */
-});
 
 /* ══════════════════════════════════════════════════════
    FEATURE 5 — RESUMEN SEMANAL AUTOMÁTICO
@@ -5243,7 +5103,6 @@ function dismissWeekly() {
   var el = document.getElementById('weeklySummaryCard');
   if (el) { el.style.opacity='0'; el.style.transition='opacity .3s'; setTimeout(function(){el.style.display='none';},300); }
 }
-window.dismissWeekly = dismissWeekly;
 
 function getWeekNumber(d) {
   var onejan = new Date(d.getFullYear(),0,1);
@@ -5456,7 +5315,6 @@ function toggleInstrument(id) {
   S.ui.openInstrumentId = S.ui.openInstrumentId === id ? null : id;
   renderPortfolio();
 }
-window.toggleInstrument = toggleInstrument;
 
 /* ── INSTRUMENT MODAL ── */
 function buildInstColorPicker() {
@@ -5487,7 +5345,6 @@ function openInstrumentModal(id) {
   document.getElementById('modalInstrument').classList.add('open');
   setTimeout(function(){ document.getElementById('instNameInput').focus(); }, 200);
 }
-window.openInstrumentModal = openInstrumentModal;
 
 function saveInstrument() {
   var name = document.getElementById('instNameInput').value.trim();
@@ -5504,7 +5361,6 @@ function saveInstrument() {
   }
   save(); closeModal('modalInstrument'); renderPortfolio();
 }
-window.saveInstrument = saveInstrument;
 
 function deleteInstrument() {
   if (!editInstId) return;
@@ -5512,7 +5368,6 @@ function deleteInstrument() {
   S.portfolio = S.portfolio.filter(function(i){ return i.id!==editInstId; });
   save(); closeModal('modalInstrument'); toast('🗑️ Eliminado'); renderPortfolio();
 }
-window.deleteInstrument = deleteInstrument;
 
 document.getElementById('modalInstrument').addEventListener('click', function(e){
   /* backdrop click disabled */
@@ -5535,7 +5390,6 @@ function openMovementModal(instId, type) {
   document.getElementById('modalMovement').classList.add('open');
   setTimeout(function(){ document.getElementById('movAmtInput').focus(); }, 200);
 }
-window.openMovementModal = openMovementModal;
 
 function setMovType(type) {
   currentMovType = type;
@@ -5548,7 +5402,6 @@ function setMovType(type) {
   var hint = document.getElementById('movValuationHint');
   if (hint) hint.style.display = type==='valuation' ? 'block' : 'none';
 }
-window.setMovType = setMovType;
 
 function setMovCurr(curr) {
   currentMovCurr = curr;
@@ -5557,7 +5410,6 @@ function setMovCurr(curr) {
   if (arsBtn) arsBtn.classList.toggle('active', curr==='ARS');
   if (usdBtn) usdBtn.classList.toggle('active', curr==='USD');
 }
-window.setMovCurr = setMovCurr;
 
 function saveMovement() {
   var amt  = parseFloat(document.getElementById('movAmtInput').value);
@@ -5576,7 +5428,6 @@ function saveMovement() {
   renderPortfolio();
   renderAhorroVs();
 }
-window.saveMovement = saveMovement;
 
 document.getElementById('modalMovement').addEventListener('click', function(e){
   /* backdrop click disabled */
@@ -6007,20 +5858,20 @@ function selCatSearch(id) {
 window.selCatSearch = selCatSearch;
 
 document.addEventListener('click', function(e) {
-  var wrap = document.querySelector('.cat-search-wrap');
-  if (wrap && !wrap.contains(e.target)) {
+  // Close both cat search dropdowns on outside click
+  var catWrap = document.querySelector('.cat-search-wrap');
+  if (catWrap && !catWrap.contains(e.target)) {
     var sg = document.getElementById('catSuggest');
     var ch = document.getElementById('catChips');
     if (sg) sg.classList.remove('open');
     if (ch) ch.style.display='';
   }
+  var evoInp = document.getElementById('catEvoSearchInput');
+  if (evoInp && !evoInp.parentElement.contains(e.target)) {
+    var sg2 = document.getElementById('catEvoSuggest');
+    if (sg2) sg2.classList.remove('open');
+  }
 });
-
-/* ══ WIRE NEW FEATURES INTO EXISTING FNS ══ */
-
-/* renderAnalysis merged above */
-
-/* ── CAT EVOLUTION SEARCH ── */
 function onCatEvoSearch(val) {
   var suggest = document.getElementById('catEvoSuggest');
   if (!suggest) return;
@@ -6058,14 +5909,6 @@ function selCatEvo(id, label, icon) {
   renderCatEvolution();
 }
 window.selCatEvo = selCatEvo;
-
-document.addEventListener('click', function(e) {
-  var wrap = document.querySelector('[id="catEvoSearchInput"]');
-  if (wrap && !wrap.parentElement.contains(e.target)) {
-    var sg = document.getElementById('catEvoSuggest');
-    if (sg) sg.classList.remove('open');
-  }
-});
 
 /* ── INTERACTIVE TUTORIAL ── */
 /* ══════════════════════════════════════════════════════
@@ -6270,9 +6113,6 @@ document.addEventListener('input', function(e) {
   }
 });
 
-/* saveTx installments merged into base above */
-
-/* Reset installments checkbox is handled in base openModal below */
 
 /* ══════════════════════════════════════════════════════
    FEATURE 13 — METAS CON PORTFOLIO LINKING
@@ -6390,11 +6230,6 @@ function toggleRecur(){
   var tog=document.getElementById('recurToggle');
   if(S.ui.txRecur)tog.classList.add('on');else tog.classList.remove('on');
 };
-window.openEdit    = openEdit;
-window.closeModal  = closeModal;
-window.setType     = setType;
-window.setCurr     = setCurr;
-window.toggleRecur = toggleRecur;
 window.openDebtModal    = openDebtModal;
 window.saveDebt         = saveDebt;
 window.deleteDebt       = deleteDebt;
@@ -6407,13 +6242,10 @@ window.addTag           = addTag;
 window.removeTag        = removeTag;
 window.onTagInput       = onTagInput;
 window.onTagKey         = onTagKey;
-window.saveTx           = saveTx;
-window.openModal        = openModal;
 window.renderTab        = renderTab;
 window.renderHist       = renderHist;
 window.renderResumen    = renderResumen;
 window.renderCfg        = renderCfg;
-window.exportJSON       = exportJSON;
 window.doLogin         = doLogin;
 window.doSignup        = doSignup;
 window.switchAuthTab   = switchAuthTab;
@@ -6507,10 +6339,10 @@ function updateAnalysisContext() {
 window.updateAnalysisContext = updateAnalysisContext;
 
 /* Wire into renderResumen */
-/* renderPmSummaryInicio merged into base renderResumen */
+
 
 /* Wire into renderAnalysis — but only add context update, not duplicate renderPmSummary */
-/* updateAnalysisContext merged into base renderAnalysis */
+
 
 </script>
 <!-- TUTORIAL OVERLAY — spotlight mode -->
