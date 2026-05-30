@@ -164,16 +164,85 @@ body{
   min-width:80px;text-align:center;
 }
 
-/* HERO */
-.hero{
-  padding:8px 18px 14px;
-  overflow:hidden;
-  transition:max-height .3s cubic-bezier(.4,0,.2,1),
-             opacity .3s,padding .3s;
-  max-height:200px;
+/* ── MONTH SELECTOR (in Resumen content) ── */
+.month-selector-row{
+  display:flex;align-items:center;justify-content:center;
+  gap:8px;padding:14px 18px 10px;
 }
-.hero.collapsed{max-height:0;opacity:0;padding-top:0;padding-bottom:0}
+.month-nav-btn{
+  background:var(--bg3);border:1px solid var(--border);
+  color:var(--muted);font-size:20px;cursor:pointer;
+  width:34px;height:34px;border-radius:10px;
+  display:flex;align-items:center;justify-content:center;
+  transition:background .15s,color .15s;line-height:1;
+  flex-shrink:0;
+}
+.month-nav-btn:hover{background:var(--border);color:var(--text)}
+.month-label-large{
+  font-size:17px;font-weight:700;color:var(--bright);
+  min-width:130px;text-align:center;letter-spacing:-.01em;
+}
 
+/* Month compact in header for non-Resumen tabs */
+.month-ctrl-compact{
+  display:flex;align-items:center;gap:4px;
+  background:var(--bg3);border:1px solid var(--border);
+  border-radius:16px;padding:4px 8px;
+}
+.month-ctrl-compact button{
+  background:none;border:none;color:var(--muted);
+  font-size:15px;cursor:pointer;padding:0 1px;line-height:1;
+}
+.month-ctrl-compact button:hover{color:var(--text)}
+.month-ctrl-compact span{
+  font-size:11px;font-weight:600;color:var(--text);
+  min-width:70px;text-align:center;
+}
+
+/* ── ADVANCED FILTERS (Registro) ── */
+.adv-filter-toggle{
+  display:flex;align-items:center;gap:8px;
+  padding:8px 18px;cursor:pointer;
+  font-size:12px;font-weight:700;color:var(--muted);
+  transition:color .15s;user-select:none;
+}
+.adv-filter-toggle:hover{color:var(--text)}
+.adv-filter-count{
+  background:var(--a2);color:#0a2010;
+  border-radius:10px;padding:1px 7px;
+  font-size:10px;font-weight:800;display:none;
+}
+.adv-filter-count.visible{display:inline}
+.adv-filter-arrow{
+  margin-left:auto;font-size:15px;
+  transition:transform .25s;
+}
+.adv-filter-arrow.open{transform:rotate(90deg)}
+.adv-filter-body{
+  overflow:hidden;max-height:0;
+  transition:max-height .3s cubic-bezier(.4,0,.2,1);
+}
+.adv-filter-body.open{max-height:200px}
+
+/* ── EMOJI PICKER ── */
+.emoji-picker-wrap{display:flex;flex-direction:column;gap:8px}
+.emoji-selected{
+  width:48px;height:48px;font-size:28px;
+  background:var(--bg3);border:1.5px solid var(--border);
+  border-radius:14px;display:flex;align-items:center;justify-content:center;
+  cursor:pointer;
+}
+.emoji-grid{
+  display:grid;grid-template-columns:repeat(8,1fr);gap:4px;
+}
+.emoji-option{
+  font-size:20px;padding:6px 0;border-radius:8px;cursor:pointer;
+  text-align:center;transition:background .12s;user-select:none;
+}
+.emoji-option:hover{background:var(--bg3)}
+.emoji-option.selected{background:rgba(66,212,96,.15)}
+
+/* ── BALANCE CARD content ── */
 .balance-label{
   font-size:10px;font-weight:700;letter-spacing:.16em;
   text-transform:uppercase;color:var(--muted);margin-bottom:3px;
@@ -200,17 +269,6 @@ body{
   text-transform:uppercase;color:var(--muted);margin-bottom:3px;
 }
 .kpi-val{font-family:'JetBrains Mono',monospace;font-size:13px;font-weight:500}
-
-/* compact balance shown when hero collapsed */
-.balance-compact{
-  display:none;align-items:center;gap:8px;
-  font-family:'JetBrains Mono',monospace;
-  font-size:15px;font-weight:500;color:var(--bright);
-  padding:0 18px 8px;
-}
-.balance-compact.show{display:flex}
-.balance-compact .bc-in{color:var(--accent);font-size:11px}
-.balance-compact .bc-out{color:var(--red);font-size:11px}
 
 /* NAV */
 .nav-wrapper{
@@ -381,10 +439,15 @@ body{
 
 /* ── FILTER BAR ── */
 .filter-bar{
-  display:flex;gap:6px;margin-bottom:10px;
+  display:flex;gap:6px;margin-bottom:4px;
+  flex-wrap:wrap; /* wraps on PC */
   overflow-x:auto;scrollbar-width:none;padding-bottom:2px;
 }
 .filter-bar::-webkit-scrollbar{display:none}
+/* On wider screens: no scroll, show all chips */
+@media(min-width:480px){
+  .filter-bar{flex-wrap:wrap;overflow-x:visible;}
+}
 .filter-chip{
   padding:6px 13px;border-radius:20px;
   background:var(--card);border:1px solid var(--border);
@@ -1104,11 +1167,11 @@ body{
 .user-btn .sync-badge.syncing{background:var(--amber);animation:pulse .8s infinite}
 .user-btn .sync-badge.error{background:var(--red)}
 .user-dropdown{
-  position:absolute;top:calc(100% + 8px);right:0;width:240px;
+  position:absolute;top:calc(100% + 8px);left:0;width:220px;
   background:var(--card);border:1px solid var(--border);border-radius:18px;
   overflow:hidden;box-shadow:0 8px 32px var(--shadow);
   opacity:0;pointer-events:none;transform:translateY(-6px) scale(.97);
-  transition:opacity .2s,transform .2s;z-index:50;
+  transition:opacity .2s,transform .2s;z-index:200;
 }
 .user-dropdown.open{opacity:1;pointer-events:all;transform:translateY(0) scale(1)}
 .ud-email{
@@ -1584,12 +1647,8 @@ body{
         <div class="user-btn" id="userBtn" data-action="toggleUserMenu">
           👤<div class="sync-badge" id="syncBadge"></div>
         </div>
-        <div style="display:flex;flex-direction:column;gap:0;cursor:pointer" data-action="toggleUserMenu">
-          <div class="sync-row" id="syncRow">
-            <span class="sync-dot" id="syncDot"></span>
-            <span id="syncLabel">local</span>
-          </div>
-        </div>
+        <span id="syncDot" style="display:none"></span>
+        <span id="syncLabel" style="display:none">local</span>
         <div class="user-dropdown" id="userDropdown">
           <div class="ud-email" id="udEmail">—</div>
           <div class="ud-row" style="cursor:default;pointer-events:none">
@@ -1599,10 +1658,10 @@ body{
         </div>
       </div>
 
-      <!-- Center: month navigation -->
-      <div class="month-ctrl">
+      <!-- Month compact (shown on non-Resumen tabs) -->
+      <div class="month-ctrl-compact" id="monthCtrlCompact" style="display:none">
         <button data-action="shiftMonth" data-args="-1">&#8249;</button>
-        <span id="monthLabel"></span>
+        <span id="monthLabelCompact"></span>
         <button data-action="shiftMonth" data-args="1">&#8250;</button>
       </div>
 
@@ -1616,8 +1675,8 @@ body{
 
     <div class="nav-wrapper">
       <div class="nav" id="navEl">
-        <div class="nav-item active" data-tab="resumen">Resumen</div>
-        <div class="nav-item" data-tab="registro">Registro</div>
+        <div class="nav-item active" data-tab="resumen">Inicio</div>
+        <div class="nav-item" data-tab="registro">Historial</div>
         <div class="nav-item" data-tab="analisis">Análisis</div>
         <div class="nav-item" data-tab="ahorro">Ahorro</div>
         <div class="nav-item" data-tab="deudas">Deudas</div>
@@ -1631,6 +1690,13 @@ body{
 
     <!-- RESUMEN -->
     <div class="tab-panel active" id="tab-resumen">
+      <!-- Month selector — in content, not header -->
+      <div class="month-selector-row" id="monthSelectorRow">
+        <button class="month-nav-btn" data-action="shiftMonth" data-args="-1">&#8249;</button>
+        <span id="monthLabel" class="month-label-large"></span>
+        <button class="month-nav-btn" data-action="shiftMonth" data-args="1">&#8250;</button>
+      </div>
+
       <!-- Balance card -->
       <div class="balance-card" id="balanceCard">
         <div class="balance-main-row">
@@ -1667,11 +1733,11 @@ body{
         <div class="card-body"><div id="catList"></div></div>
       </div>
       <div class="card">
-        <div class="card-hdr collapsible" onclick="toggleCard(this)">
+        <div class="card-hdr collapsible collapsed" onclick="toggleCard(this)">
           <span>Últimos movimientos</span>
           <button class="card-hdr-btn" onclick="event.stopPropagation();switchTab('registro')">Ver todos</button>
         </div>
-        <div class="card-body"><div id="recentList"></div></div>
+        <div class="card-body collapsed"><div id="recentList"></div></div>
       </div>
     </div>
 
@@ -1691,10 +1757,16 @@ body{
         <div class="filter-chip" data-period="year">Este año</div>
         <div class="filter-chip" data-period="all">Todo</div>
       </div>
-      <!-- Category filter chips -->
-      <div class="cat-filter-row" id="catFilterRow"></div>
-      <!-- Tag filter chips -->
-      <div class="tag-filter-row" id="tagFilterRow" style="display:none"></div>
+      <!-- Advanced filters: collapsible -->
+      <div class="adv-filter-toggle" id="advFilterToggle" onclick="toggleAdvFilters()">
+        <span id="advFilterLabel">Filtros</span>
+        <span id="advFilterCount" class="adv-filter-count"></span>
+        <span class="adv-filter-arrow" id="advFilterArrow">›</span>
+      </div>
+      <div class="adv-filter-body" id="advFilterBody">
+        <div class="cat-filter-row" id="catFilterRow"></div>
+        <div class="tag-filter-row" id="tagFilterRow" style="display:none"></div>
+      </div><!-- /adv-filter-body -->
       <div class="period-summary" id="periodSummary"></div>
       <div class="card"><div id="histList"></div></div>
     </div>
@@ -2022,10 +2094,12 @@ body{
              placeholder="Ej: Restaurantes" maxlength="24" autocomplete="off">
     </div>
     <div class="field">
-      <label class="field-lbl">Ícono (emoji)</label>
-      <input class="field-input" type="text" id="catIconInput"
-             placeholder="🍽️" maxlength="4"
-             style="font-size:24px;text-align:center;padding:8px">
+      <label class="field-lbl">Ícono</label>
+      <div class="emoji-picker-wrap">
+        <div class="emoji-selected" id="catIconSelected">📦</div>
+        <div class="emoji-grid" id="emojiGrid"></div>
+        <input type="hidden" id="catIconInput" value="📦">
+      </div>
     </div>
     <div class="field">
       <label class="field-lbl">Presupuesto mensual (opcional)</label>
@@ -2670,7 +2744,11 @@ function calcBal(txs){
 
 /* ── RENDER HEADER ── */
 function renderHeader(){
-  el('monthLabel').textContent=MONTHS[S.ui.month]+' '+S.ui.year;
+  var monthText = MONTHS[S.ui.month]+' '+S.ui.year;
+  var ml = el('monthLabel');
+  var mlc = document.getElementById('monthLabelCompact');
+  if(ml)  ml.textContent  = monthText;
+  if(mlc) mlc.textContent = monthText;
   var b=calcBal();
   var sign=b.total<0?'−':'';
   var balEl=el('balARS');
@@ -2904,7 +2982,7 @@ function renderCats(){
 function renderRecent(){
   var y=S.ui.year,m=S.ui.month;
   var txs=S.txs.filter(function(t){return inMonth(t,y,m);})
-    .sort(function(a,b){return b.ts-a.ts;}).slice(0,6);
+    .sort(function(a,b){return b.ts-a.ts;}).slice(0,3);
   var el=document.getElementById('recentList');
   if(!txs.length){
     el.innerHTML='<div class="empty-state"><div class="empty-icon">💸</div>'+
@@ -3581,10 +3659,14 @@ function openCatModal(id){
   var existing=id?S.cats.find(function(c){return c.id===id;}):null;
   document.getElementById('modalCatTitle').textContent=existing?'Editar categoría':'Nueva categoría';
   document.getElementById('catNameInput').value  =existing?existing.label:'';
-  document.getElementById('catIconInput').value  =existing?existing.icon:'';
+  var icon = existing?existing.icon:'📦';
+  document.getElementById('catIconInput').value  = icon;
+  var sel = document.getElementById('catIconSelected');
+  if (sel) sel.textContent = icon;
   document.getElementById('catBudgetInput').value=existing?(S.cfg.budgets[existing.id]||''):'';
   S.ui.editCatColor=existing?existing.color:CAT_COLORS[0];
   buildColorPicker();
+  buildEmojiGrid(icon);
   document.getElementById('delCatBtn').style.display=(existing&&!existing.builtin)?'block':'none';
   document.getElementById('modalCat').classList.add('open');
   setTimeout(function(){document.getElementById('catNameInput').focus();},200);
@@ -3948,9 +4030,14 @@ function switchTabV4(name) {
   document.querySelectorAll('.tab-panel').forEach(function(el){
     el.classList.toggle('active', el.id==='tab-'+name);
   });
-  // Balance card only visible on Resumen
+  // Balance card only in Resumen
   var balCard = document.getElementById('balanceCard');
   if (balCard) balCard.style.display = name==='resumen' ? '' : 'none';
+  // Month selector: big in Resumen, compact in header for other tabs
+  var monthRow   = document.getElementById('monthSelectorRow');
+  var compactCtrl = document.getElementById('monthCtrlCompact');
+  if (monthRow)    monthRow.style.display    = name==='resumen' ? '' : 'none';
+  if (compactCtrl) compactCtrl.style.display = name==='resumen' ? 'none' : 'flex';
   document.getElementById('contentArea').scrollTop = 0;
   renderTab(name);
 }
@@ -4170,16 +4257,16 @@ function getAllTags() {
 function renderCatFilter() {
   var row = document.getElementById('catFilterRow');
   if (!row) return;
-  // Get cats that have txs in current period
   var activeCats = {};
   S.txs.forEach(function(t){ if(inPeriod(t,S.ui.period)) activeCats[t.cat]=true; });
-  if (!Object.keys(activeCats).length) { row.innerHTML=''; return; }
+  if (!Object.keys(activeCats).length) { row.innerHTML=''; updateAdvFilterCount(); return; }
   var html = '<div class="cat-filter-chip'+(S.ui.filterCat===''?' active':'')+'" data-catfilter="">Todos</div>';
   Object.keys(activeCats).forEach(function(cid){
     var c = cat(cid);
     html += '<div class="cat-filter-chip'+(S.ui.filterCat===cid?' active':'')+'" data-catfilter="'+cid+'">'+c.icon+' '+esc(c.label)+'</div>';
   });
   row.innerHTML = html;
+  updateAdvFilterCount();
 }
 
 function renderTagFilter() {
@@ -4742,6 +4829,59 @@ window.saveMovement = saveMovement;
 
 document.getElementById('modalMovement').addEventListener('click', function(e){
   if (e.target===this) closeModal('modalMovement');
+});
+
+/* ── ADVANCED FILTERS TOGGLE ── */
+function toggleAdvFilters() {
+  var body  = document.getElementById('advFilterBody');
+  var arrow = document.getElementById('advFilterArrow');
+  if (!body) return;
+  var isOpen = body.classList.toggle('open');
+  if (arrow) arrow.classList.toggle('open', isOpen);
+}
+window.toggleAdvFilters = toggleAdvFilters;
+
+function updateAdvFilterCount() {
+  var count = document.getElementById('advFilterCount');
+  if (!count) return;
+  var n = (S.ui.filterCat ? 1 : 0) + (S.ui.filterTag ? 1 : 0);
+  count.textContent = n;
+  count.classList.toggle('visible', n > 0);
+  var lbl = document.getElementById('advFilterLabel');
+  if (lbl) lbl.textContent = n > 0 ? 'Filtros activos' : 'Filtros';
+}
+
+/* ── EMOJI PICKER ── */
+var COMMON_EMOJIS = [
+  '🏠','🍔','🚌','🎬','👕','💊','📚','✈️','🎮','🏋️',
+  '🐕','☕','🍕','🛒','💡','📱','🚗','🎵','🌿','💰',
+  '🔧','🎁','🏦','💳','⚡','🔥','🌊','🏥','🎯','📦',
+  '🧴','🧺','🧹','🪴','🎨','🏗️','📊','🤝','🌐','🧠',
+  '💻','🖥️','⌨️','🖨️','📷','🎙️','📺','🎧','⌚','🔑'
+];
+
+function buildEmojiGrid(currentIcon) {
+  var grid = document.getElementById('emojiGrid');
+  if (!grid) return;
+  grid.innerHTML = COMMON_EMOJIS.map(function(emoji) {
+    var sel = emoji === currentIcon;
+    return '<div class="emoji-option'+(sel?' selected':'')+'" data-emoji="'+emoji+'">'+emoji+'</div>';
+  }).join('');
+}
+
+// Delegate emoji grid clicks
+document.addEventListener('click', function(e) {
+  var opt = e.target.closest('.emoji-option[data-emoji]');
+  if (!opt) return;
+  var emoji = opt.dataset.emoji;
+  var input = document.getElementById('catIconInput');
+  var sel   = document.getElementById('catIconSelected');
+  if (input) input.value = emoji;
+  if (sel)   sel.textContent = emoji;
+  // Update grid selection
+  document.querySelectorAll('.emoji-option').forEach(function(el){
+    el.classList.toggle('selected', el.dataset.emoji === emoji);
+  });
 });
 
 /* ── WINDOW EXPORTS (portfolio) ── */
