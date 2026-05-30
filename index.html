@@ -2798,6 +2798,7 @@ function migrate(d) {
   if (d.goals) d.goals.forEach(function(g){
     if (!g.portfolioLinks) g.portfolioLinks = [];
   });
+  if (d.cats) {
     var hasOld = d.cats.some(function(c){ return c.id==='supermercado'||c.id==='hormiga'; });
     if (hasOld) delete d.cats;
   }
