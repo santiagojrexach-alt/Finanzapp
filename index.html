@@ -58,6 +58,31 @@
   appleLink.href = iconDataUrl;
   document.head.appendChild(appleLink);
 })();
+/* ════════════════════════════════════════════════════════════════════
+   SMOKE TESTS — run manually in browser console to verify core flows
+   ════════════════════════════════════════════════════════════════════
+   1. REGISTER TX:
+      openModal('out'); // modal opens, setType/setCurr/buildChips run
+      saveTx();         // without inputs → toast '⚠️ Ingresá un monto válido'
+
+   2. VALIDATION:
+      validateTx({id:'x',type:'out',amt:-1,curr:'ARS',cat:'otros',date:'2026-01-01'})
+      // → {ok:false, error:'Monto debe ser mayor a 0'}
+      validateTx({id:'x',type:'out',amt:100,curr:'ARS',cat:'otros',date:'2026-01-01'})
+      // → {ok:true}
+
+   3. SYNC RETRY:
+      _syncFailCount = 2; syncToCloud(); // triggers retry logic
+
+   4. RENDER SAFETY:
+      safeRender(()=>{ throw new Error('test'); }, 'test');
+      // logs error, does not crash app
+
+   5. DATA LAYER:
+      calcPortfolioHistory(750000); // returns {labels, portfolioData, idealData}
+      calcPmTotalsAllTime();        // returns {} or {pmId: total}
+   ════════════════════════════════════════════════════════════════════ */
+
 </script>
 
 <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@300;400;500&display=swap" rel="stylesheet">
@@ -2732,6 +2757,19 @@ input[type=number]{-moz-appearance:textfield}
 
 'use strict';
 
+/* ════════════════════════════════════════════════════════════════════
+   FINANZAPP — Script structure
+   ─────────────────────────────────────────────────────────────────
+   1. FIREBASE INIT + AUTH
+   2. DOM CACHE + CONSTANTS + SCHEMA
+   3. STATE + MIGRATION + STORAGE
+   4. SYNC (Firestore + retry)
+   5. DATA LAYER (pure functions — no DOM)
+   6. RENDER FUNCTIONS (header, tabs, charts, modals)
+   7. EVENT HANDLERS (delegation, actions, keyboard)
+   8. INIT (app bootstrap)
+   ════════════════════════════════════════════════════════════════════ */
+
 /* ── FIREBASE INIT ── */
 firebase.initializeApp({
   apiKey:            "AIzaSyBju4RLBgJURN_U6l7Fa5mbW_3OONwIjPo",
@@ -2791,6 +2829,7 @@ function el(id) {
   return DOM[id] || (DOM[id] = document.getElementById(id));
 }
 
+/* ════════ 2. DOM CACHE + CONSTANTS + SCHEMA ════════ */
 /* ── CONSTANTS ── */
 var STORE_KEY      = 'finanzapp_v01';
 var SCHEMA_VERSION = 2;
@@ -3024,7 +3063,6 @@ function validateImport(data) {
 }
 
 
-
 var DEFAULT_CATS = [
   {id:'edesur',    label:'Edesur',           icon:'⚡', color:'#f5c842', builtin:true},
   {id:'metrogas',  label:'Metrogas',          icon:'🔥', color:'#ff9a42', builtin:true},
@@ -3053,6 +3091,7 @@ var CAT_COLORS = [
 ];
 var CATS = DEFAULT_CATS.slice();
 
+/* ════════ 3. STATE + MIGRATION + STORAGE ════════ */
 /* ── STATE ── */
 var S = {
   txs:[], goals:[], debts:[], portfolio:[], paymentMethods:[], cats:DEFAULT_CATS.slice(),
@@ -3166,7 +3205,8 @@ function userDocRef(uid) {
   return fbDb.collection('users').doc(uid);
 }
 
-/* ── FIRESTORE SYNC ── */
+/* ════════ 4. SYNC ════════ */
+/* ── FIRESTORE SYNC (retry + error handling) ── */
 var _syncFailCount = 0;
 var _syncRetryTimer = null;
 var _MAX_SYNC_RETRIES = 3;
@@ -3469,6 +3509,7 @@ function calcBal(txs){
   return{aIn:aIn,aOut:aOut,uIn:uIn,uOut:uOut,aNet:aIn-aOut,uNet:uIn-uOut,total:(aIn-aOut)+(uIn-uOut)*rate,totalIn:aIn+uIn*rate,totalOut:aOut+uOut*rate};
 }
 
+/* ════════ 5. DATA LAYER ════════ */
 /* ══════════════════════════════════════════════════════
    DATA LAYER — pure functions, no DOM access.
    Input: state (S) + parameters. Output: plain objects.
@@ -3607,6 +3648,7 @@ function safeRender(fn, name) {
   }
 }
 
+/* ════════ 6. RENDER FUNCTIONS ════════ */
 /* ── RENDER HEADER ── */
 function renderHeader(){
   var monthText = MONTHS[S.ui.month]+' '+S.ui.year;
@@ -3666,7 +3708,7 @@ function toggleCard(hdr) {
         var id = canvas.id;
         if (id === 'donutChart')           renderDonut();
         if (id === 'barChart')             renderBar();
-        if (id === 'lineChart')            renderLine();
+        /* lineChart removed — replaced by portfolioVsMetaChart */
         if (id === 'portfolioVsMetaChart') renderPortfolioVsMeta();
         if (id === 'catEvoChart')          renderCatEvolution();
         if (id === 'pmCompareChart')       renderPmComparison();
@@ -3766,13 +3808,6 @@ function calcDelta() {
   return ((curr - prev) / Math.abs(prev) * 100);
 }
 
-/* ── HEADER COLLAPSE (single-init fix) ── */
-function initHeaderCollapse() {
-  if (S.ui.headerCollapseInited) return;
-  S.ui.headerCollapseInited = true;
-  // Header collapse no longer needed - balance is in Resumen tab card
-  S.ui.headerCollapseInited = true; // prevent any stale calls
-}
 
 /* ── RENDER CATEGORY EVOLUTION CHART ── */
 var catEvoChartInstance = null;
@@ -4320,8 +4355,6 @@ var GOAL_COLORS = ['#3bc957','#f5c842','#6ab4f5','#ff7070','#b09af5','#f5a442','
 /* ── GOALS RENDER ── */
 
 
-
-
 /* ── GOAL MODAL ── */
 
 function openGoalModal(id) {
@@ -4594,8 +4627,8 @@ function saveTx(){
   currentTxTags=[];
   renderTagChips();
   var btn=document.getElementById('saveRegBtn');
-  btn.textContent='✓ Guardado';btn.classList.add('done');
-  setTimeout(function(){btn.textContent=isEdit?'Guardar cambios':'Guardar movimiento';btn.classList.remove('done');},900);
+  if(btn){btn.textContent='✓ Guardado';btn.classList.add('done');
+  setTimeout(function(){btn.textContent=isEdit?'Guardar cambios':'Guardar movimiento';btn.classList.remove('done');},900);}
   vibrate(30);save();closeModal('modalReg');
   toast(isEdit?'✓ Movimiento actualizado':'✓ Guardado');
   if(!isEdit&&S.ui.tab==='resumen'){renderAfterSave('tx');setTimeout(function(){var f=document.querySelector('#recentList .tx');if(f)f.classList.add('tx-new');},30);}
@@ -4757,6 +4790,7 @@ function confirmClear(){
 var toastTimer;
 function toast(msg){
   var el=document.getElementById('toast');
+  if(!el)return;
   el.textContent=msg;el.classList.add('show');
   clearTimeout(toastTimer);
   toastTimer=setTimeout(function(){el.classList.remove('show');},2400);
@@ -4781,6 +4815,7 @@ document.getElementById('fabQuick').addEventListener('click',openQuick);
 
 // Expose goal functions called from inline HTML
 
+/* ════════ 7. EVENT HANDLERS ════════ */
 /* ── CONTAINER DELEGATION ── */
 /* One listener per container replaces per-row onclick= in generated HTML */
 function initContainerDelegation() {
@@ -4884,6 +4919,7 @@ window.initContainerDelegation = initContainerDelegation;
   document.addEventListener('click', handleAction);
 })();
 
+/* ════════ 8. INIT ════════ */
 /* ── INIT ── */
 // Load local data first so UI has something to show while auth resolves
 cacheDOMRefs();
@@ -4937,7 +4973,7 @@ function importJSON() {
   input.click();
 }
 
-/* ── USER MENU (v0.4) ── */
+/* ── USER MENU ── */
 function toggleUserMenu() {
   document.getElementById('userDropdown').classList.toggle('open');
 }
@@ -4952,7 +4988,7 @@ function _outsideMenuHandler(e) {
 document.addEventListener('click',      _outsideMenuHandler);
 document.addEventListener('touchstart', _outsideMenuHandler, { passive: true });
 
-/* ── ACCORDION (v0.4) ── */
+/* ── ACCORDION ── */
 function toggleAccordion(btn) {
   var arrow = btn.querySelector('.accordion-arrow');
   var body  = document.getElementById('accordionBody');
@@ -4963,7 +4999,7 @@ function toggleAccordion(btn) {
   if (lbl) lbl.textContent = isOpen ? 'Más opciones' : 'Menos opciones';
 }
 
-/* ── OFFLINE (v0.4) ── */
+/* ── OFFLINE DETECTION ── */
 function initOfflineDetection() {
   function update() {
     var b = document.getElementById('offlineBanner');
@@ -4974,7 +5010,7 @@ function initOfflineDetection() {
   update();
 }
 
-/* ── TC DATE (v0.4) ── */
+/* ── TYPE CHANGE DATE ── */
 function updateTCDate() {
   var el = document.getElementById('tcDate');
   if (!el) return;
@@ -4983,7 +5019,7 @@ function updateTCDate() {
     : '';
 }
 
-/* ── SAVINGS VELOCITY (v0.4) ── */
+/* ── SAVINGS VELOCITY ── */
 function calcAvgMonthlySavings() {
   var now = new Date(), totals = [];
   for (var i = 1; i <= 3; i++) {
@@ -4995,7 +5031,7 @@ function calcAvgMonthlySavings() {
   return totals.reduce(function(a,b){ return a+b; },0) / totals.length;
 }
 
-/* ── LOGOUT MODAL (v0.4) ── */
+/* ── LOGOUT MODAL ── */
 function openLogoutModal() {
   closeUserMenu();
   document.getElementById('modalLogout').classList.add('open');
@@ -5005,7 +5041,7 @@ async function confirmLogout() {
   await fbAuth.signOut();
 }
 
-/* ── UPDATE USER MENU ── */
+/* ── USER MENU SYNC ── */
 function updateUserMenu() {
   var emailEl = document.getElementById('udEmail');
   var dark    = S.cfg.theme === 'dark';
@@ -5019,7 +5055,7 @@ function updateUserMenu() {
   // (updated by setSyncState directly)
 }
 
-/* ── MONTH DELTA (v0.4) ── */
+/* ── MONTH DELTA ── */
 function renderDelta(b) {
   var el = document.getElementById('balDelta');
   if (!el) return;
@@ -5033,7 +5069,7 @@ function renderDelta(b) {
   el.className = 'balance-delta ' + (pos ? 'delta-pos' : 'delta-neg');
 }
 
-/* ── SWITCHTAB WITH HERO LOGIC (v0.4) ── */
+/* ── TAB SWITCHING ── */
 function switchTabV4(name) {
   S.ui.tab = name;
   document.querySelectorAll('.nav-item').forEach(function(el){
@@ -5102,7 +5138,7 @@ window.onunhandledrejection = function(e) {
   setSyncState('error');
 };
 
-/* ── GRANULAR RENDER (replaces renderAll) ── */
+/* ── RENDER DISPATCH ── */
 function renderTab(tab) {
   safeRender(renderHeader, 'renderHeader');
   if (tab === 'resumen')  { safeRender(renderResumen,  'renderResumen'); }
@@ -5378,85 +5414,6 @@ function openDebtModal(id) {
   if (delBtn) delBtn.style.display = existing ? 'block' : 'none';
   document.getElementById('modalDebt').classList.add('open');
   setTimeout(function(){ document.getElementById('debtPersonInput').focus(); }, 200);
-}
-
-/* ══════════════════════════════════════════════════════
-   FEATURE 5 — RESUMEN SEMANAL AUTOMÁTICO
-   ══════════════════════════════════════════════════════ */
-var WEEKLY_KEY = 'finanzapp_weekly_shown';
-
-function renderWeeklySummary() {
-  var el = document.getElementById('weeklySummaryCard');
-  if (!el) return;
-
-  // Show on Mondays, or if never shown this week
-  var now       = new Date();
-  var dayOfWeek = now.getDay(); // 0=sun, 1=mon
-  var weekKey   = now.getFullYear()+'-W'+getWeekNumber(now);
-  var shown     = localStorage.getItem(WEEKLY_KEY);
-  if (shown === weekKey || S.txs.length < 3) { el.style.display='none'; return; }
-
-  // Calculate last week stats
-  var monday    = new Date(now);
-  monday.setDate(now.getDate() - ((now.getDay()+6)%7) - 7);
-  monday.setHours(0,0,0,0);
-  var sunday    = new Date(monday); sunday.setDate(monday.getDate()+6); sunday.setHours(23,59,59,999);
-
-  var weekTxs = S.txs.filter(function(t){
-    if (!t.date) return false;
-    var p=t.date.split('-').map(Number); var d=new Date(p[0],p[1]-1,p[2]);
-    return d>=monday && d<=sunday;
-  });
-  if (!weekTxs.length) { el.style.display='none'; return; }
-
-  var b       = calcBal(weekTxs);
-  var topCat  = getTopCat(weekTxs);
-  var txCount = weekTxs.filter(function(t){ return t.type==='out'; }).length;
-
-  var headline = b.total >= 0
-    ? 'La semana pasada ahorraste '+fARS(b.total)+'.'
-    : 'La semana pasada gastaste '+fARS(Math.abs(b.total))+' más de lo que ingresaste.';
-
-  el.style.display = 'block';
-  el.innerHTML =
-    '<div class="weekly-card">'+
-      '<button class="weekly-close" onclick="dismissWeekly()">×</button>'+
-      '<div class="weekly-title">📅 Semana del '+formatWeekRange(monday)+'</div>'+
-      '<div class="weekly-headline">'+headline+'</div>'+
-      '<div class="weekly-stats">'+
-        '<div class="weekly-stat"><div class="weekly-stat-lbl">Ingresos</div><div class="weekly-stat-val c-in">'+fARS(b.totalIn)+'</div></div>'+
-        '<div class="weekly-stat"><div class="weekly-stat-lbl">Egresos</div><div class="weekly-stat-val c-out">'+fARS(b.totalOut)+'</div></div>'+
-        (topCat?'<div class="weekly-stat"><div class="weekly-stat-lbl">Top gasto</div><div class="weekly-stat-val">'+topCat+'</div></div>':'')+''+
-      '</div>'+
-    '</div>';
-}
-
-function dismissWeekly() {
-  var now = new Date();
-  localStorage.setItem(WEEKLY_KEY, now.getFullYear()+'-W'+getWeekNumber(now));
-  var el = document.getElementById('weeklySummaryCard');
-  if (el) { el.style.opacity='0'; el.style.transition='opacity .3s'; setTimeout(function(){el.style.display='none';},300); }
-}
-
-function getWeekNumber(d) {
-  var onejan = new Date(d.getFullYear(),0,1);
-  return Math.ceil((((d-onejan)/86400000)+onejan.getDay()+1)/7);
-}
-
-function formatWeekRange(monday) {
-  var sunday = new Date(monday); sunday.setDate(monday.getDate()+6);
-  return monday.getDate()+' al '+sunday.getDate()+' '+MONTHS[monday.getMonth()].slice(0,3).toLowerCase();
-}
-
-function getTopCat(txs) {
-  var map = {};
-  txs.filter(function(t){return t.type==='out';}).forEach(function(t){
-    map[t.cat] = (map[t.cat]||0) + toARS(t.amt,t.curr);
-  });
-  var top = Object.entries(map).sort(function(a,b){return b[1]-a[1];})[0];
-  if (!top) return null;
-  var c = cat(top[0]);
-  return c.icon+' '+c.label;
 }
 
 /* ══ WIRE FEATURES INTO RENDER PIPELINE ══ */
@@ -5759,7 +5716,6 @@ function saveMovement() {
   save(); closeModal('modalMovement');
   toast(currentMovType==='deposit'?'✓ Depósito registrado':currentMovType==='withdraw'?'✓ Retiro registrado':'✓ Valuación actualizada');
   renderPortfolio();
-  renderAhorroVs();
 }
 
 document.getElementById('modalMovement').addEventListener('click', function(e){
@@ -6612,7 +6568,6 @@ function toggleRecur(){
   if(S.ui.txRecur)tog.classList.add('on');else tog.classList.remove('on');
 };
 window.openDebtModal    = openDebtModal;
-/* debt exports moved to saveDebt block */
 window.dismissWeekly    = dismissWeekly;
 window.focusTagInput    = focusTagInput;
 window.addTag           = addTag;
