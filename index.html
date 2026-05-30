@@ -5878,6 +5878,16 @@ fbAuth.onAuthStateChanged(function(user) {
 });
 
 /* ── MODAL HELPERS (restored) ── */
+function buildChips(){
+  var active=S.ui.txCat;
+  var el=document.getElementById('catChips');
+  if(!el)return;
+  el.innerHTML=CATS.map(function(c){
+    return'<div class="cat-chip'+(c.id===active?' active':'')+'" data-id="'+c.id+'">'+c.icon+' '+esc(c.label)+'</div>';
+  }).join('');
+  setTimeout(function(){var chip=document.querySelector('#catChips .cat-chip.active');if(chip)chip.scrollIntoView({block:'nearest',inline:'center',behavior:'smooth'});},50);
+}
+window.buildChips = buildChips;
 function openEdit(id){openModal(null,id);};
 function closeModal(id){document.getElementById(id).classList.remove('open');};
 function setType(t){
