@@ -617,7 +617,7 @@ body{
 .cfg-action.red:hover{color:#ff9090}
 .cfg-action.green{color:var(--a2)}
 
-.cfg-inline-input{
+.cfg-inline-input{-webkit-appearance:none;-moz-appearance:textfield;
   width:108px;padding:6px 10px;
   background:var(--input-bg);border:1px solid var(--border);
   border-radius:10px;color:var(--bright);
@@ -931,7 +931,61 @@ body{
   .app{border-left:1px solid var(--border);border-right:1px solid var(--border)}
 }
 
-/* ── TUTORIAL ── */
+/* ── INTERACTIVE TUTORIAL OVERLAY ── */
+.tutorial-overlay{
+  position:fixed;inset:0;background:var(--overlay);
+  display:none;align-items:center;justify-content:center;
+  z-index:2000;padding:20px;
+}
+.tutorial-overlay.open{display:flex}
+.tutorial-modal-inner{
+  background:var(--card);border:1px solid var(--border);
+  border-radius:24px;padding:28px 24px 22px;
+  max-width:400px;width:100%;position:relative;
+  box-shadow:0 20px 60px var(--shadow);
+}
+.tutorial-close{
+  position:absolute;top:14px;right:14px;
+  background:var(--bg3);border:1px solid var(--border);
+  width:28px;height:28px;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  font-size:13px;cursor:pointer;color:var(--muted);
+}
+.tutorial-modal-title{
+  font-size:17px;font-weight:800;color:var(--bright);
+  margin-bottom:12px;line-height:1.3;padding-right:30px;
+}
+.tutorial-modal-body{
+  font-size:13px;color:var(--muted);line-height:1.7;
+  margin-bottom:20px;
+}
+.tutorial-modal-body strong{color:var(--text)}
+.tutorial-dots{
+  display:flex;gap:6px;justify-content:center;margin-bottom:18px;
+}
+.tutorial-dot{
+  width:7px;height:7px;border-radius:50%;
+  background:var(--border);transition:background .2s;
+}
+.tutorial-dot.active{background:var(--a2);width:20px;border-radius:4px}
+.tutorial-modal-btns{
+  display:flex;align-items:center;justify-content:space-between;gap:8px;
+}
+.tutorial-btn-pri{
+  padding:10px 20px;border-radius:12px;
+  background:var(--a2);border:none;color:#0a1510;
+  font-family:'Nunito',sans-serif;font-size:13px;font-weight:700;
+  cursor:pointer;transition:opacity .15s;
+}
+.tutorial-btn-pri:hover{opacity:.88}
+.tutorial-btn-sec{
+  padding:10px 16px;border-radius:12px;
+  background:var(--bg3);border:1px solid var(--border);
+  color:var(--text);font-family:'Nunito',sans-serif;
+  font-size:13px;font-weight:600;cursor:pointer;
+  transition:background .15s;
+}
+.tutorial-btn-sec:hover{background:var(--border)}
 .tutorial-steps{display:flex;flex-direction:column;gap:0;padding:4px 0}
 .tutorial-step{
   display:flex;gap:14px;padding:14px 16px;
@@ -989,7 +1043,7 @@ body{
   padding:10px 16px;border-bottom:1px solid var(--border);font-size:12px;
 }
 .pm-summary-row:last-child{border-bottom:none}
-.pm-summary-name{font-weight:600;color:var(--bright)}
+.pm-summary-name{font-weight:600;color:var(--bright);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:70%}
 .pm-summary-amt{font-family:'JetBrains Mono',monospace;font-weight:600;color:var(--text)}
 .theme-palette-grid{
   display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin-top:8px;
@@ -1912,8 +1966,6 @@ body{
         </div>
       </div>
 
-      <!-- Weekly summary -->
-      <div id="weeklySummaryCard" style="display:none"></div>
       <!-- Budget global semaphore -->
       <div id="globalBudgetCard"></div>
       <!-- Savings goal card -->
@@ -1951,15 +2003,7 @@ body{
       </div>
       <div class="filter-bar" id="filterBar">
         <div class="filter-chip active" data-period="month">Este mes</div>
-        <div class="filter-chip" data-period="week">Semana</div>
         <div class="filter-chip" data-period="year">Este año</div>
-        <div class="filter-chip filter-chip-more" id="filterMore" onclick="toggleFilterMore()">Más ↓</div>
-      </div>
-      <div class="filter-bar-more" id="filterBarMore" style="display:none;padding:0 18px 8px">
-        <div class="filter-bar" style="margin-bottom:0">
-          <div class="filter-chip" data-period="quarter">Trimestre</div>
-          <div class="filter-chip" data-period="all">Todo</div>
-        </div>
       </div>
       <!-- Advanced filters: collapsible -->
       <div class="adv-filter-toggle" id="advFilterToggle" onclick="toggleAdvFilters()">
@@ -2008,6 +2052,16 @@ body{
         </div>
       </div>
 
+      <!-- Portfolio vs Meta de Ahorro -->
+      <div class="card">
+        <div class="card-hdr collapsible collapsed" onclick="toggleCard(this)"><span>Portfolio vs meta de ahorro</span></div>
+        <div class="card-body collapsed">
+          <div id="portfolioVsMetaLegend" style="display:flex;gap:14px;padding:10px 16px 4px;font-size:11px"></div>
+          <div class="chart-canvas-wrap" style="height:200px"><canvas id="portfolioVsMetaChart"></canvas></div>
+          <div id="portfolioVsMetaMsg" style="padding:8px 16px 12px;font-size:11px;color:var(--muted)"></div>
+        </div>
+      </div>
+
       <!-- Evolución por categoría -->
       <div class="card">
         <div class="card-hdr collapsible collapsed" onclick="toggleCard(this)"><span>Gastos por medio de pago</span></div>
@@ -2021,9 +2075,13 @@ body{
         <div class="card-hdr collapsible collapsed" onclick="toggleCard(this)"><span>Evolución por categoría</span></div>
         <div class="card-body collapsed">
           <div style="padding:10px 0 6px">
-            <select class="field-input" id="catEvolutionSelect" onchange="renderCatEvolution()" style="margin-bottom:10px">
-              <option value="">— Elegí una categoría —</option>
-            </select>
+            <div class="cat-search-wrap" style="margin-bottom:10px">
+              <input class="field-input" type="text" id="catEvoSearchInput"
+                     placeholder="Buscar categoría…" autocomplete="off"
+                     oninput="onCatEvoSearch(this.value)" onfocus="onCatEvoSearch(this.value)">
+              <div class="cat-suggest" id="catEvoSuggest"></div>
+              <input type="hidden" id="catEvolutionSelect" value="">
+            </div>
             <div class="chart-period-row" id="catEvoPeriodRow">
               <div class="chart-chip active" data-evomonths="6">6 meses</div>
               <div class="chart-chip" data-evomonths="12">12 meses</div>
@@ -2039,19 +2097,6 @@ body{
       <!-- Resumen: ahorro calculado vs real -->
       <div class="ahorro-section-title">Resumen de ahorro</div>
       <div class="ahorro-vs" id="ahorroVsCard"></div>
-
-      <!-- Portfolio vs Meta Ideal -->
-      <div class="ahorro-section-title">Portfolio vs meta acumulada</div>
-      <div class="card" style="margin-bottom:10px">
-        <div class="card-hdr collapsible collapsed" onclick="toggleCard(this)">
-          <span>Evolución del portfolio</span>
-        </div>
-        <div class="card-body collapsed">
-          <div id="portfolioVsMetaLegend" style="display:flex;gap:14px;padding:10px 16px 4px;font-size:11px"></div>
-          <div class="chart-canvas-wrap" style="height:200px"><canvas id="portfolioVsMetaChart"></canvas></div>
-          <div id="portfolioVsMetaMsg" style="padding:8px 16px 12px;font-size:11px;color:var(--muted)"></div>
-        </div>
-      </div>
 
       <!-- Portfolio de instrumentos -->
       <div class="ahorro-section-title">Portfolio</div>
@@ -2142,7 +2187,7 @@ body{
             <div style="display:flex;gap:8px;width:100%">
               <input class="field-input" type="text" id="pmNewInput"
                      placeholder="Ej: Visa Galicia, Efectivo, Mercado Pago"
-                     maxlength="30" style="flex:1">
+                     maxlength="40" style="flex:1">
               <button class="cfg-action green" onclick="addPaymentMethod()">+ Agregar</button>
             </div>
           </div>
@@ -2263,48 +2308,21 @@ body{
       <div class="cfg-section">
         <div class="cfg-hdr collapsed" onclick="toggleCfg(this)">Ayuda y tutorial</div>
         <div class="cfg-body collapsed">
-          <div class="tutorial-steps" id="tutorialSteps">
-            <div class="tutorial-step">
-              <div class="tutorial-num">1</div>
-              <div>
-                <div class="tutorial-title">Registrá tus gastos</div>
-                <div class="tutorial-desc">Tocá <strong>+ Nuevo movimiento</strong> para el modal completo, o <strong>⚡</strong> para registro rápido solo con monto y categoría.</div>
-              </div>
+          <div class="cfg-row" style="flex-direction:column;align-items:flex-start;gap:12px;padding:16px">
+            <div>
+              <div class="cfg-lbl">Tutorial interactivo</div>
+              <div class="cfg-sub">Guía paso a paso por las funciones principales</div>
             </div>
-            <div class="tutorial-step">
-              <div class="tutorial-num">2</div>
-              <div>
-                <div class="tutorial-title">Navegá por tabs</div>
-                <div class="tutorial-desc"><strong>Inicio</strong> muestra tu balance del mes. <strong>Historial</strong> tiene todos tus movimientos con filtros. <strong>Análisis</strong> tiene gráficos. <strong>Ahorro</strong> tiene tu portfolio e instrumentos. <strong>Deudas</strong> para préstamos.</div>
-              </div>
-            </div>
-            <div class="tutorial-step">
-              <div class="tutorial-num">3</div>
-              <div>
-                <div class="tutorial-title">Sincronización automática</div>
-                <div class="tutorial-desc">Tus datos se sincronizan automáticamente entre todos tus dispositivos. El punto verde en el avatar indica que está sincronizado.</div>
-              </div>
-            </div>
-            <div class="tutorial-step">
-              <div class="tutorial-num">4</div>
-              <div>
-                <div class="tutorial-title">Medios de pago</div>
-                <div class="tutorial-desc">Configurá tus tarjetas y métodos de pago en <strong>Config → Finanzas</strong>. Al registrar un gasto podés elegir con qué pagaste. En Análisis → Gastos por medio de pago ves el total de cada tarjeta.</div>
-              </div>
-            </div>
-            <div class="tutorial-step">
-              <div class="tutorial-num">5</div>
-              <div>
-                <div class="tutorial-title">Portfolio de ahorro</div>
-                <div class="tutorial-desc">En el tab <strong>Ahorro</strong> registrás tus instrumentos (FCI, acciones, dólares, etc.). Cada vez que actualizás el valor, el gráfico compara tu portfolio real con tu meta mensual acumulada.</div>
-              </div>
-            </div>
-            <div class="tutorial-step">
-              <div class="tutorial-num">6</div>
-              <div>
-                <div class="tutorial-title">Instalar en el celular</div>
-                <div class="tutorial-desc">Para instalar como app: en Chrome tocá el menú <strong>⋮</strong> → <em>Agregar a pantalla de inicio</em>. En Safari tocá <strong>□↑</strong> → <em>Agregar a pantalla de inicio</em>. Funciona sin conexión con los últimos datos sincronizados.</div>
-              </div>
+            <button class="save-btn" style="background:var(--bg3);color:var(--accent);border:1px solid var(--border);box-shadow:none" onclick="showTutorial()">
+              Iniciar tutorial
+            </button>
+          </div>
+          <div style="padding:0 16px 16px">
+            <div class="cfg-lbl" style="margin-bottom:8px">Instalar como app</div>
+            <div class="cfg-sub" style="line-height:1.8">
+              <strong>Android (Chrome):</strong> tocá ⋮ → "Agregar a pantalla de inicio"<br>
+              <strong>iPhone (Safari):</strong> tocá □↑ → "Agregar a pantalla de inicio"<br>
+              <strong>PC (Chrome):</strong> el ícono de instalación aparece en la barra de URL
             </div>
           </div>
         </div>
@@ -3410,7 +3428,7 @@ function renderResumen(){
   renderBudgetAlert();
   renderGlobalBudget();
   renderSavingsGoal();
-  renderWeeklySummary();
+  /* weekly summary disabled */
 }
 
 function renderCats(){
@@ -4012,7 +4030,7 @@ function deleteGoal() {
 }
 
 document.getElementById('modalGoal').addEventListener('click', function(e){
-  if(e.target===this) closeModal('modalGoal');
+  /* backdrop click disabled */
 });
 
 /* ── RENDER CONFIG ── */
@@ -4028,7 +4046,6 @@ function renderCfg(){
   if(bi&&document.activeElement!==bi)bi.value=S.cfg.monthlyBudget||'';
   var sgi=document.getElementById('savingsGoalInput');
   if(sgi&&document.activeElement!==sgi)sgi.value=S.cfg.savingsGoal||'';
-  // Sync palette picker
   var palette = S.cfg.colorPalette || 'verde';
   document.querySelectorAll('.theme-palette-btn').forEach(function(btn){
     btn.classList.toggle('active', btn.dataset.palette === palette);
@@ -4038,6 +4055,9 @@ function renderCfg(){
   updateUserMenu();
   updateTCDate();
   renderCatMgmt();
+  // Payment methods
+  renderPmList();
+  buildPmSelect();
 }
 
 function renderCatMgmt(){
@@ -4111,12 +4131,6 @@ function openModal(type,id){
   document.getElementById('modalRegTitle').textContent=isEdit?'Editar movimiento':'Nuevo movimiento';
   document.getElementById('amtInput').value=tx?tx.amt:'';
   document.getElementById('descInput').value=tx?(tx.desc||''):'';
-  document.getElementById('dateInput').value=tx?tx.date:todayISO();
-  document.getElementById('saveRegBtn').textContent=isEdit?'Guardar cambios':'Guardar movimiento';
-  document.getElementById('delBtn').style.display=isEdit?'block':'none';
-  var recurTog=document.getElementById('recurToggle');
-  if(S.ui.txRecur)recurTog.classList.add('on');else recurTog.classList.remove('on');
-  // Reset date optional checkbox
   var dateOptChk = document.getElementById('dateOptional');
   var dateInp    = document.getElementById('dateInput');
   var dateMsg    = document.getElementById('dateOptionalMsg');
@@ -4129,51 +4143,31 @@ function openModal(type,id){
     if (dateInp) dateInp.style.display = 'none';
     if (dateMsg) dateMsg.style.display = 'block';
   }
-  // Load tags
+  document.getElementById('saveRegBtn').textContent=isEdit?'Guardar cambios':'Guardar movimiento';
+  document.getElementById('delBtn').style.display=isEdit?'block':'none';
+  var recurTog=document.getElementById('recurToggle');
+  if(S.ui.txRecur)recurTog.classList.add('on');else recurTog.classList.remove('on');
+  // Tags
   currentTxTags = (tx&&tx.tags) ? tx.tags.slice() : [];
   renderTagChips();
   var tagInp = document.getElementById('tagInput');
   if (tagInp) tagInp.value = '';
+  // Payment method
+  buildPmSelect();
+  var pmSel = document.getElementById('pmSelect');
+  if (pmSel) pmSel.value = (tx&&tx.paymentMethod)||'';
+  // Cat search reset
+  var catInp = document.getElementById('catSearchInput');
+  var chips  = document.getElementById('catChips');
+  if (catInp) {
+    catInp.value = '';
+    var c = cat(S.ui.txCat);
+    catInp.placeholder = c ? c.icon+' '+c.label+' ✓' : 'Buscar categoría…';
+  }
+  if (chips) chips.style.display = '';
   setType(S.ui.txType);setCurr(S.ui.txCurr);buildChips();
   document.getElementById('modalReg').classList.add('open');
   setTimeout(function(){document.getElementById('amtInput').focus();},200);
-};
-function openEdit(id){openModal(null,id);};
-function closeModal(id){document.getElementById(id).classList.remove('open');};
-function guardClose(modalId){
-  var amt=modalId==='modalReg'?document.getElementById('amtInput').value:'';
-  if(amt&&!S.ui.editId){if(!confirm('¿Cerrar sin guardar?'))return;}
-  closeModal(modalId);
-}
-document.getElementById('modalReg').addEventListener('click',function(e){if(e.target===this)guardClose('modalReg');});
-document.getElementById('modalQuick').addEventListener('click',function(e){if(e.target===this)closeModal('modalQuick');});
-
-function setType(t){
-  S.ui.txType=t;
-  document.getElementById('typOut').className='type-btn'+(t==='out'?' sel-out':'');
-  document.getElementById('typIn').className ='type-btn'+(t==='in' ?' sel-in' :'');
-};
-function setCurr(c){
-  S.ui.txCurr=c;
-  document.getElementById('cARS').classList.toggle('active',c==='ARS');
-  document.getElementById('cUSD').classList.toggle('active',c==='USD');
-  document.getElementById('amtSym').textContent=c==='USD'?'US$':'$';
-};
-function toggleRecur(){
-  S.ui.txRecur=!S.ui.txRecur;
-  var tog=document.getElementById('recurToggle');
-  if(S.ui.txRecur)tog.classList.add('on');else tog.classList.remove('on');
-};
-function buildChips(){
-  var active=S.ui.txCat;
-  document.getElementById('catChips').innerHTML=CATS.map(function(c){
-    return'<div class="cat-chip'+(c.id===active?' active':'')+'" data-id="'+c.id+'">'+c.icon+' '+esc(c.label)+'</div>';
-  }).join('');
-  setTimeout(function(){var el=document.querySelector('#catChips .cat-chip.active');if(el)el.scrollIntoView({block:'nearest',inline:'center',behavior:'smooth'});},50);
-}
-function selCat(id){
-  S.ui.txCat=id;
-  document.querySelectorAll('#catChips .cat-chip').forEach(function(el){el.classList.toggle('active',el.dataset.id===id);});
 };
 function saveTx(){
   var amt=parseFloat(document.getElementById('amtInput').value);
@@ -4181,17 +4175,18 @@ function saveTx(){
   var desc=document.getElementById('descInput').value.trim();
   var dateOptChk = document.getElementById('dateOptional');
   var noDate = dateOptChk && dateOptChk.checked;
-  // If no exact date: use YYYY-MM-00 convention (month only)
   var date = noDate
     ? S.ui.year+'-'+String(S.ui.month+1).padStart(2,'0')+'-00'
     : (document.getElementById('dateInput').value || todayISO());
   var tags=currentTxTags.slice();
+  var pmSel = document.getElementById('pmSelect');
+  var pm = pmSel ? pmSel.value : '';
   var isEdit=Boolean(S.ui.editId);
   if(isEdit){
     var idx=S.txs.findIndex(function(t){return t.id===S.ui.editId;});
-    if(idx>=0)S.txs[idx]=Object.assign({},S.txs[idx],{type:S.ui.txType,amt:amt,curr:S.ui.txCurr,cat:S.ui.txCat,desc:desc,date:date,recurring:S.ui.txRecur,tags:tags});
+    if(idx>=0)S.txs[idx]=Object.assign({},S.txs[idx],{type:S.ui.txType,amt:amt,curr:S.ui.txCurr,cat:S.ui.txCat,desc:desc,date:date,recurring:S.ui.txRecur,tags:tags,paymentMethod:pm});
   }else{
-    S.txs.push({id:uid(),type:S.ui.txType,amt:amt,curr:S.ui.txCurr,cat:S.ui.txCat,desc:desc,date:date,ts:Date.now(),recurring:S.ui.txRecur,note:'',tags:tags});
+    S.txs.push({id:uid(),type:S.ui.txType,amt:amt,curr:S.ui.txCurr,cat:S.ui.txCat,desc:desc,date:date,ts:Date.now(),recurring:S.ui.txRecur,note:'',tags:tags,paymentMethod:pm});
   }
   currentTxTags=[];
   renderTagChips();
@@ -4265,7 +4260,7 @@ function openCatModal(id){
   document.getElementById('modalCat').classList.add('open');
   setTimeout(function(){document.getElementById('catNameInput').focus();},200);
 };
-document.getElementById('modalCat').addEventListener('click',function(e){if(e.target===this)closeModal('modalCat');});
+/* backdrop click disabled - use X button */
 function buildColorPicker(){
   document.getElementById('colorPicker').innerHTML=CAT_COLORS.map(function(col){
     var active=col===S.ui.editCatColor;
@@ -5044,7 +5039,7 @@ document.addEventListener('click', function(e) {
 });
 
 document.getElementById('modalDebt').addEventListener('click', function(e){
-  if (e.target===this) closeModal('modalDebt');
+  /* backdrop click disabled */
 });
 
 /* ══════════════════════════════════════════════════════
@@ -5374,7 +5369,7 @@ function deleteInstrument() {
 window.deleteInstrument = deleteInstrument;
 
 document.getElementById('modalInstrument').addEventListener('click', function(e){
-  if (e.target===this) closeModal('modalInstrument');
+  /* backdrop click disabled */
 });
 
 /* ── MOVEMENT MODAL ── */
@@ -5438,7 +5433,7 @@ function saveMovement() {
 window.saveMovement = saveMovement;
 
 document.getElementById('modalMovement').addEventListener('click', function(e){
-  if (e.target===this) closeModal('modalMovement');
+  /* backdrop click disabled */
 });
 
 /* ── ADVANCED FILTERS TOGGLE ── */
@@ -5778,43 +5773,6 @@ document.addEventListener('click', function(e) {
 
 /* ══ WIRE NEW FEATURES INTO EXISTING FNS ══ */
 
-// openModal: populate pmSelect + reset cat search
-var __openModalPrev = openModal;
-function openModal(type, id) {
-  __openModalPrev(type, id);
-  buildPmSelect();
-  var sel = document.getElementById('pmSelect');
-  var tx = id ? S.txs.find(function(t){return t.id===id;}) : null;
-  if (sel) sel.value = (tx&&tx.paymentMethod)||'';
-  var catInp = document.getElementById('catSearchInput');
-  if (catInp) {
-    catInp.value='';
-    var c = cat(S.ui.txCat);
-    catInp.placeholder = c ? c.icon+' '+c.label+' ✓' : 'Buscar categoría…';
-  }
-  var chips = document.getElementById('catChips');
-  if (chips) chips.style.display='';
-}
-window.openModal = openModal;
-
-// saveTx: save paymentMethod
-var __saveTxPrev = saveTx;
-function saveTx() {
-  var pmSel = document.getElementById('pmSelect');
-  var pmValue = pmSel ? pmSel.value : '';
-  var editId = S.ui.editId;
-  __saveTxPrev();
-  // patch paymentMethod onto the saved tx
-  if (editId) {
-    var idx = S.txs.findIndex(function(t){return t.id===editId;});
-    if (idx>=0){S.txs[idx].paymentMethod=pmValue; save();}
-  } else if (S.txs.length) {
-    S.txs[S.txs.length-1].paymentMethod = pmValue;
-    save();
-  }
-}
-window.saveTx = saveTx;
-
 // renderAnalysis: add pm summary
 var __renderAnalysisPrev = renderAnalysis;
 function renderAnalysis() {
@@ -5823,26 +5781,162 @@ function renderAnalysis() {
 }
 window.renderAnalysis = renderAnalysis;
 
-// renderCfg: populate pm list
-var __renderCfgPrev = renderCfg;
-function renderCfg() {
-  __renderCfgPrev();
-  renderPmList();
-  buildPmSelect();
+/* ── CAT EVOLUTION SEARCH ── */
+function onCatEvoSearch(val) {
+  var suggest = document.getElementById('catEvoSuggest');
+  if (!suggest) return;
+  val = (val||'').trim().toLowerCase();
+  var usedCats = {};
+  S.txs.filter(function(t){return t.type==='out';}).forEach(function(t){usedCats[t.cat]=true;});
+  var pool = S.cats.filter(function(c){return usedCats[c.id];});
+  if (!val) {
+    suggest.innerHTML = pool.slice(0,10).map(function(c){
+      return '<div class="cat-suggest-item" onmousedown="selCatEvo(\''+c.id+'\',\''+esc(c.label)+'\',\''+c.icon+'\')">'+
+        '<span style="font-size:18px">'+c.icon+'</span><span>'+esc(c.label)+'</span></div>';
+    }).join('');
+    suggest.classList.add('open');
+    return;
+  }
+  var matches = pool.filter(function(c){
+    return c.label.toLowerCase().includes(val)||c.id.toLowerCase().includes(val);
+  }).slice(0,8);
+  if (!matches.length) { suggest.classList.remove('open'); return; }
+  suggest.innerHTML = matches.map(function(c){
+    return '<div class="cat-suggest-item" onmousedown="selCatEvo(\''+c.id+'\',\''+esc(c.label)+'\',\''+c.icon+'\')">'+
+      '<span style="font-size:18px">'+c.icon+'</span><span>'+esc(c.label)+'</span></div>';
+  }).join('');
+  suggest.classList.add('open');
 }
-window.renderCfg = renderCfg;
+window.onCatEvoSearch = onCatEvoSearch;
 
-// selCat: update cat search placeholder
-var __selCatPrev = selCat;
-function selCat(id) {
-  __selCatPrev(id);
-  var catInp = document.getElementById('catSearchInput');
-  if (catInp && !catInp.value) {
-    var c = cat(id);
-    catInp.placeholder = c ? c.icon+' '+c.label+' ✓' : 'Buscar categoría…';
+function selCatEvo(id, label, icon) {
+  var inp = document.getElementById('catEvoSearchInput');
+  var hid = document.getElementById('catEvolutionSelect');
+  var sg  = document.getElementById('catEvoSuggest');
+  if (inp) { inp.value = icon+' '+label; inp.blur(); }
+  if (hid) hid.value = id;
+  if (sg)  sg.classList.remove('open');
+  renderCatEvolution();
+}
+window.selCatEvo = selCatEvo;
+
+document.addEventListener('click', function(e) {
+  var wrap = document.querySelector('[id="catEvoSearchInput"]');
+  if (wrap && !wrap.parentElement.contains(e.target)) {
+    var sg = document.getElementById('catEvoSuggest');
+    if (sg) sg.classList.remove('open');
+  }
+});
+
+/* ── INTERACTIVE TUTORIAL ── */
+var TUTORIAL_STEPS = [
+  {
+    title: '👋 Bienvenido a FinanzApp',
+    body: 'Esta guía rápida te muestra cómo usar las funciones principales. Son 6 pasos, podés saltear cualquiera.',
+    action: null,
+  },
+  {
+    title: '💸 Registrá un gasto',
+    body: 'Tocá <strong>+ Nuevo movimiento</strong> para el registro completo con categoría, medio de pago, etiquetas y fecha. O usá el botón <strong>⚡</strong> para registro rápido: solo monto y categoría.',
+    action: null,
+  },
+  {
+    title: '📊 Navegá los tabs',
+    body: '<strong>Inicio</strong>: balance del mes con KPIs.<br><strong>Historial</strong>: todos tus movimientos con filtros y búsqueda.<br><strong>Análisis</strong>: gráficos por categoría y evolución.<br><strong>Ahorro</strong>: portfolio de instrumentos y metas.<br><strong>Deudas</strong>: seguimiento de préstamos.',
+    action: null,
+  },
+  {
+    title: '💳 Medios de pago',
+    body: 'Configurá tus tarjetas en <strong>Config → Finanzas</strong>. Al registrar un gasto elegís con qué pagaste. En Análisis podés ver el gasto total por tarjeta del mes.',
+    action: { label: 'Ir a Config', tab: 'config' },
+  },
+  {
+    title: '🏦 Portfolio de ahorro',
+    body: 'En el tab <strong>Ahorro</strong> registrás tus instrumentos financieros (FCI, acciones, dólares, etc.) con depósitos, retiros y valuaciones periódicas.',
+    action: { label: 'Ver Portfolio', tab: 'ahorro' },
+  },
+  {
+    title: '✅ ¡Listo!',
+    body: 'Ya sabés lo esencial. Podés volver a este tutorial en <strong>Config → Ayuda</strong> cuando quieras.<br><br>Para instalar como app en el celular: en Chrome tocá <strong>⋮ → Agregar a pantalla de inicio</strong>.',
+    action: null,
+  }
+];
+
+var tutorialCurrentStep = 0;
+var TUTORIAL_KEY = 'finanzapp_tutorial_done';
+
+function showTutorial() {
+  tutorialCurrentStep = 0;
+  renderTutorialStep();
+  document.getElementById('tutorialOverlay').classList.add('open');
+}
+window.showTutorial = showTutorial;
+
+function closeTutorial() {
+  document.getElementById('tutorialOverlay').classList.remove('open');
+  localStorage.setItem(TUTORIAL_KEY, '1');
+}
+window.closeTutorial = closeTutorial;
+
+function tutorialNext() {
+  if (tutorialCurrentStep < TUTORIAL_STEPS.length - 1) {
+    tutorialCurrentStep++;
+    renderTutorialStep();
+  } else {
+    closeTutorial();
   }
 }
-window.selCat = selCat;
+window.tutorialNext = tutorialNext;
+
+function tutorialPrev() {
+  if (tutorialCurrentStep > 0) {
+    tutorialCurrentStep--;
+    renderTutorialStep();
+  }
+}
+window.tutorialPrev = tutorialPrev;
+
+function tutorialGoToTab(tab) {
+  switchTab(tab);
+  closeTutorial();
+}
+window.tutorialGoToTab = tutorialGoToTab;
+
+function renderTutorialStep() {
+  var step = TUTORIAL_STEPS[tutorialCurrentStep];
+  var total = TUTORIAL_STEPS.length;
+  var el = document.getElementById('tutorialContent');
+  if (!el || !step) return;
+
+  var dots = TUTORIAL_STEPS.map(function(_, i){
+    return '<div class="tutorial-dot'+(i===tutorialCurrentStep?' active':'')+'"></div>';
+  }).join('');
+
+  el.innerHTML =
+    '<div class="tutorial-modal-inner">'+
+      '<button class="tutorial-close" onclick="closeTutorial()">✕</button>'+
+      '<div class="tutorial-modal-title">'+step.title+'</div>'+
+      '<div class="tutorial-modal-body">'+step.body+'</div>'+
+      '<div class="tutorial-dots">'+dots+'</div>'+
+      '<div class="tutorial-modal-btns">'+
+        (tutorialCurrentStep>0?'<button class="tutorial-btn-sec" onclick="tutorialPrev()">← Anterior</button>':'<div></div>')+
+        '<div style="display:flex;gap:8px">'+
+          (step.action?'<button class="tutorial-btn-sec" onclick="tutorialGoToTab(\''+step.action.tab+'\')">'+step.action.label+'</button>':'')+
+          '<button class="tutorial-btn-pri" onclick="tutorialNext()">'+
+            (tutorialCurrentStep===total-1?'Finalizar':'Siguiente →')+'</button>'+
+        '</div>'+
+      '</div>'+
+    '</div>';
+}
+
+// Auto-show tutorial for new users
+fbAuth.onAuthStateChanged(function(user) {
+  if (user && !localStorage.getItem(TUTORIAL_KEY)) {
+    setTimeout(showTutorial, 1500);
+  }
+});
+
+/* ── WINDOW EXPORTS (v20) ── */
 window.openDebtModal    = openDebtModal;
 window.saveDebt         = saveDebt;
 window.deleteDebt       = deleteDebt;
@@ -5873,7 +5967,17 @@ window.saveTx          = saveTx;
 window.deleteTx        = deleteTx;
 window.setType         = setType;
 window.setCurr         = setCurr;
-window.selCat          = selCat;
+function selCat(id){
+  S.ui.txCat=id;
+  document.querySelectorAll('#catChips .cat-chip').forEach(function(el){el.classList.toggle('active',el.dataset.id===id);});
+  // Update cat search placeholder
+  var catInp = document.getElementById('catSearchInput');
+  if (catInp && !catInp.value) {
+    var c = cat(id);
+    catInp.placeholder = c ? c.icon+' '+c.label+' ✓' : 'Buscar categoría…';
+  }
+}
+window.selCat = selCat;
 window.toggleRecur     = toggleRecur;
 window.saveQuick       = saveQuick;
 window.setQCurr        = setQCurr;
@@ -5906,5 +6010,10 @@ window.deleteGoal      = deleteGoal;
 window.selGoalColor    = selGoalColor;
 
 </script>
+<!-- TUTORIAL OVERLAY -->
+<div class="tutorial-overlay" id="tutorialOverlay">
+  <div id="tutorialContent"></div>
+</div>
+
 </body>
 </html>
