@@ -3166,7 +3166,7 @@ function userDocRef(uid) {
   return fbDb.collection('users').doc(uid);
 }
 
-async/* ── FIRESTORE SYNC ── */
+/* ── FIRESTORE SYNC ── */
 var _syncFailCount = 0;
 var _syncRetryTimer = null;
 var _MAX_SYNC_RETRIES = 3;
