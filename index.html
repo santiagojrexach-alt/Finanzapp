@@ -910,13 +910,12 @@ input[type=number]{-moz-appearance:textfield}
   .app{border-left:1px solid var(--border);border-right:1px solid var(--border)}
 }
 
-/* ── ANALYSIS CONTEXT BAR ── */
-.analysis-context-bar{
-  display:flex;align-items:center;justify-content:space-between;
-  padding:8px 18px;background:color-mix(in srgb, var(--a2) 5%, transparent);
-  border-bottom:1px solid var(--border);gap:8px;flex-wrap:wrap;
+/* ── ANALYSIS SECTION TITLES ── */
+.analysis-section-title{
+  font-size:10px;font-weight:800;letter-spacing:.12em;
+  text-transform:uppercase;color:var(--muted);
+  padding:12px 18px 4px;
 }
-#analysisContextText{font-weight:700;color:var(--accent);font-size:13px}
 
 /* ── INTERACTIVE TUTORIAL — SPOTLIGHT ── */
 .tutorial-overlay{
@@ -1920,13 +1919,6 @@ input[type=number]{-moz-appearance:textfield}
         </div>
       </div>
 
-      <!-- Month compact (shown on non-Resumen tabs) -->
-      <div class="month-ctrl-compact" id="monthCtrlCompact" style="display:none">
-        <button data-action="shiftMonth" data-args="-1">&#8249;</button>
-        <span id="monthLabelCompact"></span>
-        <button data-action="shiftMonth" data-args="1">&#8250;</button>
-      </div>
-
       <!-- Right: theme toggle -->
       <button class="theme-btn-header" id="themeBtn" data-action="toggleTheme" title="Cambiar tema">🌙</button>
     </div>
@@ -2037,39 +2029,53 @@ input[type=number]{-moz-appearance:textfield}
 
     <!-- ANÁLISIS -->
     <div class="tab-panel" id="tab-analisis">
-      <!-- Period context banner -->
-      <div class="analysis-context-bar" id="analysisContextBar">
-        <span id="analysisContextText"></span>
-        <span style="color:var(--muted);font-size:10px">El selector de mes del encabezado afecta los gráficos mensuales</span>
+
+      <!-- Month selector (same style as Inicio) -->
+      <div class="month-selector-row" id="monthSelectorAnalisis">
+        <button class="month-nav-btn" data-action="shiftMonth" data-args="-1">&#8249;</button>
+        <span id="monthLabelAnalisis" class="month-label-large"></span>
+        <button class="month-nav-btn" data-action="shiftMonth" data-args="1">&#8250;</button>
       </div>
 
-      <!-- Torta categorías -->
+      <!-- SECTION: Este mes -->
+      <div class="analysis-section-title">Este mes</div>
+
+      <!-- Donut categorías -->
       <div class="card">
         <div class="card-hdr collapsible collapsed" onclick="toggleCard(this)">
-          <span>Gastos por categoría</span><span id="donutMonth" style="font-size:11px;font-weight:600;text-transform:none;letter-spacing:0;color:var(--dim);margin-left:8px"></span>
+          <span>Gastos por categoría</span>
         </div>
         <div class="card-body collapsed">
-          <div class="chart-wrap">
-            <div class="chart-canvas-wrap" style="height:200px"><canvas id="donutChart"></canvas></div>
-          </div>
+          <div class="chart-canvas-wrap" style="height:200px"><canvas id="donutChart"></canvas></div>
           <div class="chart-legend" id="donutLegend"></div>
         </div>
       </div>
 
-      <!-- Barras evolución mensual -->
+      <!-- Gastos por medio de pago — este mes -->
       <div class="card">
         <div class="card-hdr collapsible collapsed" onclick="toggleCard(this)">
-          <span>Evolución mensual</span>
-          <span style="font-size:10px;font-weight:400;text-transform:none;letter-spacing:0;color:var(--dim);margin-left:8px">últimos meses</span>
+          <span>Gastos por medio de pago</span>
+        </div>
+        <div class="card-body collapsed">
+          <div id="pmSummaryList"></div>
+          <div id="pmUnspecifiedNotice" style="display:none;padding:8px 16px;font-size:11px;color:var(--muted)"></div>
+        </div>
+      </div>
+
+      <!-- SECTION: Evolución histórica -->
+      <div class="analysis-section-title" style="margin-top:6px">Evolución histórica</div>
+
+      <!-- Barras ingresos/egresos -->
+      <div class="card">
+        <div class="card-hdr collapsible collapsed" onclick="toggleCard(this)">
+          <span>Ingresos y egresos</span>
         </div>
         <div class="card-body collapsed">
           <div class="chart-period-row" id="barPeriodRow">
             <div class="chart-chip active" data-months="6">6 meses</div>
             <div class="chart-chip" data-months="12">12 meses</div>
           </div>
-          <div class="chart-wrap" style="padding-top:0">
-            <div class="chart-canvas-wrap" style="height:200px"><canvas id="barChart"></canvas></div>
-          </div>
+          <div class="chart-canvas-wrap" style="height:200px"><canvas id="barChart"></canvas></div>
           <div class="chart-legend" style="padding-top:0">
             <div class="chart-legend-item"><div class="chart-legend-dot" style="background:var(--accent)"></div>Ingresos</div>
             <div class="chart-legend-item"><div class="chart-legend-dot" style="background:var(--red)"></div>Egresos</div>
@@ -2077,11 +2083,23 @@ input[type=number]{-moz-appearance:textfield}
         </div>
       </div>
 
-      <!-- Evolución por categoría -->
+      <!-- Comparación tarjetas — histórico -->
       <div class="card">
-        <div class="card-hdr collapsible collapsed" onclick="toggleCard(this)"><span>Gastos por medio de pago</span></div>
-        <div class="card-body collapsed" id="pmSummaryBody">
-          <div id="pmSummaryList"></div>
+        <div class="card-hdr collapsible collapsed" onclick="toggleCard(this)">
+          <span>Consumo por tarjeta</span>
+        </div>
+        <div class="card-body collapsed">
+          <div id="pmCompareHeader" style="padding:10px 16px 4px;display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+            <select id="pmCompareSelect" class="field-input" style="flex:1;min-width:120px;max-width:200px" onchange="renderPmComparison()">
+              <option value="all">Todas las tarjetas</option>
+            </select>
+            <div class="chart-period-row" id="pmComparePeriodRow" style="margin:0">
+              <div class="chart-chip active" data-pmmonths="6">6 meses</div>
+              <div class="chart-chip" data-pmmonths="12">12 meses</div>
+            </div>
+          </div>
+          <div class="chart-canvas-wrap" style="height:200px"><canvas id="pmCompareChart"></canvas></div>
+          <div id="pmCompareTotals" style="padding:8px 16px 12px;font-size:11px;color:var(--muted)"></div>
         </div>
       </div>
 
@@ -3206,9 +3224,9 @@ function calcBal(txs){
 function renderHeader(){
   var monthText = MONTHS[S.ui.month]+' '+S.ui.year;
   var ml = el('monthLabel');
-  var mlc = document.getElementById('monthLabelCompact');
+  var mla = document.getElementById('monthLabelAnalisis');
   if(ml)  ml.textContent  = monthText;
-  if(mlc) mlc.textContent = monthText;
+  if(mla) mla.textContent = monthText;
   var b=calcBal();
   var sign=b.total<0?'−':'';
   var balEl=el('balARS');
@@ -3264,9 +3282,11 @@ function toggleCard(hdr) {
         if (id === 'lineChart')            renderLine();
         if (id === 'portfolioVsMetaChart') renderPortfolioVsMeta();
         if (id === 'catEvoChart')          renderCatEvolution();
+        if (id === 'pmCompareChart')       renderPmComparison();
       }
       // Non-canvas cards with dynamic content
-      if (body.querySelector('#pmSummaryList')) renderPmSummary();
+      if (body.querySelector('#pmSummaryList'))  renderPmSummary();
+      if (body.querySelector('#pmCompareChart')) renderPmComparison();
     }
   }
 }
@@ -3725,7 +3745,7 @@ function renderAnalysis() {
   renderLine();
   renderCatEvolution();
   renderPmSummary();
-
+  renderPmComparison();
   updateAnalysisContext();
 }
 
@@ -4759,11 +4779,11 @@ function switchTabV4(name) {
   // Balance card only in Resumen
   var balCard = document.getElementById('balanceCard');
   if (balCard) balCard.style.display = name==='resumen' ? '' : 'none';
-  // Month selector: big in Resumen, compact in header for other tabs
-  var monthRow   = document.getElementById('monthSelectorRow');
-  var compactCtrl = document.getElementById('monthCtrlCompact');
-  if (monthRow)    monthRow.style.display    = name==='resumen' ? '' : 'none';
-  if (compactCtrl) compactCtrl.style.display = name==='resumen' ? 'none' : 'flex';
+  // Month selector: show in Resumen and Análisis, hide in others
+  var monthRow = document.getElementById('monthSelectorRow');
+  var monthRowA = document.getElementById('monthSelectorAnalisis');
+  if (monthRow)  monthRow.style.display  = (name==='resumen')  ? '' : 'none';
+  if (monthRowA) monthRowA.style.display = (name==='analisis') ? '' : 'none';
   document.getElementById('contentArea').scrollTop = 0;
   renderTab(name);
 }
@@ -5813,37 +5833,136 @@ function removePaymentMethod(id) {
 window.removePaymentMethod = removePaymentMethod;
 
 function renderPmSummary() {
-  var el = document.getElementById('pmSummaryList');
-  if (!el) return;
+  var listEl   = document.getElementById('pmSummaryList');
+  var noticeEl = document.getElementById('pmUnspecifiedNotice');
+  if (!listEl) return;
   var pms = S.paymentMethods || [];
   var y=S.ui.year, m=S.ui.month;
   var txs = S.txs.filter(function(t){return inMonth(t,y,m)&&t.type==='out';});
-  var map={'':0};
+  var map={};
   pms.forEach(function(pm){map[pm.id]=0;});
   txs.forEach(function(t){
     var k=t.paymentMethod||'';
-    if(map[k]===undefined)map[k]=0;
-    map[k]+=toARS(t.amt,t.curr);
+    if(k && map[k]!==undefined) map[k]+=toARS(t.amt,t.curr);
   });
-  var rows=pms.map(function(pm){return{name:(pm.icon||'💳')+' '+pm.name,amt:map[pm.id]||0};});
-  if(map['']>0)rows.push({name:'— Sin especificar',amt:map['']});
-  rows.sort(function(a,b){return b.amt-a.amt;});
-  var visible=rows.filter(function(r){return r.amt>0;});
-  if(!visible.length){
-    el.innerHTML='<div style="padding:20px;text-align:center;font-size:12px;color:var(--muted)">Sin gastos este mes con medio de pago registrado</div>';
+  var rows=pms.map(function(pm){return{name:(pm.icon||'💳')+' '+pm.name,amt:map[pm.id]||0};})
+    .filter(function(r){return r.amt>0;})
+    .sort(function(a,b){return b.amt-a.amt;});
+  if(!rows.length){
+    listEl.innerHTML='<div style="padding:20px;text-align:center;font-size:12px;color:var(--muted)">Sin gastos con medio de pago este mes</div>';
+    if(noticeEl) noticeEl.style.display='none';
     return;
   }
-  el.innerHTML=visible.map(function(r){
-    return '<div class="pm-summary-row">'+
-      '<span class="pm-summary-name">'+r.name+'</span>'+
-      '<span class="pm-summary-amt">'+fARS(r.amt)+'</span>'+
-    '</div>';
+  listEl.innerHTML=rows.map(function(r){
+    return '<div class="pm-summary-row"><span class="pm-summary-name">'+r.name+'</span>'+
+      '<span class="pm-summary-amt">'+fARS(r.amt)+'</span></div>';
   }).join('');
+  // Aviso sin especificar
+  var unspecTxs = txs.filter(function(t){return !t.paymentMethod;});
+  if(noticeEl) {
+    if(unspecTxs.length>0) {
+      var unspecAmt = unspecTxs.reduce(function(s,t){return s+toARS(t.amt,t.curr);},0);
+      noticeEl.style.display='block';
+      noticeEl.innerHTML='⚠️ '+unspecTxs.length+' movimiento'+(unspecTxs.length>1?'s':'')+
+        ' sin medio de pago ('+fARS(unspecAmt)+') — editálos para asignarles una tarjeta';
+    } else {
+      noticeEl.style.display='none';
+    }
+  }
 }
 
 /* ══════════════════════════════════════════════════════
-   AUTOCOMPLETADO DE CATEGORÍAS
+   PM COMPARISON CHART — consumo por tarjeta histórico
    ══════════════════════════════════════════════════════ */
+var pmCompareChartInstance = null;
+var pmCompareMonths = 6;
+
+function renderPmComparison() {
+  var canvas   = document.getElementById('pmCompareChart');
+  var totalsEl = document.getElementById('pmCompareTotals');
+  var sel      = document.getElementById('pmCompareSelect');
+  if (!canvas || !sel) return;
+
+  var pms = S.paymentMethods || [];
+  if (!pms.length) {
+    canvas.parentElement.innerHTML = '<div style="height:200px;display:flex;align-items:center;justify-content:center;font-size:12px;color:var(--muted);text-align:center;padding:20px">Configurá medios de pago en ⚙️ → Finanzas</div>';
+    return;
+  }
+
+  // Populate select
+  var curVal = sel.value;
+  sel.innerHTML = '<option value="all">Todas las tarjetas</option>' +
+    pms.map(function(pm){ return '<option value="'+pm.id+'">'+(pm.icon||'💳')+' '+esc(pm.name)+'</option>'; }).join('');
+  if (curVal) sel.value = curVal;
+
+  var selectedId = sel.value;
+  var selectedPms = selectedId === 'all' ? pms : pms.filter(function(pm){ return pm.id===selectedId; });
+
+  // Build month labels
+  var now = new Date();
+  var labels = [], monthKeys = [];
+  for (var i = pmCompareMonths-1; i >= 0; i--) {
+    var d = new Date(now.getFullYear(), now.getMonth()-i, 1);
+    labels.push(MONTHS[d.getMonth()].slice(0,3)+" '"+String(d.getFullYear()).slice(2));
+    monthKeys.push({y:d.getFullYear(), m:d.getMonth()});
+  }
+
+  // Colors for multiple cards
+  var CHART_COLORS = ['rgba(66,212,96,1)','rgba(122,192,255,1)','rgba(200,160,255,1)','rgba(255,204,112,1)','rgba(255,136,136,1)'];
+
+  var datasets = selectedPms.map(function(pm, pi) {
+    var color = CHART_COLORS[pi % CHART_COLORS.length];
+    var data = monthKeys.map(function(mk) {
+      return S.txs.filter(function(t){
+        return t.type==='out' && t.paymentMethod===pm.id && inMonth(t,mk.y,mk.m);
+      }).reduce(function(s,t){ return s+toARS(t.amt,t.curr); }, 0);
+    });
+    return { label:(pm.icon||'💳')+' '+pm.name, data:data, backgroundColor:color.replace(',1)',', .7)'), borderColor:color, borderWidth:1.5, borderRadius:5 };
+  });
+
+  var th = chartTheme();
+  if (pmCompareChartInstance) { pmCompareChartInstance.destroy(); pmCompareChartInstance=null; }
+  pmCompareChartInstance = new Chart(canvas.getContext('2d'), {
+    type: 'bar',
+    data: { labels:labels, datasets:datasets },
+    options: {
+      responsive:true, maintainAspectRatio:false, animation:{duration:300},
+      plugins: {
+        legend: { display: selectedId==='all' && pms.length>1, labels:{color:th.text,font:{size:10}} },
+        tooltip: { callbacks: { label:function(ctx){ return ctx.dataset.label+': '+fARS(ctx.parsed.y); } } }
+      },
+      scales: {
+        x: { grid:{color:th.grid}, ticks:{color:th.text,font:{size:10}}, stacked: selectedId==='all' },
+        y: { grid:{color:th.grid}, ticks:{color:th.text,font:{size:10},
+          callback:function(v){ return v>=1000000?'$'+(v/1e6).toFixed(1)+'M':v>=1000?'$'+(v/1000).toFixed(0)+'k':'$'+v; }
+        }, stacked: selectedId==='all' }
+      }
+    }
+  });
+
+  // Totals summary
+  if (totalsEl) {
+    var parts = selectedPms.map(function(pm) {
+      var total = S.txs.filter(function(t){ return t.type==='out'&&t.paymentMethod===pm.id; })
+        .reduce(function(s,t){ return s+toARS(t.amt,t.curr); }, 0);
+      return (pm.icon||'💳')+' '+pm.name+': <strong>'+fARS(total)+'</strong> acumulado';
+    });
+    totalsEl.innerHTML = parts.join(' &nbsp;·&nbsp; ');
+  }
+}
+window.renderPmComparison = renderPmComparison;
+
+// Period chips for PM comparison
+document.addEventListener('click', function(e) {
+  var chip = e.target.closest('[data-pmmonths]');
+  if (!chip) return;
+  pmCompareMonths = parseInt(chip.dataset.pmmonths);
+  var row = document.getElementById('pmComparePeriodRow');
+  if (row) row.querySelectorAll('.chart-chip').forEach(function(c){
+    c.classList.toggle('active', c.dataset.pmmonths===String(pmCompareMonths));
+  });
+  renderPmComparison();
+});
 function onCatSearch(val) {
   var suggest = document.getElementById('catSuggest');
   var chips   = document.getElementById('catChips');
@@ -6382,9 +6501,8 @@ window.renderPmSummaryInicio = renderPmSummaryInicio;
 
 /* ── ANALYSIS CONTEXT BAR ── */
 function updateAnalysisContext() {
-  var el = document.getElementById('analysisContextText');
-  if (!el) return;
-  el.textContent = MONTHS[S.ui.month]+' '+S.ui.year;
+  var el = document.getElementById('monthLabelAnalisis');
+  if (el) el.textContent = MONTHS[S.ui.month]+' '+S.ui.year;
 }
 window.updateAnalysisContext = updateAnalysisContext;
 
