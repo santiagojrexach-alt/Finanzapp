@@ -462,14 +462,22 @@ body{
 
 /* ── DATE SEPARATOR ── */
 .date-sep{
-  padding:12px 16px 6px;
+  padding:10px 16px 6px;
   font-size:10px;font-weight:700;letter-spacing:.14em;
   text-transform:uppercase;color:var(--muted);
   border-bottom:1px solid var(--border);
   background:var(--bg3);
-  transition:background .35s;
+  display:flex;align-items:center;justify-content:space-between;
+  cursor:pointer;user-select:none;
+  transition:background .15s;
 }
-.date-sep:first-child{padding-top:8px}
+.date-sep:hover{background:var(--border)}
+.date-sep-arrow{
+  font-size:13px;transition:transform .2s;flex-shrink:0;
+}
+.date-sep.collapsed .date-sep-arrow{transform:rotate(-90deg)}
+.date-group-body{overflow:hidden;transition:max-height .25s cubic-bezier(.4,0,.2,1)}
+.date-group-body.collapsed{max-height:0!important}
 
 /* ── TX ROW ── */
 .tx{
@@ -1849,6 +1857,8 @@ body{
       <div id="weeklySummaryCard" style="display:none"></div>
       <!-- Budget global semaphore -->
       <div id="globalBudgetCard"></div>
+      <!-- Savings goal card -->
+      <div id="savingsGoalCard"></div>
       <!-- Recurring suggestions banner -->
       <div class="recur-banner" id="recurBanner">
         <div class="recur-banner-title">🔁 Movimientos recurrentes pendientes</div>
@@ -2023,126 +2033,149 @@ body{
     <!-- CONFIG -->
     <div class="tab-panel" id="tab-config">
 
+      <!-- FINANZAS -->
       <div class="cfg-section">
-        <div class="cfg-hdr" onclick="toggleCfg(this)">Cuenta</div>
+        <div class="cfg-hdr" onclick="toggleCfg(this)">Finanzas</div>
         <div class="cfg-body">
-        <div class="cfg-row">
-          <div class="user-row">
-            <div class="user-avatar">👤</div>
+          <div class="cfg-row">
             <div>
-              <div class="cfg-lbl" style="text-transform:none;letter-spacing:0;font-size:13px" id="cfgUserEmail">—</div>
-              <div class="cfg-sub" id="cfgSyncStatus">Sincronización activa</div>
+              <div class="cfg-lbl">Ingreso mensual</div>
+              <div class="cfg-sub">Referencia para % de ahorro</div>
             </div>
+            <input class="cfg-inline-input" type="number" inputmode="decimal"
+                   id="monthlyInput" placeholder="0" min="0">
           </div>
-          <button class="cfg-action red" data-action="openLogoutModal">Salir</button>
-        </div>
+          <div class="cfg-row">
+            <div>
+              <div class="cfg-lbl">Meta de ahorro mensual</div>
+              <div class="cfg-sub">Cuánto querés ahorrar por mes</div>
+            </div>
+            <input class="cfg-inline-input" type="number" inputmode="decimal"
+                   id="savingsGoalInput" placeholder="0" min="0">
+          </div>
+          <div class="cfg-row">
+            <div>
+              <div class="cfg-lbl">Tipo de cambio USD</div>
+              <div class="cfg-sub">ARS por dólar</div>
+              <div class="tc-date" id="tcDate"></div>
+            </div>
+            <input class="cfg-inline-input" type="number" inputmode="decimal"
+                   id="usdRateInput" placeholder="1200" min="1">
+          </div>
         </div>
       </div>
 
+      <!-- PRESUPUESTO -->
+      <div class="cfg-section">
+        <div class="cfg-hdr collapsed" onclick="toggleCfg(this)">Presupuesto</div>
+        <div class="cfg-body collapsed">
+          <div class="cfg-row">
+            <div>
+              <div class="cfg-lbl">Presupuesto mensual global</div>
+              <div class="cfg-sub">Límite de gasto total del mes</div>
+            </div>
+            <input class="cfg-inline-input" type="number" inputmode="decimal"
+                   id="monthlyBudgetInput" placeholder="0" min="0">
+          </div>
+          <div class="cfg-sub" style="padding:0 16px 12px;line-height:1.6">
+            Los presupuestos por categoría se configuran en cada categoría.
+          </div>
+        </div>
+      </div>
+
+      <!-- APARIENCIA -->
       <div class="cfg-section">
         <div class="cfg-hdr collapsed" onclick="toggleCfg(this)">Apariencia</div>
         <div class="cfg-body collapsed">
-        <div class="cfg-row">
-          <div>
-            <div class="cfg-lbl">Tema nocturno</div>
-            <div class="cfg-sub">Verde oscuro sobre negro</div>
-          </div>
-          <div class="toggle on" id="themeToggle" data-action="toggleTheme">
-            <div class="toggle-knob"></div>
-          </div>
-        </div>
-        <div class="cfg-row" style="flex-direction:column;align-items:flex-start;gap:4px">
-          <div class="cfg-lbl">Color del tema</div>
-          <div class="theme-palette-grid" id="themePaletteGrid">
-            <div class="theme-palette-btn active" data-palette="verde" onclick="setColorPalette('verde')">
-              <div class="theme-palette-swatch" style="background:linear-gradient(135deg,#1a2b1b,#42d460)">🌿</div>
-              <span class="theme-palette-lbl">Verde</span>
+          <div class="cfg-row">
+            <div>
+              <div class="cfg-lbl">Tema nocturno</div>
+              <div class="cfg-sub">Oscuro / claro</div>
             </div>
-            <div class="theme-palette-btn" data-palette="azul" onclick="setColorPalette('azul')">
-              <div class="theme-palette-swatch" style="background:linear-gradient(135deg,#1a2535,#3aadff)">🌊</div>
-              <span class="theme-palette-lbl">Azul</span>
-            </div>
-            <div class="theme-palette-btn" data-palette="purpura" onclick="setColorPalette('purpura')">
-              <div class="theme-palette-swatch" style="background:linear-gradient(135deg,#221840,#a870ff)">🔮</div>
-              <span class="theme-palette-lbl">Púrpura</span>
-            </div>
-            <div class="theme-palette-btn" data-palette="naranja" onclick="setColorPalette('naranja')">
-              <div class="theme-palette-swatch" style="background:linear-gradient(135deg,#382010,#ff9810)">🔥</div>
-              <span class="theme-palette-lbl">Naranja</span>
-            </div>
-            <div class="theme-palette-btn" data-palette="neutro" onclick="setColorPalette('neutro')">
-              <div class="theme-palette-swatch" style="background:linear-gradient(135deg,#202224,#78a0b8)">🩶</div>
-              <span class="theme-palette-lbl">Neutro</span>
+            <div class="toggle on" id="themeToggle" data-action="toggleTheme">
+              <div class="toggle-knob"></div>
             </div>
           </div>
-        </div>
+          <div class="cfg-row" style="flex-direction:column;align-items:flex-start;gap:4px">
+            <div class="cfg-lbl">Color del tema</div>
+            <div class="theme-palette-grid" id="themePaletteGrid">
+              <div class="theme-palette-btn active" data-palette="verde" onclick="setColorPalette('verde')">
+                <div class="theme-palette-swatch" style="background:linear-gradient(135deg,#1a2b1b,#42d460)">🌿</div>
+                <span class="theme-palette-lbl">Verde</span>
+              </div>
+              <div class="theme-palette-btn" data-palette="azul" onclick="setColorPalette('azul')">
+                <div class="theme-palette-swatch" style="background:linear-gradient(135deg,#1a2535,#3aadff)">🌊</div>
+                <span class="theme-palette-lbl">Azul</span>
+              </div>
+              <div class="theme-palette-btn" data-palette="purpura" onclick="setColorPalette('purpura')">
+                <div class="theme-palette-swatch" style="background:linear-gradient(135deg,#221840,#a870ff)">🔮</div>
+                <span class="theme-palette-lbl">Púrpura</span>
+              </div>
+              <div class="theme-palette-btn" data-palette="naranja" onclick="setColorPalette('naranja')">
+                <div class="theme-palette-swatch" style="background:linear-gradient(135deg,#382010,#ff9810)">🔥</div>
+                <span class="theme-palette-lbl">Naranja</span>
+              </div>
+              <div class="theme-palette-btn" data-palette="neutro" onclick="setColorPalette('neutro')">
+                <div class="theme-palette-swatch" style="background:linear-gradient(135deg,#202224,#78a0b8)">🩶</div>
+                <span class="theme-palette-lbl">Neutro</span>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
 
-      <div class="cfg-section">
-        <div class="cfg-hdr collapsed" onclick="toggleCfg(this)">Moneda y tipo de cambio</div>
-        <div class="cfg-body collapsed">
-        <div class="cfg-row">
-          <div>
-            <div class="cfg-lbl">Tipo de cambio USD</div>
-            <div class="cfg-sub">ARS por dólar · para balance total</div>
-            <div class="tc-date" id="tcDate"></div>
-          </div>
-          <input class="cfg-inline-input" type="number" inputmode="decimal"
-                 id="usdRateInput" placeholder="1200" min="1">
-        </div>
-        <div class="cfg-row">
-          <div>
-            <div class="cfg-lbl">Presupuesto mensual</div>
-            <div class="cfg-sub">Monto total disponible por mes</div>
-          </div>
-          <input class="cfg-inline-input" type="number" inputmode="decimal"
-                 id="monthlyBudgetInput" placeholder="0" min="0">
-        </div>
-        <div class="cfg-row">
-          <div>
-            <div class="cfg-lbl">Ingreso mensual base</div>
-            <div class="cfg-sub">Referencia para % de ahorro</div>
-          </div>
-          <input class="cfg-inline-input" type="number" inputmode="decimal"
-                 id="monthlyInput" placeholder="0" min="0">
-        </div>
-        </div>
-      </div>
-
+      <!-- CATEGORÍAS -->
       <div class="cfg-section">
         <div class="cfg-hdr collapsed" onclick="toggleCfg(this)">Categorías</div>
         <div class="cfg-body collapsed">
-        <div id="catMgmtList"></div>
-        <div class="cfg-row" style="padding:11px 16px">
-          <button class="cfg-action green" onclick="openCatModal(null)">+ Agregar categoría</button>
-        </div>
+          <div id="catMgmtList"></div>
+          <div class="cfg-row" style="padding:11px 16px">
+            <button class="cfg-action green" onclick="openCatModal(null)">+ Agregar categoría</button>
+          </div>
         </div>
       </div>
 
+      <!-- DATOS -->
       <div class="cfg-section">
         <div class="cfg-hdr collapsed" onclick="toggleCfg(this)">Datos</div>
         <div class="cfg-body collapsed">
-        <div class="cfg-row">
-          <div><div class="cfg-lbl">Importar JSON</div><div class="cfg-sub">Restaurar desde backup</div></div>
-          <button class="cfg-action" data-action="importJSON">↑ JSON</button>
-        </div>
-        <div class="cfg-row">
-          <div><div class="cfg-lbl">Exportar CSV</div><div class="cfg-sub">Todas las transacciones</div></div>
-          <button class="cfg-action" data-action="exportCSV">↓ CSV</button>
-        </div>
-        <div class="cfg-row">
-          <div><div class="cfg-lbl">Exportar JSON</div><div class="cfg-sub">Backup completo</div></div>
-          <button class="cfg-action" data-action="exportJSON">↓ JSON</button>
-        </div>
-        <div class="cfg-row">
-          <div><div class="cfg-lbl">Borrar todos los datos</div><div class="cfg-sub">No se puede deshacer</div></div>
-          <button class="cfg-action red" data-action="confirmClear">Borrar</button>
-        </div>
+          <div class="cfg-row">
+            <div><div class="cfg-lbl">Importar JSON</div><div class="cfg-sub">Restaurar desde backup</div></div>
+            <button class="cfg-action" data-action="importJSON">↑ JSON</button>
+          </div>
+          <div class="cfg-row">
+            <div><div class="cfg-lbl">Exportar CSV</div><div class="cfg-sub">Todas las transacciones</div></div>
+            <button class="cfg-action" data-action="exportCSV">↓ CSV</button>
+          </div>
+          <div class="cfg-row">
+            <div><div class="cfg-lbl">Exportar JSON</div><div class="cfg-sub">Backup completo</div></div>
+            <button class="cfg-action" data-action="exportJSON">↓ JSON</button>
+          </div>
+          <div class="cfg-row">
+            <div><div class="cfg-lbl">Borrar todos los datos</div><div class="cfg-sub">No se puede deshacer</div></div>
+            <button class="cfg-action red" data-action="confirmClear">Borrar</button>
+          </div>
         </div>
       </div>
 
-      <div class="version-note">FinanzApp v0.3 · Firebase · Chart.js · schema v2</div>
+      <!-- CUENTA -->
+      <div class="cfg-section">
+        <div class="cfg-hdr collapsed" onclick="toggleCfg(this)">Cuenta</div>
+        <div class="cfg-body collapsed">
+          <div class="cfg-row">
+            <div class="user-row">
+              <div class="user-avatar">👤</div>
+              <div>
+                <div class="cfg-lbl" style="text-transform:none;letter-spacing:0;font-size:13px" id="cfgUserEmail">—</div>
+                <div class="cfg-sub" id="cfgSyncStatus">Sincronización activa</div>
+              </div>
+            </div>
+            <button class="cfg-action red" data-action="openLogoutModal">Salir</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="version-note">FinanzApp · Firebase · Chart.js · schema v2</div>
     </div>
 
   </div><!-- /content-area -->
@@ -2209,8 +2242,17 @@ body{
           </div>
         </div>
         <div class="field">
-          <label class="field-lbl">Fecha</label>
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
+            <label class="field-lbl" style="margin:0">Fecha</label>
+            <label style="display:flex;align-items:center;gap:6px;font-size:11px;color:var(--muted);cursor:pointer">
+              <input type="checkbox" id="dateOptional" onchange="toggleDateOptional()" style="accent-color:var(--a2)">
+              Sin fecha exacta
+            </label>
+          </div>
           <input class="field-input" type="date" id="dateInput">
+          <div id="dateOptionalMsg" style="display:none;font-size:11px;color:var(--muted);padding:6px 0">
+            Se registrará en el mes actual sin día específico
+          </div>
         </div>
         <div class="recur-row">
           <div>
@@ -2562,7 +2604,7 @@ var CATS = DEFAULT_CATS.slice();
 /* ── STATE ── */
 var S = {
   txs:[], goals:[], debts:[], portfolio:[], cats:DEFAULT_CATS.slice(),
-  cfg:{theme:'dark',colorPalette:'verde',usdRate:1200,monthlyIncome:0,monthlyBudget:0,budgets:{},schemaVersion:SCHEMA_VERSION},
+  cfg:{theme:'dark',colorPalette:'verde',usdRate:1200,monthlyIncome:0,monthlyBudget:0,savingsGoal:0,budgets:{},schemaVersion:SCHEMA_VERSION},
   ui:{
     tab:'resumen',year:new Date().getFullYear(),month:new Date().getMonth(),
     period:'month',searchQuery:'',editId:null,
@@ -2603,6 +2645,7 @@ function migrate(d) {
   if (!d.debts) d.debts = [];
   if (!d.portfolio) d.portfolio = [];
   if (d.cfg && d.cfg.monthlyBudget === undefined) d.cfg.monthlyBudget = 0;
+  if (d.cfg && d.cfg.savingsGoal   === undefined) d.cfg.savingsGoal   = 0;
   if (d.txs) d.txs.forEach(function(t) {
     if (!t.tags) t.tags = [];
   });
@@ -2862,6 +2905,7 @@ function toARS(amount,curr){return curr==='USD'?amount*S.cfg.usdRate:amount;}
 function todayISO(){return new Date().toISOString().slice(0,10);}
 function fmtDate(ds){
   if(!ds)return'';
+  if(ds.endsWith('-00')){var p=ds.split('-');return MONTHS[parseInt(p[1])-1].slice(0,3).toLowerCase();}
   var p=ds.split('-').map(Number);
   var now=new Date();now.setHours(0,0,0,0);
   var then=new Date(p[0],p[1]-1,p[2]);
@@ -2873,6 +2917,10 @@ function fmtDate(ds){
 }
 function dateLabel(ds){
   if(!ds)return'';
+  if(ds.endsWith('-00')){
+    var p=ds.split('-');
+    return MONTHS[parseInt(p[1])-1]+' — sin día específico';
+  }
   var p=ds.split('-').map(Number);
   var now=new Date();now.setHours(0,0,0,0);
   var then=new Date(p[0],p[1]-1,p[2]);
@@ -3208,6 +3256,7 @@ function renderResumen(){
   renderRecurBanner();
   renderBudgetAlert();
   renderGlobalBudget();
+  renderSavingsGoal();
   renderWeeklySummary();
 }
 
@@ -3350,7 +3399,23 @@ function renderHist(){
   var groups={},order=[];
   txs.forEach(function(t){var key=t.date||'sin-fecha';if(!groups[key]){groups[key]=[];order.push(key);}groups[key].push(t);});
   var html='';
-  order.forEach(function(dk){html+='<div class="date-sep">'+dateLabel(dk)+'</div>';html+=groups[dk].map(function(tx){return txRow(tx);}).join('');});
+  order.forEach(function(dk){
+    var dayTxs = groups[dk];
+    var dayTotal = dayTxs.reduce(function(s,t){ return s + (t.type==='out'?-1:1)*toARS(t.amt,t.curr); }, 0);
+    var totalStr = (dayTotal>=0?'+':'')+fARS(dayTotal);
+    var totalColor = dayTotal>=0?'var(--a2)':'var(--red)';
+    var groupId = 'dg-'+dk.replace(/-/g,'');
+    html += '<div class="date-sep" onclick="toggleDayGroup(\''+groupId+'\')">'+
+      '<span>'+dateLabel(dk)+'</span>'+
+      '<span style="display:flex;align-items:center;gap:6px">'+
+        '<span style="font-size:10px;font-weight:700;color:'+totalColor+'">'+totalStr+'</span>'+
+        '<span class="date-sep-arrow">›</span>'+
+      '</span>'+
+    '</div>'+
+    '<div class="date-group-body" id="'+groupId+'" style="max-height:'+dayTxs.length*80+'px">'+
+      dayTxs.map(function(tx){return txRow(tx);}).join('')+
+    '</div>';
+  });
   el.innerHTML=html;
   setTimeout(attachSwipeListeners, 50);
 }
@@ -3742,6 +3807,8 @@ function renderCfg(){
   if(mi&&document.activeElement!==mi)mi.value=S.cfg.monthlyIncome||'';
   var bi=document.getElementById('monthlyBudgetInput');
   if(bi&&document.activeElement!==bi)bi.value=S.cfg.monthlyBudget||'';
+  var sgi=document.getElementById('savingsGoalInput');
+  if(sgi&&document.activeElement!==sgi)sgi.value=S.cfg.savingsGoal||'';
   // Sync palette picker
   var palette = S.cfg.colorPalette || 'verde';
   document.querySelectorAll('.theme-palette-btn').forEach(function(btn){
@@ -3830,6 +3897,19 @@ function openModal(type,id){
   document.getElementById('delBtn').style.display=isEdit?'block':'none';
   var recurTog=document.getElementById('recurToggle');
   if(S.ui.txRecur)recurTog.classList.add('on');else recurTog.classList.remove('on');
+  // Reset date optional checkbox
+  var dateOptChk = document.getElementById('dateOptional');
+  var dateInp    = document.getElementById('dateInput');
+  var dateMsg    = document.getElementById('dateOptionalMsg');
+  if (dateOptChk) dateOptChk.checked = false;
+  if (dateInp)    dateInp.style.display = '';
+  if (dateMsg)    dateMsg.style.display = 'none';
+  if (dateInp)    dateInp.value = tx ? (tx.date && tx.date.endsWith('-00') ? '' : tx.date) : todayISO();
+  if (tx && tx.date && tx.date.endsWith('-00') && dateOptChk) {
+    dateOptChk.checked = true;
+    if (dateInp) dateInp.style.display = 'none';
+    if (dateMsg) dateMsg.style.display = 'block';
+  }
   // Load tags
   currentTxTags = (tx&&tx.tags) ? tx.tags.slice() : [];
   renderTagChips();
@@ -3880,7 +3960,12 @@ function saveTx(){
   var amt=parseFloat(document.getElementById('amtInput').value);
   if(!amt||amt<=0){toast('⚠️ Ingresá un monto válido');return;}
   var desc=document.getElementById('descInput').value.trim();
-  var date=document.getElementById('dateInput').value||todayISO();
+  var dateOptChk = document.getElementById('dateOptional');
+  var noDate = dateOptChk && dateOptChk.checked;
+  // If no exact date: use YYYY-MM-00 convention (month only)
+  var date = noDate
+    ? S.ui.year+'-'+String(S.ui.month+1).padStart(2,'0')+'-00'
+    : (document.getElementById('dateInput').value || todayISO());
   var tags=currentTxTags.slice();
   var isEdit=Boolean(S.ui.editId);
   if(isEdit){
@@ -4840,6 +4925,8 @@ var debouncedSaveBudget = debounce(function(v){
 },800);
 var mbInp = document.getElementById('monthlyBudgetInput');
 if (mbInp) mbInp.addEventListener('input',function(){debouncedSaveBudget(this.value);});
+var sgInp = document.getElementById('savingsGoalInput');
+if (sgInp) sgInp.addEventListener('input',function(){debouncedSaveSavingsGoal(this.value);});
 
 // Export overridden fns (not using _orig pattern — direct extension below)
 
@@ -5210,6 +5297,68 @@ function updateFilterMoreBtn() {
     btn.textContent = 'Menos ↑';
   }
 }
+
+/* ── SAVINGS GOAL CARD ── */
+function renderSavingsGoal() {
+  var el = document.getElementById('savingsGoalCard');
+  if (!el) return;
+  var goal = S.cfg.savingsGoal || 0;
+  if (!goal) { el.innerHTML = ''; return; }
+
+  var y = S.ui.year, m = S.ui.month;
+  var txs = S.txs.filter(function(t){ return inMonth(t,y,m); });
+  var b = calcBal(txs);
+  var saved = b.total; // ingresos - egresos del mes
+  var pct   = Math.min(saved / goal * 100, 100);
+  var cls   = pct >= 100 ? 'ok' : pct >= 60 ? 'warn' : 'danger';
+  var diff  = saved - goal;
+  var msg   = diff >= 0
+    ? '✓ Meta cumplida — ahorraste '+fARS(diff)+' extra'
+    : 'Faltan '+fARS(Math.abs(diff))+' para la meta mensual';
+  var msgCls = diff >= 0 ? 'ok' : pct >= 60 ? 'warn' : 'danger';
+
+  el.innerHTML =
+    '<div class="budget-card">'+
+      '<div class="budget-top">'+
+        '<div class="budget-title">Meta de ahorro mensual</div>'+
+        '<div class="budget-pct" style="color:'+(cls==='ok'?'var(--a2)':cls==='warn'?'var(--amber)':'var(--red)')+'">'+
+          (saved>=0?'+':'')+fARS(saved)+'</div>'+
+      '</div>'+
+      '<div class="budget-bar-track">'+
+        '<div class="budget-bar-fill '+cls+'" style="width:'+Math.max(0,pct)+'%"></div>'+
+      '</div>'+
+      '<div class="budget-meta">'+
+        '<span>'+(saved<0?'Balance negativo':fARS(saved)+' ahorrados')+'</span>'+
+        '<span>meta: '+fARS(goal)+'</span>'+
+      '</div>'+
+      '<div class="budget-proj '+msgCls+'">'+msg+'</div>'+
+    '</div>';
+}
+
+var debouncedSaveSavingsGoal = debounce(function(v) {
+  var n = parseFloat(v);
+  updateCfg({ savingsGoal: n >= 0 ? n : 0 });
+  renderSavingsGoal();
+}, 800);
+
+function toggleDayGroup(id) {
+  var sep  = document.querySelector('[onclick="toggleDayGroup(\''+id+'\')"]');
+  var body = document.getElementById(id);
+  if (!body) return;
+  var isCollapsed = body.classList.toggle('collapsed');
+  if (sep) sep.classList.toggle('collapsed', isCollapsed);
+}
+window.toggleDayGroup = toggleDayGroup;
+
+function toggleDateOptional() {
+  var chk = document.getElementById('dateOptional');
+  var inp = document.getElementById('dateInput');
+  var msg = document.getElementById('dateOptionalMsg');
+  if (!chk||!inp) return;
+  inp.style.display  = chk.checked ? 'none' : '';
+  if (msg) msg.style.display = chk.checked ? 'block' : 'none';
+}
+window.toggleDateOptional = toggleDateOptional;
 
 /* ── WINDOW EXPORTS (bugs) ── */
 window.openInstrumentModal = openInstrumentModal;
