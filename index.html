@@ -483,13 +483,11 @@ body{
 /* ── FILTER BAR ── */
 .filter-bar{
   display:flex;gap:6px;margin-bottom:4px;
-  flex-wrap:wrap; /* wraps on PC */
-  overflow-x:auto;scrollbar-width:none;padding-bottom:2px;
+  flex-wrap:wrap;
 }
-.filter-bar::-webkit-scrollbar{display:none}
-/* On wider screens: no scroll, show all chips */
-@media(min-width:480px){
-  .filter-bar{flex-wrap:wrap;overflow-x:visible;}
+@media(max-width:480px){
+  .filter-bar{flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none}
+  .filter-bar::-webkit-scrollbar{display:none}
 }
 .filter-chip{
   padding:6px 13px;border-radius:20px;
@@ -568,6 +566,11 @@ body{
   transition:border-color .2s;text-align:right;
 }
 .cfg-inline-input:focus{border-color:var(--a2)}
+.cfg-inline-input::-webkit-inner-spin-button,
+.cfg-inline-input::-webkit-outer-spin-button{-webkit-appearance:none;margin:0}
+input[type=number]::-webkit-inner-spin-button,
+input[type=number]::-webkit-outer-spin-button{-webkit-appearance:none;margin:0}
+input[type=number]{-moz-appearance:textfield}
 
 /* ── TOGGLE ── */
 .toggle{
@@ -1873,7 +1876,7 @@ body{
         <div class="nav-item" data-tab="analisis">Análisis</div>
         <div class="nav-item" data-tab="ahorro">Ahorro</div>
         <div class="nav-item" data-tab="deudas">Deudas</div>
-        <div class="nav-item" data-tab="config">Config</div>
+        <div class="nav-item" data-tab="config">⚙️</div>
       </div>
     </div>
   </div>
@@ -1920,11 +1923,7 @@ body{
       <!-- Budget alert -->
       <div class="budget-alert" id="budgetAlert"></div>
 
-      <!-- Cards EXPANDED by default -->
-      <div class="card">
-        <div class="card-hdr collapsible" onclick="toggleCard(this)"><span>Gastos por categoría</span></div>
-        <div class="card-body"><div id="catList"></div></div>
-      </div>
+      <!-- Cards: only Últimos movimientos in Inicio (Gastos x cat → Análisis) -->
       <div class="card">
         <div class="card-hdr collapsible collapsed" onclick="toggleCard(this)">
           <span>Últimos movimientos</span>
@@ -1949,7 +1948,7 @@ body{
       </div>
       <!-- Advanced filters: collapsible -->
       <div class="adv-filter-toggle" id="advFilterToggle" onclick="toggleAdvFilters()">
-        <span id="advFilterLabel">Filtros</span>
+        <span id="advFilterLabel">+ Filtros</span>
         <span id="advFilterCount" class="adv-filter-count"></span>
         <span class="adv-filter-arrow" id="advFilterArrow">›</span>
       </div>
@@ -1996,7 +1995,7 @@ body{
 
       <!-- Portfolio vs Meta de Ahorro -->
       <div class="card">
-        <div class="card-hdr collapsible collapsed" onclick="toggleCard(this)"><span>Portfolio vs meta de ahorro</span></div>
+        <div class="card-hdr collapsible collapsed" onclick="toggleCard(this)"><span>Portfolio vs ahorro ideal proyectado</span></div>
         <div class="card-body collapsed">
           <div id="portfolioVsMetaLegend" style="display:flex;gap:14px;padding:10px 16px 4px;font-size:11px"></div>
           <div class="chart-canvas-wrap" style="height:200px"><canvas id="portfolioVsMetaChart"></canvas></div>
@@ -2087,9 +2086,9 @@ body{
     <!-- CONFIG -->
     <div class="tab-panel" id="tab-config">
 
-      <!-- FINANZAS -->
+      <!-- FINANZAS Y PRESUPUESTO (merged) -->
       <div class="cfg-section">
-        <div class="cfg-hdr" onclick="toggleCfg(this)">Finanzas</div>
+        <div class="cfg-hdr" onclick="toggleCfg(this)">Finanzas y presupuesto</div>
         <div class="cfg-body">
           <div class="cfg-row">
             <div>
@@ -2106,6 +2105,14 @@ body{
             </div>
             <input class="cfg-inline-input" type="number" inputmode="decimal"
                    id="savingsGoalInput" placeholder="0" min="0">
+          </div>
+          <div class="cfg-row">
+            <div>
+              <div class="cfg-lbl">Presupuesto mensual</div>
+              <div class="cfg-sub">Límite de gasto total del mes</div>
+            </div>
+            <input class="cfg-inline-input" type="number" inputmode="decimal"
+                   id="monthlyBudgetInput" placeholder="0" min="0">
           </div>
           <div class="cfg-row">
             <div>
@@ -2128,24 +2135,6 @@ body{
                      maxlength="40" style="flex:1">
               <button class="cfg-action green" onclick="addPaymentMethod()">+ Agregar</button>
             </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- PRESUPUESTO -->
-      <div class="cfg-section">
-        <div class="cfg-hdr collapsed" onclick="toggleCfg(this)">Presupuesto</div>
-        <div class="cfg-body collapsed">
-          <div class="cfg-row">
-            <div>
-              <div class="cfg-lbl">Presupuesto mensual global</div>
-              <div class="cfg-sub">Límite de gasto total del mes</div>
-            </div>
-            <input class="cfg-inline-input" type="number" inputmode="decimal"
-                   id="monthlyBudgetInput" placeholder="0" min="0">
-          </div>
-          <div class="cfg-sub" style="padding:0 16px 12px;line-height:1.6">
-            Los presupuestos por categoría se configuran en cada categoría.
           </div>
         </div>
       </div>
@@ -2202,6 +2191,23 @@ body{
         </div>
       </div>
 
+      <!-- CUENTA -->
+      <div class="cfg-section">
+        <div class="cfg-hdr collapsed" onclick="toggleCfg(this)">Cuenta</div>
+        <div class="cfg-body collapsed">
+          <div class="cfg-row">
+            <div class="user-row">
+              <div class="user-avatar">👤</div>
+              <div>
+                <div class="cfg-lbl" style="text-transform:none;letter-spacing:0;font-size:13px" id="cfgUserEmail">—</div>
+                <div class="cfg-sub" id="cfgSyncStatus">Sincronización activa</div>
+              </div>
+            </div>
+            <button class="cfg-action red" data-action="openLogoutModal">Salir</button>
+          </div>
+        </div>
+      </div>
+
       <!-- DATOS -->
       <div class="cfg-section">
         <div class="cfg-hdr collapsed" onclick="toggleCfg(this)">Datos</div>
@@ -2221,23 +2227,6 @@ body{
           <div class="cfg-row">
             <div><div class="cfg-lbl">Borrar todos los datos</div><div class="cfg-sub">No se puede deshacer</div></div>
             <button class="cfg-action red" data-action="confirmClear">Borrar</button>
-          </div>
-        </div>
-      </div>
-
-      <!-- CUENTA -->
-      <div class="cfg-section">
-        <div class="cfg-hdr collapsed" onclick="toggleCfg(this)">Cuenta</div>
-        <div class="cfg-body collapsed">
-          <div class="cfg-row">
-            <div class="user-row">
-              <div class="user-avatar">👤</div>
-              <div>
-                <div class="cfg-lbl" style="text-transform:none;letter-spacing:0;font-size:13px" id="cfgUserEmail">—</div>
-                <div class="cfg-sub" id="cfgSyncStatus">Sincronización activa</div>
-              </div>
-            </div>
-            <button class="cfg-action red" data-action="openLogoutModal">Salir</button>
           </div>
         </div>
       </div>
