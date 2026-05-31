@@ -3418,9 +3418,9 @@ fbAuth.onAuthStateChanged(async function(user) {
     await loadFromCloud();
     applyTheme();
     showApp();
-    initHeaderCollapse();
+    // initHeaderCollapse removed — header collapse no longer used
     initContainerDelegation();
-    renderTab(S.ui.tab);
+    renderTab(S.ui.tab); // render AFTER cloud data is loaded
   } else {
     currentUser = null;
     showAuth();
