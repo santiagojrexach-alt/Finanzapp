@@ -3,9 +3,11 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="FinanzApp">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>💰</text></svg>">
 <meta name="theme-color" id="themeColorMeta" content="#111c12">
 <title>FinanzApp</title>
 
@@ -3180,21 +3182,28 @@ function loadLocal() {
     var raw = localStorage.getItem(STORE_KEY);
     if (!raw) return;
     var d = migrate(JSON.parse(raw));
-    if (d.txs)   S.txs   = d.txs;
-    if (d.goals) S.goals = d.goals;
-    if (d.debts) S.debts = d.debts;
-    if (d.portfolio) S.portfolio = d.portfolio;
+    if (d.txs)            S.txs            = d.txs;
+    if (d.goals)          S.goals          = d.goals;
+    if (d.debts)          S.debts          = d.debts;
+    if (d.portfolio)      S.portfolio      = d.portfolio;
     if (d.paymentMethods) S.paymentMethods = d.paymentMethods;
-    if (d.cats && d.cats.length) S.cats = d.cats;
-    if (d.cfg)   S.cfg   = Object.assign({}, S.cfg, d.cfg);
-    if (!S.cfg.budgets) S.cfg.budgets = {};
+    if (d.cats && d.cats.length) S.cats   = d.cats;
+    if (d.cfg)            S.cfg            = Object.assign({}, S.cfg, d.cfg);
+    if (!S.cfg.budgets)   S.cfg.budgets    = {};
+    // Restore last-viewed month/year so app opens where user left off
+    if (d.ui && typeof d.ui.year  === 'number') S.ui.year  = d.ui.year;
+    if (d.ui && typeof d.ui.month === 'number') S.ui.month = d.ui.month;
+    if (d.ui && d.ui.tab) S.ui.tab = d.ui.tab;
   } catch(e) { console.warn('loadLocal error', e); }
   CATS = S.cats;
 }
 function saveLocal() {
   try {
     localStorage.setItem(STORE_KEY, JSON.stringify({
-      txs:S.txs, goals:S.goals, debts:S.debts, portfolio:S.portfolio, paymentMethods:S.paymentMethods, cats:S.cats, cfg:S.cfg
+      txs:S.txs, goals:S.goals, debts:S.debts, portfolio:S.portfolio,
+      paymentMethods:S.paymentMethods, cats:S.cats, cfg:S.cfg,
+      // Persist UI state so app reopens where user left off
+      ui:{ year:S.ui.year, month:S.ui.month, tab:S.ui.tab }
     }));
   } catch(e) {}
 }
@@ -3411,16 +3420,22 @@ async function doLogout() {
 fbAuth.onAuthStateChanged(async function(user) {
   if (user) {
     currentUser = user;
-    // Update config panel email
     var emailEl = document.getElementById('cfgUserEmail');
     if (emailEl) emailEl.textContent = user.email;
-    // Load from cloud (merges with any local data)
-    await loadFromCloud();
+
+    // Show app immediately with local data (fast perceived load)
     applyTheme();
     showApp();
-    // initHeaderCollapse removed — header collapse no longer used
     initContainerDelegation();
-    renderTab(S.ui.tab); // render AFTER cloud data is loaded
+    renderTab(S.ui.tab);
+
+    // Then load from cloud and re-render with fresh data
+    try {
+      await loadFromCloud();
+      renderTab(S.ui.tab); // re-render with cloud data
+    } catch(e) {
+      console.warn('[auth] Cloud load failed, using local data:', e.message);
+    }
   } else {
     currentUser = null;
     showAuth();
