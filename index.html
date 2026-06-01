@@ -3190,9 +3190,8 @@ function loadLocal() {
     if (d.cats && d.cats.length) S.cats   = d.cats;
     if (d.cfg)            S.cfg            = Object.assign({}, S.cfg, d.cfg);
     if (!S.cfg.budgets)   S.cfg.budgets    = {};
-    // Restore last-viewed month/year so app opens where user left off
-    if (d.ui && typeof d.ui.year  === 'number') S.ui.year  = d.ui.year;
-    if (d.ui && typeof d.ui.month === 'number') S.ui.month = d.ui.month;
+    // Note: S.ui.year/month intentionally NOT restored — always open on current month.
+    // Only restore the active tab.
     if (d.ui && d.ui.tab) S.ui.tab = d.ui.tab;
   } catch(e) { console.warn('loadLocal error', e); }
   CATS = S.cats;
@@ -3427,13 +3426,25 @@ fbAuth.onAuthStateChanged(async function(user) {
     applyTheme();
     showApp();
     initContainerDelegation();
+    setSyncState('syncing'); // show sync indicator while loading cloud data
     renderTab(S.ui.tab);
+
+    // Show subtle loading state while fetching cloud data
+    var balEl = document.getElementById('balARS');
+    var hadLocalData = S.txs && S.txs.length > 0;
+    if (!hadLocalData && balEl) {
+      balEl.style.opacity = '0.4';
+      balEl.title = 'Cargando datos…';
+    }
 
     // Then load from cloud and re-render with fresh data
     try {
       await loadFromCloud();
+      if (balEl) { balEl.style.opacity = ''; balEl.title = ''; }
       renderTab(S.ui.tab); // re-render with cloud data
     } catch(e) {
+      if (balEl) { balEl.style.opacity = ''; }
+      setSyncState('error');
       console.warn('[auth] Cloud load failed, using local data:', e.message);
     }
   } else {
