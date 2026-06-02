@@ -382,6 +382,11 @@ body{
   text-transform:uppercase;color:var(--muted);cursor:pointer;
   transition:all .2s;white-space:nowrap;user-select:none;
 }
+.nav-item.nav-item-cfg{
+  flex:0 0 auto;padding:6px 10px;font-size:20px;
+  letter-spacing:0;text-transform:none;
+}
+.nav-item.nav-item-cfg.active{background:var(--card2);border:1px solid var(--border)}
 .nav-item.active{
   background:var(--card2);color:var(--accent);
   border:1px solid var(--border);box-shadow:0 1px 4px var(--shadow);
@@ -1961,7 +1966,7 @@ input[type=number]{-moz-appearance:textfield}
         <div class="nav-item" data-tab="analisis">Análisis</div>
         <div class="nav-item" data-tab="ahorro">Ahorro</div>
         <div class="nav-item" data-tab="deudas">Deudas</div>
-        <div class="nav-item" data-tab="config">⚙️</div>
+        <div class="nav-item nav-item-cfg" data-tab="config">⚙️</div>
       </div>
     </div>
   </div>
@@ -2260,11 +2265,19 @@ input[type=number]{-moz-appearance:textfield}
               <div class="cfg-sub">Tarjetas y métodos que usás</div>
             </div>
             <div id="pmList" style="width:100%"></div>
-            <div style="display:flex;gap:8px;width:100%">
-              <input class="field-input" type="text" id="pmNewInput"
-                     placeholder="Ej: Visa Galicia, Efectivo, Mercado Pago"
-                     maxlength="40" style="flex:1">
-              <button class="cfg-action green" onclick="addPaymentMethod()">+ Agregar</button>
+            <div style="display:flex;flex-direction:column;gap:8px;width:100%">
+              <!-- Emoji selector -->
+              <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap">
+                <span style="font-size:11px;color:var(--muted);flex-basis:100%">Ícono:</span>
+                <div id="pmIconGrid" style="display:flex;gap:6px;flex-wrap:wrap"></div>
+                <span id="pmIconSelected" style="font-size:22px;min-width:28px;text-align:center">💳</span>
+              </div>
+              <div style="display:flex;gap:8px">
+                <input class="field-input" type="text" id="pmNewInput"
+                       placeholder="Ej: Efectivo, Visa Galicia, Mercado Pago"
+                       maxlength="40" style="flex:1">
+                <button class="cfg-action green" onclick="addPaymentMethod()">+ Agregar</button>
+              </div>
             </div>
           </div>
         </div>
@@ -4470,6 +4483,7 @@ function renderCfg(){
   updateTCDate();
   renderCatMgmt();
   renderPmList();
+  renderPmIconGrid();
   buildPmSelect();
 }
 
@@ -5952,6 +5966,36 @@ function buildPmSelect() {
     }).join('');
 }
 
+/* ── PAYMENT METHOD ICON GRID ── */
+var PM_ICONS = [
+  '💳','💵','💶','💴','🏦','📱','🔄','🏧','💰','💸',
+  '🪙','🛒','🍔','🚗','🏠','✈️','🎓','💊','🎮','👗',
+  '⚡','🌐','📦','🎁','🍺','☕','🎵','🏋️','🐾','🔑',
+];
+var currentPmIcon = '💳';
+
+function renderPmIconGrid() {
+  var grid = document.getElementById('pmIconGrid');
+  var sel  = document.getElementById('pmIconSelected');
+  if (!grid) return;
+  currentPmIcon = currentPmIcon || '💳';
+  grid.innerHTML = PM_ICONS.map(function(icon) {
+    var active = icon === currentPmIcon;
+    return '<button onclick="selectPmIcon(\''+icon+'\')" style="'+
+      'font-size:20px;padding:4px 6px;border-radius:8px;cursor:pointer;border:2px solid '+
+      (active ? 'var(--a2)' : 'transparent')+';background:'+(active ? 'color-mix(in srgb, var(--a2) 15%, transparent)' : 'var(--bg3)')+
+      ';transition:all .15s">'+icon+'</button>';
+  }).join('');
+  if (sel) sel.textContent = currentPmIcon;
+}
+window.renderPmIconGrid = renderPmIconGrid;
+
+function selectPmIcon(icon) {
+  currentPmIcon = icon;
+  renderPmIconGrid();
+}
+window.selectPmIcon = selectPmIcon;
+
 function renderPmList() {
   var el = document.getElementById('pmList');
   if (!el) return;
@@ -5975,16 +6019,13 @@ function addPaymentMethod() {
   var name = inp.value.trim();
   if (!name) { toast('⚠️ Ingresá un nombre'); return; }
   if (!S.paymentMethods) S.paymentMethods = [];
-  var icon = '💳';
-  var lower = name.toLowerCase();
-  if (lower.includes('efectivo')||lower.includes('cash')) icon='💵';
-  else if (lower.includes('debito')||lower.includes('débito')) icon='🏦';
-  else if (lower.includes('mercado')||lower.includes('mp')) icon='📱';
-  else if (lower.includes('transfer')) icon='🔄';
-  S.paymentMethods.push({id:uid(),name:name,icon:icon});
+  var icon = currentPmIcon || '💳';
+  S.paymentMethods.push({id:uid(), name:name, icon:icon});
   inp.value = '';
+  currentPmIcon = '💳'; // reset to default
   save();
   renderPmList();
+  renderPmIconGrid();
   buildPmSelect();
   toast('✓ Medio de pago agregado');
 }
