@@ -2083,14 +2083,29 @@ input[type=number]{-moz-appearance:textfield}
         </div>
       </div>
 
-      <!-- Gastos por medio de pago — este mes -->
+      <!-- Medios de pago — este mes + histórico fusionados -->
       <div class="card">
         <div class="card-hdr collapsible collapsed" onclick="toggleCard(this)">
-          <span>Gastos por medio de pago</span>
+          <span>Medios de pago</span>
         </div>
         <div class="card-body collapsed">
+          <!-- Este mes -->
+          <div style="padding:4px 16px 8px;font-size:10px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)">Este mes</div>
           <div id="pmSummaryList"></div>
-          <div id="pmUnspecifiedNotice" style="display:none;padding:8px 16px;font-size:11px;color:var(--muted)"></div>
+          <div id="pmUnspecifiedNotice" style="display:none;padding:4px 16px 8px;font-size:11px;color:var(--muted)"></div>
+          <!-- Histórico -->
+          <div style="padding:12px 16px 4px;font-size:10px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);border-top:1px solid var(--border);margin-top:4px">Evolución histórica</div>
+          <div id="pmCompareHeader" style="padding:4px 16px 4px;display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+            <select id="pmCompareSelect" class="field-input" style="flex:1;min-width:120px;max-width:200px" onchange="renderPmComparison()">
+              <option value="all">Todas las tarjetas</option>
+            </select>
+            <div class="chart-period-row" id="pmComparePeriodRow" style="margin:0">
+              <div class="chart-chip active" data-pmmonths="6">6 meses</div>
+              <div class="chart-chip" data-pmmonths="12">12 meses</div>
+            </div>
+          </div>
+          <div class="chart-canvas-wrap" style="height:200px"><canvas id="pmCompareChart"></canvas></div>
+          <div id="pmCompareTotals" style="padding:8px 16px 12px;font-size:11px;color:var(--muted)"></div>
         </div>
       </div>
 
@@ -2112,26 +2127,6 @@ input[type=number]{-moz-appearance:textfield}
             <div class="chart-legend-item"><div class="chart-legend-dot" style="background:var(--accent)"></div>Ingresos</div>
             <div class="chart-legend-item"><div class="chart-legend-dot" style="background:var(--red)"></div>Egresos</div>
           </div>
-        </div>
-      </div>
-
-      <!-- Comparación tarjetas — histórico -->
-      <div class="card">
-        <div class="card-hdr collapsible collapsed" onclick="toggleCard(this)">
-          <span>Consumo por tarjeta</span>
-        </div>
-        <div class="card-body collapsed">
-          <div id="pmCompareHeader" style="padding:10px 16px 4px;display:flex;gap:8px;align-items:center;flex-wrap:wrap">
-            <select id="pmCompareSelect" class="field-input" style="flex:1;min-width:120px;max-width:200px" onchange="renderPmComparison()">
-              <option value="all">Todas las tarjetas</option>
-            </select>
-            <div class="chart-period-row" id="pmComparePeriodRow" style="margin:0">
-              <div class="chart-chip active" data-pmmonths="6">6 meses</div>
-              <div class="chart-chip" data-pmmonths="12">12 meses</div>
-            </div>
-          </div>
-          <div class="chart-canvas-wrap" style="height:200px"><canvas id="pmCompareChart"></canvas></div>
-          <div id="pmCompareTotals" style="padding:8px 16px 12px;font-size:11px;color:var(--muted)"></div>
         </div>
       </div>
 
@@ -3751,10 +3746,10 @@ function toggleCard(hdr) {
         /* lineChart removed — replaced by portfolioVsMetaChart */
         if (id === 'portfolioVsMetaChart') renderPortfolioVsMeta();
         if (id === 'catEvoChart')          renderCatEvolution();
-        if (id === 'pmCompareChart')       renderPmComparison();
+        if (id === 'pmCompareChart')       { renderPmSummary(); renderPmComparison(); }
       }
       // Non-canvas cards with dynamic content
-      if (body.querySelector('#pmSummaryList'))  renderPmSummary();
+      if (body.querySelector('#pmSummaryList'))  { renderPmSummary(); renderPmComparison(); }
       if (body.querySelector('#pmCompareChart')) renderPmComparison();
     }
   }
