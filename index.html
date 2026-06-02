@@ -377,14 +377,18 @@ body{
   transition:background .35s;
 }
 .nav-item{
-  flex:1;text-align:center;padding:8px 2px;border-radius:10px;
+  flex:1;text-align:center;padding:0 2px;border-radius:10px;
   font-size:10px;font-weight:700;letter-spacing:.06em;
   text-transform:uppercase;color:var(--muted);cursor:pointer;
   transition:all .2s;white-space:nowrap;user-select:none;
+  display:flex;align-items:center;justify-content:center;
+  min-height:36px;
 }
 .nav-item.nav-item-cfg{
-  flex:0 0 44px;text-align:center;padding:8px 4px;
+  flex:0 0 44px;text-align:center;padding:0 4px;
   font-size:16px;letter-spacing:0;text-transform:none;
+  display:flex;align-items:center;justify-content:center;
+  min-height:36px;
 }
 .nav-item.nav-item-cfg.active{
   background:var(--card2);color:var(--accent);
