@@ -3751,7 +3751,7 @@ function calcCatEvolutionData(catId, months) {
     var d = new Date(now.getFullYear(), now.getMonth()-i, 1);
     labels.push(MONTHS[d.getMonth()].slice(0,3)+" '"+String(d.getFullYear()).slice(2));
     var sum = S.txs.filter(function(t){
-      return t.type==='out' && t.cat===catId && inMonth(t,d.getFullYear(),d.getMonth());
+      return t.cat===catId && inMonth(t,d.getFullYear(),d.getMonth());
     }).reduce(function(s,t){ return s+toARS(t.amt,t.curr); }, 0);
     data.push(sum);
   }
@@ -6365,7 +6365,7 @@ function onCatEvoSearch(val) {
   if (!suggest) return;
   val = (val||'').trim().toLowerCase();
   var usedCats = {};
-  S.txs.filter(function(t){return t.type==='out';}).forEach(function(t){usedCats[t.cat]=true;});
+  S.txs.forEach(function(t){usedCats[t.cat]=true;});  // include both in and out
   var pool = S.cats.filter(function(c){return usedCats[c.id];});
   if (!val) {
     suggest.innerHTML = pool.slice(0,10).map(function(c){
