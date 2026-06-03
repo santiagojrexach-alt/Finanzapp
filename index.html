@@ -3082,23 +3082,34 @@ function validateImport(data) {
 
 
 var DEFAULT_CATS = [
-  {id:'edesur',    label:'Edesur',           icon:'⚡', color:'#f5c842', builtin:true},
-  {id:'metrogas',  label:'Metrogas',          icon:'🔥', color:'#ff9a42', builtin:true},
-  {id:'telecentro',label:'Telecentro',         icon:'📡', color:'#6ab4f5', builtin:true},
-  {id:'claro',     label:'Claro',              icon:'📱', color:'#e05050', builtin:true},
-  {id:'abl',       label:'ABL',                icon:'🏛️', color:'#8ab4a0', builtin:true},
-  {id:'expensas',  label:'Expensas',           icon:'🏢', color:'#90caf9', builtin:true},
-  {id:'youtube',   label:'YouTube Premium',    icon:'▶️', color:'#ff7070', builtin:true},
-  {id:'claude',    label:'Claude',             icon:'🤖', color:'#b09af5', builtin:true},
-  {id:'bondi',     label:'Bondi',              icon:'🚌', color:'#5ee8d4', builtin:true},
-  {id:'subte',     label:'Subte',              icon:'🚇', color:'#4db8e8', builtin:true},
-  {id:'uber',      label:'Uber',               icon:'🚗', color:'#34d399', builtin:true},
-  {id:'meli',      label:'Meli',               icon:'🛍️', color:'#f5e642', builtin:true},
-  {id:'deuda_ml',  label:'Deuda ML',           icon:'💸', color:'#f5a442', builtin:true},
-  {id:'supermercado',label:'Supermercado',      icon:'🛒', color:'#80cbc4', builtin:true},
-  {id:'chipa',       label:'Chipá',             icon:'🫓', color:'#f5c842', builtin:true},
-  {id:'cocina_bg', label:'Cocina Belgrano',    icon:'🍽️', color:'#f48fb1', builtin:true},
-  {id:'otros',     label:'Otros',              icon:'📦', color:'#8ab4a0', builtin:true},
+  // ── Ingresos ──
+  {id:'sueldo',     label:'Sueldo',            icon:'💵', color:'#42d460', builtin:true},
+  {id:'samo',       label:'S.A.M.O.',          icon:'💵', color:'#42b8a0', builtin:true},
+  // ── Servicios fijos ──
+  {id:'edesur',     label:'Edesur',            icon:'⚡', color:'#f5c842', builtin:true},
+  {id:'metrogas',   label:'Metrogas',          icon:'🔥', color:'#ff9a42', builtin:true},
+  {id:'telecentro', label:'Telecentro',        icon:'📡', color:'#6ab4f5', builtin:true},
+  {id:'claro',      label:'Claro',             icon:'📱', color:'#e05050', builtin:true},
+  {id:'abl',        label:'ABL',               icon:'🏛️', color:'#8ab4a0', builtin:true},
+  {id:'expensas',   label:'Expensas',          icon:'🏢', color:'#90caf9', builtin:true},
+  {id:'youtube',    label:'YouTube Premium',   icon:'▶️', color:'#ff7070', builtin:true},
+  {id:'claude',     label:'Claude',            icon:'🤖', color:'#b09af5', builtin:true},
+  // ── Transporte ──
+  {id:'bondi',      label:'Bondi',             icon:'🚌', color:'#5ee8d4', builtin:true},
+  {id:'subte',      label:'Subte',             icon:'🚇', color:'#4db8e8', builtin:true},
+  {id:'uber',       label:'Uber',              icon:'🚗', color:'#34d399', builtin:true},
+  // ── Compras y gastos ──
+  {id:'meli',       label:'Meli',              icon:'🛍️', color:'#f5e642', builtin:true},
+  {id:'deuda_ml',   label:'Deuda ML',          icon:'💸', color:'#f5a442', builtin:true},
+  {id:'supermercado',label:'Supermercado',     icon:'🛒', color:'#80cbc4', builtin:true},
+  {id:'chipa',      label:'Chipá',             icon:'🫓', color:'#f5c842', builtin:true},
+  {id:'cocina_bg',  label:'Cocina Belgrano',   icon:'🍽️', color:'#f48fb1', builtin:true},
+  // ── Salidas ──
+  {id:'cine',       label:'Cine',              icon:'🎬', color:'#9c6ef5', builtin:true},
+  {id:'teatro',     label:'Teatro',            icon:'🎭', color:'#e06090', builtin:true},
+  {id:'salidas',    label:'Salidas',           icon:'🍻', color:'#42b8a0', builtin:true},
+  // ── General ──
+  {id:'otros',      label:'Otros',             icon:'📦', color:'#8ab4a0', builtin:true},
 ];
 var CAT_COLORS = [
   '#f5c842','#ff7070','#6ab4f5','#5ee8d4','#b09af5',
@@ -3173,11 +3184,15 @@ function migrate(d) {
       if (t.cat==='master') { t.paymentMethod='pm-master'; t.cat='otros'; }
     });
   }
-  // Add defaults if no payment methods configured yet
+  // Add generic defaults if no payment methods configured yet
   if (d.paymentMethods.length === 0) {
     d.paymentMethods = [
-      {id:'pm-efectivo', name:'Efectivo',     icon:'💵'},
-      {id:'pm-mp',       name:'Mercado Pago', icon:'📱'},
+      {id:'pm-efectivo', name:'Efectivo',      icon:'💵'},
+      {id:'pm-debito',   name:'Débito',        icon:'💳'},
+      {id:'pm-credito',  name:'Crédito',       icon:'💳'},
+      {id:'pm-mp',       name:'Mercado Pago',  icon:'📱'},
+      {id:'pm-modo',     name:'Modo',          icon:'🔵'},
+      {id:'pm-transfer', name:'Transferencia', icon:'🔄'},
     ];
   }
   // ── Migrate chino + carrefour → supermercado ─────────────────────────
@@ -3187,14 +3202,25 @@ function migrate(d) {
   if (d.cats) {
     // Remove old separate chino/carrefour cats, keep supermercado
     d.cats = d.cats.filter(function(c){ return c.id!=='chino' && c.id!=='carrefour'; });
-    // Add supermercado if not present
-    if (!d.cats.some(function(c){ return c.id==='supermercado'; })) {
-      d.cats.push({id:'supermercado', label:'Supermercado', icon:'🛒', color:'#80cbc4', builtin:true});
-    }
-    // Add chipa if not present
-    if (!d.cats.some(function(c){ return c.id==='chipa'; })) {
-      d.cats.push({id:'chipa', label:'Chipá', icon:'🫓', color:'#f5c842', builtin:true});
-    }
+    // Add new cats if not present
+    var newCats = [
+      {id:'supermercado', label:'Supermercado', icon:'🛒', color:'#80cbc4', builtin:true},
+      {id:'chipa',        label:'Chipá',        icon:'🫓', color:'#f5c842', builtin:true},
+      {id:'cine',         label:'Cine',         icon:'🎬', color:'#9c6ef5', builtin:true},
+      {id:'teatro',       label:'Teatro',       icon:'🎭', color:'#e06090', builtin:true},
+      {id:'salidas',      label:'Salidas',      icon:'🍻', color:'#42b8a0', builtin:true},
+      {id:'sueldo',       label:'Sueldo',       icon:'💵', color:'#42d460', builtin:true},
+      {id:'samo',         label:'S.A.M.O.',     icon:'💵', color:'#42b8a0', builtin:true},
+    ];
+    newCats.forEach(function(nc){
+      var existing = d.cats.find(function(c){ return c.id===nc.id; });
+      if (!existing) {
+        d.cats.push(nc);
+      } else if (existing.icon === '📦') {
+        // Fix wrong icon (was inheriting 'otros' icon)
+        existing.icon = nc.icon;
+      }
+    });
   }
   if (d.goals) d.goals.forEach(function(g){
     if (!g.portfolioLinks) g.portfolioLinks = [];
@@ -4699,7 +4725,33 @@ function deleteTx(){
 };
 
 /* ── QUICK MODAL ── */
-function openQuick(){
+
+// IDs de categorías que aparecen en el modo rápido.
+// El usuario puede personalizarlos desde ⚙️ → Categorías (campo "Modo rápido").
+// Por defecto: gastos frecuentes del día a día.
+var DEFAULT_QUICK_CAT_IDS = [
+  'bondi','subte','uber','supermercado','chipa',
+  'cocina_bg','cine','teatro','salidas','meli','otros'
+];
+
+function getQuickCatIds() {
+  // Allow user override stored in cfg
+  return S.cfg.quickCatIds || DEFAULT_QUICK_CAT_IDS;
+}
+
+function buildQuickGrid(){
+  var qIds = getQuickCatIds();
+  // Build ordered list: quick cats first, then remaining cats
+  var quickCats = qIds.map(function(id){ return CATS.find(function(c){ return c.id===id; }); }).filter(Boolean);
+  // Fallback: if no quick cats match (new user), show all
+  if (!quickCats.length) quickCats = CATS;
+
+  document.getElementById('quickGrid').innerHTML = quickCats.map(function(c){
+    return '<div class="quick-tile'+(c.id===S.ui.qCat?' active':'')+'" data-id="'+c.id+'">'+
+      '<div class="quick-tile-icon">'+c.icon+'</div>'+
+      '<div class="quick-tile-lbl">'+esc(c.label.length>8?c.label.slice(0,7)+'…':c.label)+'</div></div>';
+  }).join('');
+}
   S.ui.qCurr='ARS';S.ui.qCat='otros';
   document.getElementById('qAmtInput').value='';
   setQCurr('ARS');buildQuickGrid();
@@ -4711,14 +4763,7 @@ function setQCurr(c){
   document.getElementById('qcARS').classList.toggle('active',c==='ARS');
   document.getElementById('qcUSD').classList.toggle('active',c==='USD');
 };
-function buildQuickGrid(){
-  document.getElementById('quickGrid').innerHTML=CATS.map(function(c){
-    return'<div class="quick-tile'+(c.id===S.ui.qCat?' active':'')+'" data-id="'+c.id+'">'+
-      '<div class="quick-tile-icon">'+c.icon+'</div>'+
-      '<div class="quick-tile-lbl">'+esc(c.label.length>8?c.label.slice(0,7)+'…':c.label)+'</div></div>';
-  }).join('');
-}
-function selQCat(id){
+function openQuick(){
   S.ui.qCat=id;
   document.querySelectorAll('#quickGrid .quick-tile').forEach(function(el){el.classList.toggle('active',el.dataset.id===id);});
 };
