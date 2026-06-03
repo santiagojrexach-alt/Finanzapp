@@ -3270,7 +3270,7 @@ function migrate(d) {
     d.cats = d.cats.filter(function(c){ return !c._merge_remove; });
   }
 
-
+  if (d.goals) d.goals.forEach(function(g){
     if (!g.portfolioLinks) g.portfolioLinks = [];
   });
   if (d.cats) {
