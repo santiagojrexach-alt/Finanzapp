@@ -3107,6 +3107,7 @@ var DEFAULT_CATS = [
   {id:'nafta',      label:'Nafta',             icon:'⛽', color:'#f5a442', builtin:true},
   {id:'libreria',   label:'Librería',          icon:'📚', color:'#7c9ef5', builtin:true},
   {id:'farmacia',   label:'Farmacia',          icon:'💊', color:'#f57c9e', builtin:true},
+  {id:'kiosco',     label:'Kiosco',            icon:'🏪', color:'#ffb347', builtin:true},
   // ── Salidas ──
   {id:'cine',       label:'Cine',              icon:'🎬', color:'#9c6ef5', builtin:true},
   {id:'teatro',     label:'Teatro',            icon:'🎭', color:'#e06090', builtin:true},
@@ -3217,6 +3218,7 @@ function migrate(d) {
       {id:'nafta',        label:'Nafta',        icon:'⛽', color:'#f5a442', builtin:true},
       {id:'libreria',     label:'Librería',     icon:'📚', color:'#7c9ef5', builtin:true},
       {id:'farmacia',     label:'Farmacia',     icon:'💊', color:'#f57c9e', builtin:true},
+      {id:'kiosco',       label:'Kiosco',       icon:'🏪', color:'#ffb347', builtin:true},
     ];
     newCats.forEach(function(nc){
       var existing = d.cats.find(function(c){ return c.id===nc.id; });
@@ -4737,8 +4739,8 @@ function deleteTx(){
 // Por defecto: gastos frecuentes del día a día.
 var DEFAULT_QUICK_CAT_IDS = [
   'bondi','subte','uber','supermercado','chipa',
-  'nafta','libreria','farmacia',
-  'cine','teatro','salidas','meli','otros'
+  'nafta','libreria','farmacia','kiosco',
+  'cine','teatro','salidas','otros'
 ];
 
 function getQuickCatIds() {
