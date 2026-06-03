@@ -3104,6 +3104,9 @@ var DEFAULT_CATS = [
   {id:'supermercado',label:'Supermercado',     icon:'🛒', color:'#80cbc4', builtin:true},
   {id:'chipa',      label:'Chipá',             icon:'🫓', color:'#f5c842', builtin:true},
   {id:'cocina_bg',  label:'Cocina Belgrano',   icon:'🍽️', color:'#f48fb1', builtin:true},
+  {id:'nafta',      label:'Nafta',             icon:'⛽', color:'#f5a442', builtin:true},
+  {id:'libreria',   label:'Librería',          icon:'📚', color:'#7c9ef5', builtin:true},
+  {id:'farmacia',   label:'Farmacia',          icon:'💊', color:'#f57c9e', builtin:true},
   // ── Salidas ──
   {id:'cine',       label:'Cine',              icon:'🎬', color:'#9c6ef5', builtin:true},
   {id:'teatro',     label:'Teatro',            icon:'🎭', color:'#e06090', builtin:true},
@@ -3211,6 +3214,9 @@ function migrate(d) {
       {id:'salidas',      label:'Salidas',      icon:'🍻', color:'#42b8a0', builtin:true},
       {id:'sueldo',       label:'Sueldo',       icon:'💵', color:'#42d460', builtin:true},
       {id:'samo',         label:'S.A.M.O.',     icon:'💵', color:'#42b8a0', builtin:true},
+      {id:'nafta',        label:'Nafta',        icon:'⛽', color:'#f5a442', builtin:true},
+      {id:'libreria',     label:'Librería',     icon:'📚', color:'#7c9ef5', builtin:true},
+      {id:'farmacia',     label:'Farmacia',     icon:'💊', color:'#f57c9e', builtin:true},
     ];
     newCats.forEach(function(nc){
       var existing = d.cats.find(function(c){ return c.id===nc.id; });
@@ -4731,7 +4737,8 @@ function deleteTx(){
 // Por defecto: gastos frecuentes del día a día.
 var DEFAULT_QUICK_CAT_IDS = [
   'bondi','subte','uber','supermercado','chipa',
-  'cocina_bg','cine','teatro','salidas','meli','otros'
+  'nafta','libreria','farmacia',
+  'cine','teatro','salidas','meli','otros'
 ];
 
 function getQuickCatIds() {
