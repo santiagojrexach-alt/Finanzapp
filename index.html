@@ -2110,6 +2110,7 @@ input[type=number]{-moz-appearance:textfield}
               <div class="chart-chip active" data-pmmonths="6">6 meses</div>
               <div class="chart-chip" data-pmmonths="12">12 meses</div>
             </div>
+            <button onclick="openPmHistoryModal()" style="font-size:11px;padding:5px 10px;border-radius:8px;background:color-mix(in srgb,var(--a2) 15%,transparent);border:1px solid var(--a2);color:var(--accent);cursor:pointer;font-family:inherit;white-space:nowrap">+ Cargar histórico</button>
           </div>
           <div class="chart-canvas-wrap" style="height:200px"><canvas id="pmCompareChart"></canvas></div>
           <div id="pmCompareTotals" style="padding:8px 16px 12px;font-size:11px;color:var(--muted)"></div>
@@ -2609,6 +2610,54 @@ input[type=number]{-moz-appearance:textfield}
 </div>
 
 <!-- LOGOUT MODAL -->
+<!-- PM HISTORY MODAL -->
+<div class="modal-overlay" id="modalPmHistory">
+  <div class="modal-inner" style="max-width:380px">
+    <div class="modal-hdr">
+      <span class="modal-title">Cargar consumo histórico</span>
+      <button class="modal-close" onclick="closeModal('modalPmHistory')">✕</button>
+    </div>
+    <div style="padding:16px;display:flex;flex-direction:column;gap:12px">
+      <div>
+        <div class="field-label">Medio de pago</div>
+        <select id="pmHistPmSelect" class="field-input" style="width:100%"></select>
+      </div>
+      <div style="display:flex;gap:8px">
+        <div style="flex:1">
+          <div class="field-label">Mes</div>
+          <select id="pmHistMonth" class="field-input" style="width:100%">
+            <option value="0">Enero</option><option value="1">Febrero</option>
+            <option value="2">Marzo</option><option value="3">Abril</option>
+            <option value="4">Mayo</option><option value="5">Junio</option>
+            <option value="6">Julio</option><option value="7">Agosto</option>
+            <option value="8">Septiembre</option><option value="9">Octubre</option>
+            <option value="10">Noviembre</option><option value="11">Diciembre</option>
+          </select>
+        </div>
+        <div style="flex:1">
+          <div class="field-label">Año</div>
+          <select id="pmHistYear" class="field-input" style="width:100%"></select>
+        </div>
+      </div>
+      <div>
+        <div class="field-label">Total gastado</div>
+        <div style="display:flex;gap:8px;align-items:center">
+          <input class="field-input" type="number" id="pmHistAmt" placeholder="0" min="0" style="flex:1">
+          <div style="display:flex;gap:4px">
+            <button id="pmHistARS" class="type-btn sel-in" onclick="setPmHistCurr('ARS')">ARS</button>
+            <button id="pmHistUSD" class="type-btn" onclick="setPmHistCurr('USD')">USD</button>
+          </div>
+        </div>
+      </div>
+      <div id="pmHistExistingNote" style="font-size:11px;color:var(--muted);display:none"></div>
+      <div id="pmHistList" style="max-height:180px;overflow-y:auto;border-top:1px solid var(--border);padding-top:10px;margin-top:4px"></div>
+    </div>
+    <div class="modal-footer">
+      <button class="save-btn" onclick="savePmHistory()">Guardar</button>
+    </div>
+  </div>
+</div>
+
 <!-- DEBT MODAL -->
 <div class="modal-backdrop" id="modalDebt">
   <div class="modal-sheet" style="max-height:85vh;padding:18px 18px 0">
@@ -3125,7 +3174,7 @@ var CATS = DEFAULT_CATS.slice();
 /* ════════ 3. STATE + MIGRATION + STORAGE ════════ */
 /* ── STATE ── */
 var S = {
-  txs:[], goals:[], debts:[], portfolio:[], paymentMethods:[], cats:DEFAULT_CATS.slice(),
+  txs:[], goals:[], debts:[], portfolio:[], paymentMethods:[], pmHistory:[], cats:DEFAULT_CATS.slice(),
   cfg:{theme:'dark',colorPalette:'verde',usdRate:1200,monthlyIncome:0,monthlyBudget:0,savingsGoal:0,budgets:{},schemaVersion:SCHEMA_VERSION},
   ui:{
     tab:'resumen',year:new Date().getFullYear(),month:new Date().getMonth(),
@@ -3293,6 +3342,7 @@ function loadLocal() {
     if (d.debts)          S.debts          = d.debts;
     if (d.portfolio)      S.portfolio      = d.portfolio;
     if (d.paymentMethods) S.paymentMethods = d.paymentMethods;
+    if (d.pmHistory)      S.pmHistory      = d.pmHistory;
     if (d.cats && d.cats.length) S.cats   = d.cats;
     if (d.cfg)            S.cfg            = Object.assign({}, S.cfg, d.cfg);
     if (!S.cfg.budgets)   S.cfg.budgets    = {};
@@ -3306,7 +3356,7 @@ function saveLocal() {
   try {
     localStorage.setItem(STORE_KEY, JSON.stringify({
       txs:S.txs, goals:S.goals, debts:S.debts, portfolio:S.portfolio,
-      paymentMethods:S.paymentMethods, cats:S.cats, cfg:S.cfg,
+      paymentMethods:S.paymentMethods, pmHistory:S.pmHistory, cats:S.cats, cfg:S.cfg,
       // Persist UI state so app reopens where user left off
       ui:{ year:S.ui.year, month:S.ui.month, tab:S.ui.tab }
     }));
@@ -3337,6 +3387,7 @@ function syncToCloud() {
     debts:S.debts,
     portfolio:S.portfolio,
     paymentMethods:S.paymentMethods,
+    pmHistory:S.pmHistory,
     cats: S.cats,
     cfg:  S.cfg,
     updatedAt: Date.now(),
@@ -3378,6 +3429,7 @@ async function loadFromCloud() {
       if (d.debts)                    S.debts = d.debts;
       if (d.portfolio)                 S.portfolio = d.portfolio;
       if (d.paymentMethods)            S.paymentMethods = d.paymentMethods;
+      if (d.pmHistory)                 S.pmHistory      = d.pmHistory;
       if (d.cats  && d.cats.length)   S.cats  = d.cats;
       if (d.cfg)  S.cfg = Object.assign({}, S.cfg, d.cfg);
       if (!S.cfg.budgets) S.cfg.budgets = {};
@@ -3728,9 +3780,16 @@ function calcPmHistoryByMonth(months, pmIds) {
     labels.push(MONTHS[d.getMonth()].slice(0,3)+" '"+String(d.getFullYear()).slice(2));
     monthKeys.push({y:d.getFullYear(), m:d.getMonth()});
   }
+  var pmHist = S.pmHistory || [];
   var result = {};
   (pmIds||[]).forEach(function(pmId) {
     result[pmId] = monthKeys.map(function(mk) {
+      // Check for manual override first
+      var manual = pmHist.find(function(h){
+        return h.pmId===pmId && h.year===mk.y && h.month===mk.m;
+      });
+      if (manual) return manual.curr==='USD' ? manual.amt*(S.cfg.usdRate||1) : manual.amt;
+      // Fall back to summing real transactions
       return S.txs.filter(function(t){
         return t.type==='out' && t.paymentMethod===pmId && inMonth(t,mk.y,mk.m);
       }).reduce(function(s,t){ return s+toARS(t.amt,t.curr); }, 0);
@@ -6261,6 +6320,103 @@ function renderPmSummary() {
   }
 }
 
+/* ── PM HISTORY (manual monthly totals) ── */
+var currentPmHistCurr = 'ARS';
+
+function openPmHistoryModal() {
+  var pms = S.paymentMethods || [];
+  if (!pms.length) { toast('⚠️ Primero configurá medios de pago en ⚙️'); return; }
+  var pmSel = document.getElementById('pmHistPmSelect');
+  if (pmSel) pmSel.innerHTML = pms.map(function(pm){
+    return '<option value="'+pm.id+'">'+(pm.icon||'💳')+' '+esc(pm.name)+'</option>';
+  }).join('');
+  var yrSel = document.getElementById('pmHistYear');
+  if (yrSel) {
+    var curY = new Date().getFullYear();
+    yrSel.innerHTML = '';
+    for (var y = curY; y >= curY-4; y--) {
+      var opt = document.createElement('option');
+      opt.value = y; opt.textContent = y;
+      if (y === curY-1) opt.selected = true;
+      yrSel.appendChild(opt);
+    }
+  }
+  var mSel = document.getElementById('pmHistMonth');
+  if (mSel) mSel.value = (new Date().getMonth() + 11) % 12;
+  currentPmHistCurr = 'ARS';
+  setPmHistCurr('ARS');
+  document.getElementById('pmHistAmt').value = '';
+  renderPmHistList();
+  document.getElementById('modalPmHistory').classList.add('open');
+}
+window.openPmHistoryModal = openPmHistoryModal;
+
+function setPmHistCurr(c) {
+  currentPmHistCurr = c;
+  document.getElementById('pmHistARS').className = 'type-btn'+(c==='ARS'?' sel-in':'');
+  document.getElementById('pmHistUSD').className = 'type-btn'+(c==='USD'?' sel-out':'');
+}
+window.setPmHistCurr = setPmHistCurr;
+
+function savePmHistory() {
+  var pmId  = document.getElementById('pmHistPmSelect').value;
+  var month = parseInt(document.getElementById('pmHistMonth').value);
+  var year  = parseInt(document.getElementById('pmHistYear').value);
+  var amt   = parseFloat(document.getElementById('pmHistAmt').value);
+  if (!pmId)         { toast('⚠️ Elegí un medio de pago'); return; }
+  if (!amt || amt<=0){ toast('⚠️ Ingresá un monto válido'); return; }
+  if (!S.pmHistory) S.pmHistory = [];
+  // Remove existing entry for same pm+month+year (replace, not duplicate)
+  S.pmHistory = S.pmHistory.filter(function(h){
+    return !(h.pmId===pmId && h.year===year && h.month===month);
+  });
+  S.pmHistory.push({pmId:pmId, year:year, month:month, amt:amt, curr:currentPmHistCurr});
+  save();
+  document.getElementById('pmHistAmt').value = '';
+  renderPmHistList();
+  renderPmComparison();
+  toast('✓ Consumo histórico guardado');
+}
+window.savePmHistory = savePmHistory;
+
+function deletePmHistory(pmId, year, month) {
+  S.pmHistory = (S.pmHistory||[]).filter(function(h){
+    return !(h.pmId===pmId && h.year===year && h.month===month);
+  });
+  save();
+  renderPmHistList();
+  renderPmComparison();
+  toast('🗑️ Registro eliminado');
+}
+window.deletePmHistory = deletePmHistory;
+
+function renderPmHistList() {
+  var el = document.getElementById('pmHistList');
+  if (!el) return;
+  var hist = (S.pmHistory||[]).slice().sort(function(a,b){
+    return (b.year*12+b.month) - (a.year*12+a.month);
+  });
+  if (!hist.length) {
+    el.innerHTML = '<div style="font-size:11px;color:var(--muted);text-align:center;padding:8px">Sin registros cargados</div>';
+    return;
+  }
+  var pms = S.paymentMethods || [];
+  el.innerHTML = '<div style="font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-bottom:6px">Registros cargados</div>'+
+    hist.map(function(h){
+      var pm = pms.find(function(p){ return p.id===h.pmId; });
+      var pmName = pm ? (pm.icon||'💳')+' '+pm.name : h.pmId;
+      var amtStr = h.curr==='USD' ? 'USD '+h.amt.toLocaleString('es-AR') : '$'+h.amt.toLocaleString('es-AR');
+      return '<div style="display:flex;align-items:center;justify-content:space-between;padding:5px 0;border-bottom:1px solid var(--border);gap:8px;font-size:11px">'+
+        '<span style="color:var(--muted);white-space:nowrap">'+MONTHS[h.month]+' '+h.year+'</span>'+
+        '<span style="font-weight:600;flex:1;padding:0 6px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+pmName+'</span>'+
+        '<span style="color:var(--accent);white-space:nowrap">'+amtStr+'</span>'+
+        '<button onclick="deletePmHistory(\''+h.pmId+'\','+h.year+','+h.month+')" style="background:none;border:none;color:var(--red);cursor:pointer;font-size:16px;padding:0 2px;font-family:inherit;flex-shrink:0">×</button>'+
+      '</div>';
+    }).join('');
+}
+window.renderPmHistList = renderPmHistList;
+
+/* ── PM COMPARISON CHART ── */
 var pmCompareChartInstance = null;
 var pmCompareMonths = 6;
 var PM_CHART_COLORS = ['rgba(66,212,96,1)','rgba(122,192,255,1)','rgba(200,160,255,1)','rgba(255,204,112,1)','rgba(255,136,136,1)'];
