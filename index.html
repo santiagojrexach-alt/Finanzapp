@@ -4434,7 +4434,28 @@ function renderPortfolioVsMeta() {
       responsive: true, maintainAspectRatio: false, animation:{duration:400},
       plugins: {
         legend: { display: false },
-        tooltip: { callbacks: { label: function(ctx){ return ctx.dataset.label+': '+fARS(ctx.parsed.y); } } }
+        tooltip: {
+          callbacks: {
+            title: function(items) {
+              return items[0] ? items[0].label : '';
+            },
+            label: function(ctx) {
+              var isIdeal = ctx.datasetIndex === 1;
+              var prefix = isIdeal
+                ? '— Meta ideal: '
+                : '● Portfolio real: ';
+              return prefix + fARS(ctx.parsed.y);
+            },
+            afterBody: function(items) {
+              // Only show explanation when hovering the ideal line
+              var hasIdeal = items.some(function(i){ return i.datasetIndex === 1; });
+              if (hasIdeal && goal) {
+                return ['', 'Meta ideal = ' + fARS(goal) + '/mes × meses transcurridos', 'desde Oct 2025'];
+              }
+              return [];
+            }
+          }
+        }
       },
       scales: {
         x: { grid:{color:th.grid}, ticks:{color:th.text,font:{size:10},maxRotation:0,maxTicksLimit:8} },
@@ -4450,7 +4471,7 @@ function renderPortfolioVsMeta() {
   if (legEl) {
     legEl.innerHTML =
       '<div style="display:flex;align-items:center;gap:5px"><div style="width:12px;height:12px;border-radius:50%;background:rgba(66,212,96,1)"></div>Portfolio real</div>'+
-      (goal ? '<div style="display:flex;align-items:center;gap:5px"><div style="width:16px;height:2px;background:rgba(253,212,74,.8)"></div>Meta ideal</div>' : '');
+      (goal ? '<div style="display:flex;align-items:center;gap:5px;cursor:help" title="Acumulado si ahorraras '+fARS(goal)+' por mes desde Oct 2025"><div style="width:16px;height:2px;background:rgba(253,212,74,.8)"></div>Meta ideal ('+fARS(goal)+'/mes)</div>' : '');
   }
 
   // Message
