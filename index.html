@@ -3664,8 +3664,19 @@ function calcSavedForGoal(goal) {
  * for the portfolio-vs-ideal chart. Pure: no DOM, no chart.js.
  */
 function calcPortfolioHistory(savingsGoal, startYear, startMonth) {
-  startYear  = startYear  || 2025;
-  startMonth = startMonth || 9; // Oct 2025
+  // Default: use date of first transaction, fallback to current month
+  if (startYear === undefined || startMonth === undefined) {
+    var firstTx = S.txs.slice().sort(function(a,b){ return a.date>b.date?1:-1; })[0];
+    if (firstTx && firstTx.date) {
+      var parts = firstTx.date.split('-');
+      startYear  = parseInt(parts[0]);
+      startMonth = parseInt(parts[1]) - 1; // 0-indexed
+    } else {
+      var now0 = new Date();
+      startYear  = now0.getFullYear();
+      startMonth = now0.getMonth();
+    }
+  }
   savingsGoal = savingsGoal || 0;
 
   var now = new Date();
@@ -4447,10 +4458,13 @@ function renderPortfolioVsMeta() {
               return prefix + fARS(ctx.parsed.y);
             },
             afterBody: function(items) {
-              // Only show explanation when hovering the ideal line
               var hasIdeal = items.some(function(i){ return i.datasetIndex === 1; });
               if (hasIdeal && goal) {
-                return ['', 'Meta ideal = ' + fARS(goal) + '/mes × meses transcurridos', 'desde Oct 2025'];
+                var firstTx = S.txs.slice().sort(function(a,b){ return a.date>b.date?1:-1; })[0];
+                var sinceLabel = firstTx && firstTx.date
+                  ? 'desde ' + MONTHS[parseInt(firstTx.date.split('-')[1])-1] + ' ' + firstTx.date.split('-')[0]
+                  : 'desde el primer movimiento';
+                return ['', 'Meta ideal = ' + fARS(goal) + '/mes × meses transcurridos', sinceLabel];
               }
               return [];
             }
@@ -4469,9 +4483,13 @@ function renderPortfolioVsMeta() {
   // Legend
   var legEl = document.getElementById('portfolioVsMetaLegend');
   if (legEl) {
+    var firstTx = S.txs.slice().sort(function(a,b){ return a.date>b.date?1:-1; })[0];
+    var sinceLabel = firstTx && firstTx.date
+      ? 'desde ' + MONTHS[parseInt(firstTx.date.split('-')[1])-1] + ' ' + firstTx.date.split('-')[0]
+      : 'desde el primer movimiento';
     legEl.innerHTML =
       '<div style="display:flex;align-items:center;gap:5px"><div style="width:12px;height:12px;border-radius:50%;background:rgba(66,212,96,1)"></div>Portfolio real</div>'+
-      (goal ? '<div style="display:flex;align-items:center;gap:5px;cursor:help" title="Acumulado si ahorraras '+fARS(goal)+' por mes desde Oct 2025"><div style="width:16px;height:2px;background:rgba(253,212,74,.8)"></div>Meta ideal ('+fARS(goal)+'/mes)</div>' : '');
+      (goal ? '<div style="display:flex;align-items:center;gap:5px;cursor:help" title="Acumulado si ahorraras '+fARS(goal)+' por mes '+sinceLabel+'"><div style="width:16px;height:2px;background:rgba(253,212,74,.8)"></div>Meta ideal ('+fARS(goal)+'/mes)</div>' : '');
   }
 
   // Message
