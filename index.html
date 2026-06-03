@@ -2611,13 +2611,14 @@ input[type=number]{-moz-appearance:textfield}
 
 <!-- LOGOUT MODAL -->
 <!-- PM HISTORY MODAL -->
-<div class="modal-overlay" id="modalPmHistory">
-  <div class="modal-inner" style="max-width:380px">
-    <div class="modal-hdr">
-      <span class="modal-title">Cargar consumo histórico</span>
-      <button class="modal-close" onclick="closeModal('modalPmHistory')">✕</button>
+<div class="modal-backdrop" id="modalPmHistory">
+  <div class="modal-sheet">
+    <div class="modal-handle"></div>
+    <div class="modal-title-row">
+      <div class="modal-title">Cargar consumo histórico</div>
+      <button class="modal-close-btn" onclick="closeModal('modalPmHistory')">✕</button>
     </div>
-    <div style="padding:16px;display:flex;flex-direction:column;gap:12px">
+    <div style="display:flex;flex-direction:column;gap:12px">
       <div>
         <div class="field-label">Medio de pago</div>
         <select id="pmHistPmSelect" class="field-input" style="width:100%"></select>
@@ -2649,11 +2650,8 @@ input[type=number]{-moz-appearance:textfield}
           </div>
         </div>
       </div>
-      <div id="pmHistExistingNote" style="font-size:11px;color:var(--muted);display:none"></div>
-      <div id="pmHistList" style="max-height:180px;overflow-y:auto;border-top:1px solid var(--border);padding-top:10px;margin-top:4px"></div>
-    </div>
-    <div class="modal-footer">
-      <button class="save-btn" onclick="savePmHistory()">Guardar</button>
+      <button class="save-btn" onclick="savePmHistory()" style="margin-top:4px">Guardar</button>
+      <div id="pmHistList" style="max-height:200px;overflow-y:auto;border-top:1px solid var(--border);padding-top:10px"></div>
     </div>
   </div>
 </div>
@@ -3494,7 +3492,7 @@ function hideSplash() {
 
 function showAuth()  {
   hideSplash();
-  ['modalLogout','modalReg','modalQuick','modalCat','modalGoal'].forEach(function(id){
+  ['modalLogout','modalReg','modalQuick','modalCat','modalGoal','modalPmHistory'].forEach(function(id){
     var modal = document.getElementById(id);
     if (modal) modal.classList.remove('open');
   });
@@ -5063,7 +5061,7 @@ function toast(msg){
 
 /* ── KEYBOARD ── */
 document.addEventListener('keydown',function(e){
-  if(e.key==='Escape'){guardClose('modalReg');closeModal('modalQuick');closeModal('modalCat');closeModal('modalGoal');}
+  if(e.key==='Escape'){guardClose('modalReg');closeModal('modalQuick');closeModal('modalCat');closeModal('modalGoal');closeModal('modalPmHistory');}
 });
 
 /* ── AUTH ENTER KEY ── */
