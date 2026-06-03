@@ -3223,11 +3223,25 @@ function migrate(d) {
     newCats.forEach(function(nc){
       var existing = d.cats.find(function(c){ return c.id===nc.id; });
       if (!existing) {
+        // Add if missing
         d.cats.push(nc);
-      } else if (existing.icon === '📦') {
-        // Fix wrong icon (was inheriting 'otros' icon)
-        existing.icon = nc.icon;
+      } else {
+        // Always update icon for sueldo/samo (user may have wrong icon from before)
+        if (nc.id === 'sueldo' || nc.id === 'samo') {
+          existing.icon    = nc.icon;
+          existing.builtin = true;
+        } else if (existing.icon === '📦') {
+          // Fix wrong icon inherited from 'otros'
+          existing.icon = nc.icon;
+        }
       }
+    });
+    // Remove duplicates keeping the first occurrence of each id
+    var seen = {};
+    d.cats = d.cats.filter(function(c){
+      if (seen[c.id]) return false;
+      seen[c.id] = true;
+      return true;
     });
   }
   if (d.goals) d.goals.forEach(function(g){
