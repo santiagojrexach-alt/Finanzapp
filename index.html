@@ -4678,24 +4678,42 @@ function renderCfg(){
 
 function renderCatMgmt(){
   var el=document.getElementById('catMgmtList');if(!el)return;
-  el.innerHTML=S.cats.map(function(c){
-    var budget=S.cfg.budgets[c.id]||0;
-    return'<div class="cfg-row" style="padding:10px 16px">'+
-      '<div style="display:flex;align-items:center;gap:10px;flex:1;min-width:0">'+
-        '<span style="font-size:20px;width:28px;text-align:center;flex-shrink:0">'+c.icon+'</span>'+
-        '<div style="min-width:0">'+
-          '<div class="cfg-lbl" style="font-size:13px;font-weight:600;text-transform:none;letter-spacing:0;color:var(--bright)">'+esc(c.label)+'</div>'+
-          '<div class="cfg-sub">'+(budget>0?'Presupuesto: '+fARS(budget):(c.builtin?'Categoría base':'Personalizada'))+'</div>'+
+  var quickIds = S.cfg.quickCatIds || DEFAULT_QUICK_CAT_IDS;
+  el.innerHTML=
+    '<div style="padding:6px 16px 4px;font-size:10px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)">⚡ = aparece en modo rápido</div>'+
+    S.cats.map(function(c){
+      var budget=S.cfg.budgets[c.id]||0;
+      var inQuick = quickIds.indexOf(c.id) >= 0;
+      return'<div class="cfg-row" style="padding:10px 16px">'+
+        '<div style="display:flex;align-items:center;gap:10px;flex:1;min-width:0">'+
+          '<span style="font-size:20px;width:28px;text-align:center;flex-shrink:0">'+c.icon+'</span>'+
+          '<div style="min-width:0">'+
+            '<div class="cfg-lbl" style="font-size:13px;font-weight:600;text-transform:none;letter-spacing:0;color:var(--bright)">'+esc(c.label)+'</div>'+
+            '<div class="cfg-sub">'+(budget>0?'Presupuesto: '+fARS(budget):(c.builtin?'Categoría base':'Personalizada'))+'</div>'+
+          '</div>'+
         '</div>'+
-      '</div>'+
-      '<div style="display:flex;align-items:center;gap:8px;flex-shrink:0">'+
-        '<div style="width:12px;height:12px;border-radius:3px;background:'+c.color+'"></div>'+
-        '<button class="cfg-action" data-catid="'+c.id+'">Editar</button>'+
-      '</div></div>';
-  }).join('');
+        '<div style="display:flex;align-items:center;gap:10px;flex-shrink:0">'+
+          '<label style="display:flex;align-items:center;gap:5px;cursor:pointer;font-size:12px;color:var(--muted);user-select:none" title="Mostrar en modo rápido">'+
+            '<input type="checkbox" data-quickcat="'+c.id+'" '+(inQuick?'checked':'')+' onchange="toggleQuickCat(\''+c.id+'\',this.checked)" style="width:15px;height:15px;accent-color:var(--accent);cursor:pointer">'+
+            '<span>⚡</span>'+
+          '</label>'+
+          '<div style="width:12px;height:12px;border-radius:3px;background:'+c.color+'"></div>'+
+          '<button class="cfg-action" data-catid="'+c.id+'">Editar</button>'+
+        '</div></div>';
+    }).join('');
 }
 
-/* ── RENDER ALL ── */
+function toggleQuickCat(catId, checked) {
+  var ids = (S.cfg.quickCatIds || DEFAULT_QUICK_CAT_IDS).slice();
+  var idx = ids.indexOf(catId);
+  if (checked && idx < 0) ids.push(catId);
+  if (!checked && idx >= 0) ids.splice(idx, 1);
+  updateCfg({quickCatIds: ids});
+  // Rebuild quick grid if quick modal is open
+  var qGrid = document.getElementById('quickGrid');
+  if (qGrid) buildQuickGrid();
+}
+window.toggleQuickCat = toggleQuickCat;
 function renderAll(){
   renderHeader();
   var t=S.ui.tab;
