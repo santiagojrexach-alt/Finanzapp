@@ -4625,8 +4625,18 @@ document.getElementById('navEl').addEventListener('click',function(e){
 function shiftMonth(d){
   var m=S.ui.month+d,y=S.ui.year;
   if(m<0){m=11;y--;}if(m>11){m=0;y++;}
-  S.ui.month=m;S.ui.year=y;renderTab(S.ui.tab);
-};
+  S.ui.month=m;S.ui.year=y;
+  renderTab(S.ui.tab);
+  // Re-render any open cards in Análisis (they don't re-render on tab switch)
+  if (S.ui.tab==='analisis') {
+    var open = document.querySelectorAll('#tab-analisis .card-body:not(.collapsed)');
+    open.forEach(function(body){
+      if (body.querySelector('#donutChart'))    safeRender(renderDonut,       'renderDonut');
+      if (body.querySelector('#pmSummaryList')) { safeRender(renderPmSummary,'renderPmSummary'); safeRender(renderPmComparison,'renderPmComparison'); }
+    });
+    updateAnalysisContext();
+  }
+}
 
 /* ── SEARCH ── */
 function onSearch(val){
@@ -5299,7 +5309,17 @@ function renderTab(tab) {
   safeRender(renderHeader, 'renderHeader');
   if (tab === 'resumen')  { safeRender(renderResumen,  'renderResumen'); }
   if (tab === 'registro') { safeRender(renderHist,     'renderHist'); }
-  if (tab === 'analisis') { /* charts render on card expand — no-op here */ }
+  if (tab === 'analisis') {
+    // Only render charts in cards that are already open
+    var openBodies = document.querySelectorAll('#tab-analisis .card-body:not(.collapsed)');
+    openBodies.forEach(function(body){
+      if (body.querySelector('#donutChart'))    safeRender(renderDonut,          'renderDonut');
+      if (body.querySelector('#barChart'))      safeRender(renderBar,            'renderBar');
+      if (body.querySelector('#pmSummaryList')) { safeRender(renderPmSummary,   'renderPmSummary'); safeRender(renderPmComparison,'renderPmComparison'); }
+      if (body.querySelector('#catEvoChart'))   safeRender(renderCatEvolution,   'renderCatEvolution');
+    });
+    updateAnalysisContext();
+  }
   if (tab === 'ahorro')   { safeRender(renderAhorro,   'renderAhorro'); }
   if (tab === 'deudas')   { safeRender(renderDeudas,   'renderDeudas'); }
   if (tab === 'config')   { safeRender(renderCfg,      'renderCfg'); }
