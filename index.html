@@ -527,6 +527,11 @@ body{
   font-size:9px;color:var(--blue);margin-top:1px;
   display:flex;align-items:center;gap:3px;
 }
+.tx-nopres{
+  font-size:9px;color:var(--muted);margin-top:1px;
+  display:inline-flex;align-items:center;gap:3px;
+  background:var(--bg3);border-radius:3px;padding:1px 5px;
+}
 .c-in{color:var(--accent)} .c-out{color:var(--red)}
 
 /* ── CAT ROW ── */
@@ -2505,6 +2510,15 @@ input[type=number]{-moz-appearance:textfield}
             <div class="toggle-knob"></div>
           </div>
         </div>
+        <div class="recur-row">
+          <div>
+            <div class="recur-lbl">Solo registro</div>
+            <div class="recur-sub">No descuenta del presupuesto mensual</div>
+          </div>
+          <div class="toggle" id="noPresToggle" data-action="toggleNoPres">
+            <div class="toggle-knob"></div>
+          </div>
+        </div>
         <div class="field">
           <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
             <label class="field-lbl" style="margin:0">En cuotas</label>
@@ -3177,7 +3191,7 @@ var S = {
   ui:{
     tab:'resumen',year:new Date().getFullYear(),month:new Date().getMonth(),
     period:'month',searchQuery:'',editId:null,
-    txType:'out',txCurr:'ARS',txCat:'carrefour',txRecur:false,
+    txType:'out',txCurr:'ARS',txCat:'carrefour',txRecur:false,txNoPres:false,
     qCurr:'ARS',qCat:'otros',
     editCatId:null,editCatColor:'#f5c842',headerCollapsed:false,
     editGoalId:null,editGoalColor:'#3bc957',
@@ -4212,7 +4226,7 @@ function renderBudgetAlert(){
   var alerts=[],y=S.ui.year,m=S.ui.month;
   Object.keys(S.cfg.budgets).forEach(function(cid){
     var budget=S.cfg.budgets[cid];if(!budget)return;
-    var spent=S.txs.filter(function(t){return inMonth(t,y,m)&&t.type==='out'&&t.cat===cid;})
+    var spent=S.txs.filter(function(t){return inMonth(t,y,m)&&t.type==='out'&&t.cat===cid&&!t.noPresupuesto;})
       .reduce(function(s,t){return s+toARS(t.amt,t.curr);},0);
     var pct=spent/budget*100;
     if(pct>=80){var c=cat(cid);alerts.push(c.icon+' '+esc(c.label)+': '+pct.toFixed(0)+'% del presupuesto'+(pct>=100?' ⚠️ superado':''));}
@@ -4288,6 +4302,7 @@ function txRow(tx){
   var desc=tx.desc||c.label;
   var badge=tx.curr==='USD'?'<span style="font-size:10px;color:var(--blue);margin-left:4px">USD</span>':'';
   var recurBadge=tx.recurring?'<div class="tx-recur">🔁 recurrente</div>':'';
+  var noPresBadge=tx.noPresupuesto?'<span class="tx-nopres">solo registro</span>':'';
   var tagsBadge = (tx.tags&&tx.tags.length)
     ? '<div class="tx-tags">'+tx.tags.map(function(t){return'<span class="tx-tag">'+esc(t)+'</span>';}).join('')+'</div>'
     : '';
@@ -4296,7 +4311,7 @@ function txRow(tx){
     '<div class="tx" data-id="'+tx.id+'">'+
       '<div class="tx-icon">'+c.icon+'</div>'+
       '<div class="tx-body"><div class="tx-name">'+esc(desc)+badge+'</div>'+
-      '<div class="tx-meta">'+esc(c.label)+'</div>'+recurBadge+tagsBadge+'</div>'+
+      '<div class="tx-meta">'+esc(c.label)+'</div>'+recurBadge+noPresBadge+tagsBadge+'</div>'+
       '<div class="tx-right"><div class="tx-amount '+cls+'">'+sign+fmt+'</div>'+
       '<div class="tx-date-lbl">'+fmtDate(tx.date)+'</div></div>'+
     '</div>'+
@@ -4771,7 +4786,7 @@ function openModal(type,id){
   var isEdit=Boolean(id);
   var tx=isEdit?S.txs.find(function(t){return t.id===id;}):null;
   S.ui.editId=id||null;S.ui.txType=tx?tx.type:(type||'out');
-  S.ui.txCurr=tx?tx.curr:'ARS';S.ui.txCat=tx?tx.cat:CATS[0].id;S.ui.txRecur=tx?!!tx.recurring:false;
+  S.ui.txCurr=tx?tx.curr:'ARS';S.ui.txCat=tx?tx.cat:CATS[0].id;S.ui.txRecur=tx?!!tx.recurring:false;S.ui.txNoPres=tx?!!tx.noPresupuesto:false;
   document.getElementById('modalRegTitle').textContent=isEdit?'Editar movimiento':'Nuevo movimiento';
   document.getElementById('amtInput').value=tx?tx.amt:'';
   document.getElementById('descInput').value=tx?(tx.desc||''):'';
@@ -4791,6 +4806,8 @@ function openModal(type,id){
   document.getElementById('delBtn').style.display=isEdit?'block':'none';
   var recurTog=document.getElementById('recurToggle');
   if(S.ui.txRecur)recurTog.classList.add('on');else recurTog.classList.remove('on');
+  var noPresTog=document.getElementById('noPresToggle');
+  if(noPresTog){if(S.ui.txNoPres)noPresTog.classList.add('on');else noPresTog.classList.remove('on');}
   // Tags
   currentTxTags = (tx&&tx.tags) ? tx.tags.slice() : [];
   renderTagChips();
@@ -4871,14 +4888,14 @@ function saveTx(){
     id: isEdit ? S.ui.editId : uid(),
     type:S.ui.txType, amt:amt, curr:S.ui.txCurr,
     cat:S.ui.txCat, desc:desc, date:date,
-    recurring:S.ui.txRecur, tags:tags, paymentMethod:pm
+    recurring:S.ui.txRecur, noPresupuesto:S.ui.txNoPres, tags:tags, paymentMethod:pm
   };
   var vr = validateTx(draftTx);
   if (!vr.ok) { toast('⚠️ '+vr.error); return; }
 
   if(isEdit){
     var idx=S.txs.findIndex(function(t){return t.id===S.ui.editId;});
-    if(idx>=0)S.txs[idx]=Object.assign({},S.txs[idx],{type:draftTx.type,amt:draftTx.amt,curr:draftTx.curr,cat:draftTx.cat,desc:draftTx.desc,date:draftTx.date,recurring:draftTx.recurring,tags:draftTx.tags,paymentMethod:draftTx.paymentMethod});
+    if(idx>=0)S.txs[idx]=Object.assign({},S.txs[idx],{type:draftTx.type,amt:draftTx.amt,curr:draftTx.curr,cat:draftTx.cat,desc:draftTx.desc,date:draftTx.date,recurring:draftTx.recurring,noPresupuesto:draftTx.noPresupuesto,tags:draftTx.tags,paymentMethod:draftTx.paymentMethod});
   }else{
     S.txs.push(Object.assign({ts:Date.now(),note:''},draftTx));
   }
@@ -5172,6 +5189,7 @@ window.initContainerDelegation = initContainerDelegation;
     saveGoal:        function()       { saveGoal(); },
     deleteGoal:      function()       { deleteGoal(); },
     toggleRecur:     function()       { toggleRecur(); },
+    toggleNoPres:    function()       { toggleNoPres(); },
     toggleAccordion: function(el)     { toggleAccordion(el); },
     importJSON:      function()       { importJSON(); },
     exportCSV:       function()       { exportCSV(); },
@@ -5476,7 +5494,7 @@ function renderGlobalBudget() {
   if (!budget) { el.innerHTML = ''; return; }
 
   var y = S.ui.year, m = S.ui.month;
-  var txs = S.txs.filter(function(t){ return inMonth(t,y,m) && t.type==='out'; });
+  var txs = S.txs.filter(function(t){ return inMonth(t,y,m) && t.type==='out' && !t.noPresupuesto; });
   var spent = txs.reduce(function(s,t){ return s+toARS(t.amt,t.curr); }, 0);
   var pct   = Math.min(spent/budget*100, 100);
   var cls   = pct >= 90 ? 'danger' : pct >= 70 ? 'warn' : 'ok';
@@ -6989,6 +7007,12 @@ function toggleRecur(){
   var tog=document.getElementById('recurToggle');
   if(S.ui.txRecur)tog.classList.add('on');else tog.classList.remove('on');
 };
+function toggleNoPres(){
+  S.ui.txNoPres=!S.ui.txNoPres;
+  var tog=document.getElementById('noPresToggle');
+  if(tog){if(S.ui.txNoPres)tog.classList.add('on');else tog.classList.remove('on');}
+};
+window.toggleNoPres     = toggleNoPres;
 window.openDebtModal    = openDebtModal;
 window.dismissWeekly    = function(){}; /* weekly summary removed */
 window.focusTagInput    = focusTagInput;
