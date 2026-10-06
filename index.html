@@ -834,8 +834,11 @@ input[type=number]{-moz-appearance:textfield}
 /* RECURRING TOGGLE ROW */
 .recur-row{
   display:flex;align-items:center;justify-content:space-between;
-  padding:10px 0;margin-bottom:10px;
-  border-top:1px solid var(--border);border-bottom:1px solid var(--border);
+  padding:10px 0;
+  border-top:1px solid var(--border);
+}
+.recur-row:last-of-type{
+  border-bottom:1px solid var(--border);margin-bottom:10px;
 }
 .recur-lbl{font-size:13px;font-weight:600;color:var(--bright)}
 .recur-sub{font-size:11px;color:var(--muted);margin-top:2px}
@@ -3175,6 +3178,14 @@ var DEFAULT_CATS = [
   {id:'salidas',    label:'Salidas',           icon:'🍻', color:'#42b8a0', builtin:true},
   // ── General ──
   {id:'otros',      label:'Otros',             icon:'📦', color:'#8ab4a0', builtin:true},
+  // ── Nuevas ──
+  {id:'peluqueria',  label:'Peluquería',        icon:'✂️', color:'#f48fb1', builtin:true},
+  {id:'veterinaria', label:'Veterinaria',       icon:'🐾', color:'#80cbc4', builtin:true},
+  {id:'estacionamiento', label:'Estacionamiento', icon:'🅿️', color:'#90caf9', builtin:true},
+  {id:'carwash',     label:'Car Wash',          icon:'🚿', color:'#4db8e8', builtin:true},
+  {id:'desayuno_bg', label:'Desayuno Belgrano', icon:'☕', color:'#f5c842', builtin:true},
+  {id:'merienda_farmaco', label:'Merienda Farmaco', icon:'🧁', color:'#ce93d8', builtin:true},
+  {id:'prepaga',     label:'Prepaga',           icon:'🏥', color:'#ef9a9a', builtin:true},
 ];
 var CAT_COLORS = [
   '#f5c842','#ff7070','#6ab4f5','#5ee8d4','#b09af5',
