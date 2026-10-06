@@ -5707,6 +5707,12 @@ function renderDeudas() {
       '</div>'+
     '</div>';
   }).join('');
+
+  // Click handler: abrir modal al tocar una deuda
+  debtList.onclick = function(e) {
+    var item = e.target.closest('.debt-item');
+    if (item) openDebtModal(item.dataset.debtid);
+  };
 }
 
 function openDebtModal(id) {
