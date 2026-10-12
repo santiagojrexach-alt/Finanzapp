@@ -3178,6 +3178,10 @@ var DEFAULT_CATS = [
   {id:'salidas',    label:'Birras',            icon:'🎉', color:'#42b8a0', builtin:true},
   // ── General ──
   {id:'otros',      label:'Otros',             icon:'📦', color:'#8ab4a0', builtin:true},
+  // ── Ingresos extra ──
+  {id:'aguinaldo',   label:'Aguinaldo',         icon:'💵', color:'#42d460', builtin:true},
+  // ── Comidas ──
+  {id:'papucho',     label:'Papucho',           icon:'🥐', color:'#f5c842', builtin:true},
   // ── Nuevas ──
   {id:'peluqueria',  label:'Peluquería',        icon:'✂️', color:'#f48fb1', builtin:true},
   {id:'veterinaria', label:'Veterinaria',       icon:'🐾', color:'#80cbc4', builtin:true},
@@ -3191,7 +3195,7 @@ var DEFAULT_CATS = [
   {id:'bar',         label:'Bar',               icon:'🥃', color:'#a5d6a7', builtin:true},
   {id:'regalo',      label:'Regalo',            icon:'🎁', color:'#f06292', builtin:true},
   {id:'heladeria',   label:'Heladería',         icon:'🍦', color:'#b2ebf2', builtin:true},
-  {id:'lavanderia',  label:'Lavandería',        icon:'🫧', color:'#90caf9', builtin:true},
+  {id:'lavanderia',  label:'Lavandería',        icon:'👔', color:'#90caf9', builtin:true},
 ];
 var CAT_COLORS = [
   '#f5c842','#ff7070','#6ab4f5','#5ee8d4','#b09af5',
@@ -3364,8 +3368,8 @@ function migrate(d) {
 /* Garantiza que todas las categorías builtin estén presentes,
    sin tocar las personalizadas del usuario */
 function mergeBuiltinCats() {
-  // IDs cuyo label e icono se actualizan forzosamente (renombres)
-  var FORCE_UPDATE_IDS = { 'salidas': true, 'carwash': true, 'desayuno_bg': true };
+  // IDs cuyo label e icono se actualizan forzosamente (renombres o nuevos builtin)
+  var FORCE_UPDATE_IDS = { 'salidas': true, 'carwash': true, 'desayuno_bg': true, 'aguinaldo': true, 'papucho': true };
   var existingIds = {};
   S.cats.forEach(function(c){ existingIds[c.id] = true; });
   DEFAULT_CATS.forEach(function(def){
@@ -6102,11 +6106,29 @@ function updateAdvFilterCount() {
 
 /* ── EMOJI PICKER ── */
 var COMMON_EMOJIS = [
-  '🏠','🍔','🚌','🎬','👕','💊','📚','✈️','🎮','🏋️',
-  '🐕','☕','🍕','🛒','💡','📱','🚗','🎵','🌿','💰',
-  '🔧','🎁','🏦','💳','⚡','🔥','🌊','🏥','🎯','📦',
-  '🧴','🧺','🧹','🪴','🎨','🏗️','📊','🤝','🌐','🧠',
-  '💻','🖥️','⌨️','🖨️','📷','🎙️','📺','🎧','⌚','🔑'
+  // Comida y bebida
+  '🍔','🍕','🌮','🍣','🍜','🍦','🥐','🧁','🍰','☕',
+  '🧉','🍺','🥃','🍷','🥤','🧃','🍫','🍬','🥗','🍱',
+  // Casa y hogar
+  '🏠','💡','🔧','🔑','🛋️','🧹','🧺','🧴','🪣','🛁',
+  // Ropa y cuidado personal
+  '👕','👗','👟','✂️','🪒','💄','🧴','👚','👔','🎩',
+  // Transporte
+  '🚌','🚇','🚗','✈️','🛵','🚲','🚕','⛽','🅿️','🚘',
+  // Salud y bienestar
+  '💊','🏥','🩺','🧬','🏋️','🧘','🚑','🩹','💉','🦷',
+  // Tecnología
+  '📱','💻','🖥️','🎮','📺','🎧','⌚','📷','🖨️','🔋',
+  // Educación y trabajo
+  '📚','📝','🎓','✏️','📊','📋','🗂️','🖊️','📐','🔬',
+  // Entretenimiento y ocio
+  '🎬','🎵','🎭','🎨','🎯','🎲','🎪','🎠','🎡','🎟️',
+  // Mascotas y naturaleza
+  '🐕','🐈','🐾','🌿','🌺','🌳','🦜','🐠','🪴','🌻',
+  // Finanzas y servicios
+  '💰','💳','🏦','💸','🧾','📦','🎁','🛒','🛍️','🏪',
+  // Varios útiles
+  '⚡','🔥','🌊','🌐','🤝','⚙️','🔑','📡','🏗️','🎰',
 ];
 
 function buildEmojiGrid(currentIcon) {
@@ -6285,16 +6307,12 @@ function buildPmSelect() {
 
 /* ── PAYMENT METHOD ICON GRID ── */
 var PM_ICONS = [
-  // Tarjetas y pagos digitales
-  '💳','📱','🏧','💸','🔄',
-  // Efectivo y monedas
-  '💵','💶','💴','🪙','💰',
-  // Bancos e instituciones
-  '🏦','🏛️','📋','🧾','📄',
-  // Apps y servicios de pago argentinos
-  '🟡','🔵','🟢','⚡','🌐',
-  // Cheques y transferencias
-  '✉️','📨','📩','🖊️','📝',
+  '💳',  // Tarjeta
+  '📱',  // Teléfono / pago digital
+  '💵',  // Efectivo
+  '🧾',  // Cheque
+  '🔄',  // Transferencia
+  '🎟️', // Cupón
 ];
 var currentPmIcon = '💳';
 
