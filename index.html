@@ -3175,21 +3175,23 @@ var DEFAULT_CATS = [
   // ── Salidas ──
   {id:'cine',       label:'Cine',              icon:'🎬', color:'#9c6ef5', builtin:true},
   {id:'teatro',     label:'Teatro',            icon:'🎭', color:'#e06090', builtin:true},
-  {id:'salidas',    label:'Salidas',           icon:'🍻', color:'#42b8a0', builtin:true},
+  {id:'salidas',    label:'Birras',            icon:'🎉', color:'#42b8a0', builtin:true},
   // ── General ──
   {id:'otros',      label:'Otros',             icon:'📦', color:'#8ab4a0', builtin:true},
   // ── Nuevas ──
   {id:'peluqueria',  label:'Peluquería',        icon:'✂️', color:'#f48fb1', builtin:true},
   {id:'veterinaria', label:'Veterinaria',       icon:'🐾', color:'#80cbc4', builtin:true},
   {id:'estacionamiento', label:'Estacionamiento', icon:'🅿️', color:'#90caf9', builtin:true},
-  {id:'carwash',     label:'Car Wash',          icon:'🚿', color:'#4db8e8', builtin:true},
-  {id:'desayuno_bg', label:'Desayuno Belgrano', icon:'☕', color:'#f5c842', builtin:true},
+  {id:'carwash',     label:'Lavadero',          icon:'🚘', color:'#4db8e8', builtin:true},
+  {id:'desayuno_bg', label:'Desayuno Belgrano', icon:'🧉', color:'#f5c842', builtin:true},
   {id:'merienda_farmaco', label:'Merienda Farmaco', icon:'🧁', color:'#ce93d8', builtin:true},
   {id:'prepaga',     label:'Prepaga',           icon:'🏥', color:'#ef9a9a', builtin:true},
   {id:'loteria',     label:'Lotería',           icon:'🎰', color:'#ffd54f', builtin:true},
   {id:'restaurante', label:'Restaurante',       icon:'🍴', color:'#ff8a65', builtin:true},
   {id:'bar',         label:'Bar',               icon:'🥃', color:'#a5d6a7', builtin:true},
   {id:'regalo',      label:'Regalo',            icon:'🎁', color:'#f06292', builtin:true},
+  {id:'heladeria',   label:'Heladería',         icon:'🍦', color:'#b2ebf2', builtin:true},
+  {id:'lavanderia',  label:'Lavandería',        icon:'🫧', color:'#90caf9', builtin:true},
 ];
 var CAT_COLORS = [
   '#f5c842','#ff7070','#6ab4f5','#5ee8d4','#b09af5',
@@ -3288,7 +3290,7 @@ function migrate(d) {
       {id:'chipa',        label:'Chipá',        icon:'🫓', color:'#f5c842', builtin:true},
       {id:'cine',         label:'Cine',         icon:'🎬', color:'#9c6ef5', builtin:true},
       {id:'teatro',       label:'Teatro',       icon:'🎭', color:'#e06090', builtin:true},
-      {id:'salidas',      label:'Salidas',      icon:'🍻', color:'#42b8a0', builtin:true},
+      {id:'salidas',      label:'Birras',       icon:'🎉', color:'#42b8a0', builtin:true},
       {id:'sueldo',       label:'Sueldo',       icon:'💵', color:'#42d460', builtin:true},
       {id:'samo',         label:'S.A.M.O.',     icon:'💵', color:'#42b8a0', builtin:true},
       {id:'nafta',        label:'Nafta',        icon:'⛽', color:'#f5a442', builtin:true},
@@ -3362,11 +3364,17 @@ function migrate(d) {
 /* Garantiza que todas las categorías builtin estén presentes,
    sin tocar las personalizadas del usuario */
 function mergeBuiltinCats() {
+  // IDs cuyo label e icono se actualizan forzosamente (renombres)
+  var FORCE_UPDATE_IDS = { 'salidas': true, 'carwash': true, 'desayuno_bg': true };
   var existingIds = {};
   S.cats.forEach(function(c){ existingIds[c.id] = true; });
   DEFAULT_CATS.forEach(function(def){
     if (!existingIds[def.id]) {
       S.cats.push(def);
+    } else if (FORCE_UPDATE_IDS[def.id]) {
+      // Actualiza label e icon para renombres deliberados
+      var cat = S.cats.find(function(c){ return c.id === def.id; });
+      if (cat) { cat.label = def.label; cat.icon = def.icon; }
     }
   });
 }
