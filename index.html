@@ -3186,6 +3186,10 @@ var DEFAULT_CATS = [
   {id:'desayuno_bg', label:'Desayuno Belgrano', icon:'☕', color:'#f5c842', builtin:true},
   {id:'merienda_farmaco', label:'Merienda Farmaco', icon:'🧁', color:'#ce93d8', builtin:true},
   {id:'prepaga',     label:'Prepaga',           icon:'🏥', color:'#ef9a9a', builtin:true},
+  {id:'loteria',     label:'Lotería',           icon:'🎰', color:'#ffd54f', builtin:true},
+  {id:'restaurante', label:'Restaurante',       icon:'🍴', color:'#ff8a65', builtin:true},
+  {id:'bar',         label:'Bar',               icon:'🥃', color:'#a5d6a7', builtin:true},
+  {id:'regalo',      label:'Regalo',            icon:'🎁', color:'#f06292', builtin:true},
 ];
 var CAT_COLORS = [
   '#f5c842','#ff7070','#6ab4f5','#5ee8d4','#b09af5',
@@ -3355,6 +3359,18 @@ function migrate(d) {
 }
 
 /* ── LOCAL STORAGE ── */
+/* Garantiza que todas las categorías builtin estén presentes,
+   sin tocar las personalizadas del usuario */
+function mergeBuiltinCats() {
+  var existingIds = {};
+  S.cats.forEach(function(c){ existingIds[c.id] = true; });
+  DEFAULT_CATS.forEach(function(def){
+    if (!existingIds[def.id]) {
+      S.cats.push(def);
+    }
+  });
+}
+
 function loadLocal() {
   try {
     var raw = localStorage.getItem(STORE_KEY);
@@ -3373,6 +3389,7 @@ function loadLocal() {
     // Only restore the active tab.
     if (d.ui && d.ui.tab) S.ui.tab = d.ui.tab;
   } catch(e) { console.warn('loadLocal error', e); }
+  mergeBuiltinCats();
   CATS = S.cats;
 }
 function saveLocal() {
@@ -3456,6 +3473,7 @@ async function loadFromCloud() {
       if (d.cats  && d.cats.length)   S.cats  = d.cats;
       if (d.cfg)  S.cfg = Object.assign({}, S.cfg, d.cfg);
       if (!S.cfg.budgets) S.cfg.budgets = {};
+      mergeBuiltinCats();
       CATS = S.cats;
       saveLocal();
       setSyncState('synced');
@@ -3477,6 +3495,7 @@ async function loadFromCloud() {
         if (dc.cats  && dc.cats.length)   S.cats  = dc.cats;
         if (dc.cfg)  S.cfg = Object.assign({}, S.cfg, dc.cfg);
         if (!S.cfg.budgets) S.cfg.budgets = {};
+        mergeBuiltinCats();
         CATS = S.cats;
         setSyncState('error');
         return true;
@@ -4705,9 +4724,12 @@ function renderCfg(){
 function renderCatMgmt(){
   var el=document.getElementById('catMgmtList');if(!el)return;
   var quickIds = S.cfg.quickCatIds || DEFAULT_QUICK_CAT_IDS;
+  var sortedCats = S.cats.slice().sort(function(a,b){
+    return a.label.localeCompare(b.label, 'es', {sensitivity:'base'});
+  });
   el.innerHTML=
     '<div style="padding:6px 16px 4px;font-size:10px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)">⚡ = aparece en modo rápido</div>'+
-    S.cats.map(function(c){
+    sortedCats.map(function(c){
       var budget=S.cfg.budgets[c.id]||0;
       var inQuick = quickIds.indexOf(c.id) >= 0;
       return'<div class="cfg-row" style="padding:10px 16px">'+
@@ -5266,9 +5288,11 @@ function importJSON() {
         if (d.debts && d.debts.length)  S.debts = d.debts;
         if (d.portfolio)                S.portfolio = d.portfolio;
         if (d.paymentMethods)           S.paymentMethods = d.paymentMethods;
-        if (d.cats  && d.cats.length)  { S.cats = d.cats; CATS = S.cats; }
+        if (d.cats  && d.cats.length)  { S.cats = d.cats; }
         if (d.cfg) S.cfg = Object.assign({}, S.cfg, d.cfg);
         if (!S.cfg.budgets) S.cfg.budgets = {};
+        mergeBuiltinCats();
+        CATS = S.cats;
         save();
         renderHeader();
         renderTab(S.ui.tab);
