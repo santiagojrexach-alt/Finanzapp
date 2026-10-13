@@ -3739,7 +3739,7 @@ function inPeriod(tx,period){
 
 /* ── BALANCE CALC ── */
 function calcBal(txs){
-  txs=txs||S.txs.filter(function(t){return inMonth(t,S.ui.year,S.ui.month);});
+  txs=txs||S.txs.filter(function(t){return inMonth(t,S.ui.year,S.ui.month)&&!t.noPresupuesto;});
   var aIn=0,aOut=0,uIn=0,uOut=0;
   txs.forEach(function(t){
     if(t.curr==='USD'){if(t.type==='in')uIn+=t.amt;else uOut+=t.amt;}
@@ -4171,7 +4171,7 @@ function renderResumen(){
 
 function renderCats(){
   var y=S.ui.year,m=S.ui.month;
-  var txs=S.txs.filter(function(t){return inMonth(t,y,m)&&t.type==='out';});
+  var txs=S.txs.filter(function(t){return inMonth(t,y,m)&&t.type==='out'&&!t.noPresupuesto;});
   var map={};
   txs.forEach(function(t){var a=toARS(t.amt,t.curr);map[t.cat]=(map[t.cat]||0)+a;});
   var entries=Object.keys(map).map(function(k){return[k,map[k]];});
@@ -4401,7 +4401,7 @@ function renderAnalysis() {
 
 function renderDonut() {
   var y = S.ui.year, m = S.ui.month;
-  var txs = S.txs.filter(function(t){ return inMonth(t,y,m) && t.type==='out'; });
+  var txs = S.txs.filter(function(t){ return inMonth(t,y,m) && t.type==='out' && !t.noPresupuesto; });
   var map = {};
   txs.forEach(function(t){ var a=toARS(t.amt,t.curr); map[t.cat]=(map[t.cat]||0)+a; });
 
@@ -6188,9 +6188,9 @@ function renderSavingsGoal() {
   if (!goal) { el.innerHTML = ''; return; }
 
   var y = S.ui.year, m = S.ui.month;
-  var txs = S.txs.filter(function(t){ return inMonth(t,y,m); });
+  var txs = S.txs.filter(function(t){ return inMonth(t,y,m) && !t.noPresupuesto; });
   var b = calcBal(txs);
-  var saved = b.total; // ingresos - egresos del mes
+  var saved = b.total; // ingresos - egresos del mes (excluye "solo registro")
   var pct   = Math.min(saved / goal * 100, 100);
   var cls   = pct >= 100 ? 'ok' : pct >= 60 ? 'warn' : 'danger';
   var diff  = saved - goal;
@@ -6392,7 +6392,7 @@ function renderPmSummary() {
   if (!listEl) return;
   var pms = S.paymentMethods || [];
   var y=S.ui.year, m=S.ui.month;
-  var txs = S.txs.filter(function(t){return inMonth(t,y,m)&&t.type==='out';});
+  var txs = S.txs.filter(function(t){return inMonth(t,y,m)&&t.type==='out'&&!t.noPresupuesto;});
   var map={};
   pms.forEach(function(pm){map[pm.id]=0;});
   txs.forEach(function(t){
